@@ -3,13 +3,11 @@ package migrations
 import (
 	"embed"
 	"fmt"
-	"strings"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	_ "github.com/mattn/go-sqlite3"
-	"go.trulyao.dev/bore/pkg/db"
 )
 
 //go:embed *.sql
@@ -43,7 +41,7 @@ func GetMigrations() ([]Migration, error) {
 	return allMigrations, nil
 }
 
-func Migrate() error {
+func Migrate(databasePath string) error {
 	sourceDriver, err := iofs.New(migrations, ".")
 	if err != nil {
 		return fmt.Errorf("failed to create source driver: %w", err)
@@ -52,7 +50,7 @@ func Migrate() error {
 	migrator, err := migrate.NewWithSourceInstance(
 		"iofs",
 		sourceDriver,
-		strings.Replace(db.GetDSN(), "file:", "sqlite3://", 1),
+		"sqlite3://"+databasePath,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create migrator: %w", err)

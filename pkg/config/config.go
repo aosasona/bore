@@ -8,10 +8,10 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-// TODO: get rid of global config and use an App struct to encapsulate the config, database connection etc.
-var _config *Config
-
 type Config struct {
+	// Path is the path to the configuration file
+	Path string `toml:"-"`
+
 	// DataDir is the path to the directory where the application stores its data
 	DataDir string `toml:"data_dir"`
 
@@ -60,6 +60,7 @@ func DefaultConfigFilePath() string {
 
 func DefaultConfig() *Config {
 	return &Config{
+		Path:                  DefaultConfigFilePath(),
 		DataDir:               DefaultDataDir(),
 		EnableNativeClipboard: false,
 	}
@@ -112,10 +113,13 @@ func ParseConfig(path string) (*Config, error) {
 		path = home + path[1:]
 	}
 
-	// We will automatically fallback to the default configuration if the file is not found
 	s, err := os.Stat(path)
 	if err != nil {
-		return DefaultConfig(), nil
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("Config file does not exist: %s", path)
+		}
+
+		return nil, fmt.Errorf("Failed to check config file: %s", err)
 	}
 
 	if s.IsDir() {
@@ -127,23 +131,18 @@ func ParseConfig(path string) (*Config, error) {
 		return nil, fmt.Errorf("Failed to parse config file: %s", err)
 	}
 
+	config.Path = path
+
 	return config, nil
 }
 
 // Load the configuration file and store it in the global variable
-func Load(path string) error {
+func Load(path string) (*Config, error) {
 	config, err := ParseConfig(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	CreateDirIfNotExists(config.DataDir)
-
-	_config = config
-	return nil
-}
-
-// Get the global configuration object
-func Get() *Config {
-	return _config
+	return config, nil
 }
