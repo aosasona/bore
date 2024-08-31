@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v2"
-	"go.trulyao.dev/bore/cmd/bore/commands"
+	"go.trulyao.dev/bore/cmd/bore/command"
 	"go.trulyao.dev/bore/pkg/config"
 )
 
@@ -23,8 +23,22 @@ var root = &cli.App{
 			Value:   config.DefaultConfigFilePath(),
 		},
 	},
+	Authors: []*cli.Author{
+		{
+			Name:  "Ayodeji O.",
+			Email: "ayodeji@trulyao.dev",
+		},
+	},
+	Before: func(c *cli.Context) error {
+		configPath := c.String("config")
+		if err := config.Load(configPath); err != nil {
+			return err
+		}
+
+		return nil
+	},
 	Commands: []*cli.Command{
-		commands.Config,
+		command.Config,
 	},
 }
 

@@ -1,4 +1,4 @@
-package commands
+package command
 
 import (
 	"fmt"
@@ -25,14 +25,27 @@ var (
 		Action: handleInitAction,
 	}
 
+	dumpCurrentConfigCommand = &cli.Command{
+		Name:   "dump",
+		Usage:  "Dump the current configuration",
+		Action: handleDumpCurrentConfigAction,
+	}
+
 	Config = &cli.Command{
 		Name:  "config",
 		Usage: "Manage configuration",
 		Subcommands: []*cli.Command{
 			initCommand,
+			dumpCurrentConfigCommand,
 		},
 	}
 )
+
+func handleDumpCurrentConfigAction(c *cli.Context) error {
+	config := config.Get()
+	fmt.Fprintf(c.App.Writer, "%#v", config)
+	return nil
+}
 
 func handleInitAction(c *cli.Context) error {
 	path := c.String("path")
