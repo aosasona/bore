@@ -1,14 +1,33 @@
 package main
 
-import "github.com/spf13/cobra"
+import (
+	"os"
 
-var rootCmd = &cobra.Command{
-	Use:   "bore",
-	Short: "Bore is a clipboard for headless (and non-headless) environments",
-	Long:  "Bore provides you with a clipboard and a clipboard manager on any machine you are working on",
+	"github.com/urfave/cli/v2"
+	"go.trulyao.dev/bore/cmd/bore/commands"
+	"go.trulyao.dev/bore/pkg/config"
+)
+
+var root = &cli.App{
+	Name:  "bore",
+	Usage: "A minimal clipboard manager for terminal/headless environments",
+	Action: func(c *cli.Context) error {
+		cli.ShowAppHelp(c)
+		return nil
+	},
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:    "config",
+			Aliases: []string{"c"},
+			Usage:   "Load configuration from `FILE`",
+			Value:   config.DefaultConfigFilePath(),
+		},
+	},
+	Commands: []*cli.Command{
+		commands.Config,
+	},
 }
 
 func Execute() error {
-	// TODO: add commands
-	return rootCmd.Execute()
+	return root.Run(os.Args)
 }
