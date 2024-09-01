@@ -3,8 +3,7 @@ create table collections (
   name text not null,
   is_folder_scoped integer not null default 0,
   folder_hash text, -- the folder names are not stored but the path hash is stored and used for lookup with "." as separator
-  created_at integer not null default `(unixepoch())`,
-  last_modified integer,
+  last_modified integer not null default `(unixepoch())`,
 
   unique (folder_hash),
   unique (name),

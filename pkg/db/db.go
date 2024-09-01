@@ -1,6 +1,7 @@
 package db
 
 import (
+	csha256 "crypto/sha256"
 	"database/sql"
 	"fmt"
 	"os"
@@ -17,7 +18,12 @@ func uuid() string {
 	return guuid.New().String()
 }
 
-// TODO: stop using default data directory
+func sha256(s string) string {
+	c := csha256.New()
+	c.Write([]byte(s))
+	return fmt.Sprintf("%x", c.Sum(nil))
+}
+
 func GetDSN(dataDir string) string {
 	path := filepath.Join(dataDir, "data.db")
 	return "file:" + path + "?_foreign_keys=on&mode=rwc&_journal_mode=WAL&cache=shared"
@@ -28,7 +34,13 @@ func Connect(dataDir string) (*sql.DB, error) {
 		// Add UUID function
 		sql.Register("sqlite3_custom", &sqlite3.SQLiteDriver{
 			ConnectHook: func(conn *sqlite3.SQLiteConn) error {
+				// UUID function
 				if err := conn.RegisterFunc("uuid", uuid, false); err != nil {
+					return err
+				}
+
+				// SHA256 function
+				if err := conn.RegisterFunc("sha256", sha256, false); err != nil {
 					return err
 				}
 

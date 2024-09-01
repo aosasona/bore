@@ -9,12 +9,12 @@ import (
 )
 
 type Artifact struct {
-	ID           interface{}
-	Content      []byte
-	Type         string
-	CreatedAt    interface{}
-	LastModified sql.NullInt64
-	CollectionID sql.NullString
+	ID            interface{}
+	Content       []byte
+	ContentSha256 string
+	Type          string
+	LastModified  interface{}
+	CollectionID  sql.NullString
 }
 
 type Collection struct {
@@ -22,6 +22,5 @@ type Collection struct {
 	Name           string
 	IsFolderScoped int64
 	FolderHash     sql.NullString
-	CreatedAt      interface{}
-	LastModified   sql.NullInt64
+	LastModified   interface{}
 }

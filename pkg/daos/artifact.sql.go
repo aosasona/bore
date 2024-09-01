@@ -7,22 +7,61 @@ package daos
 
 import (
 	"context"
+	"database/sql"
 )
 
-const getArtifactByContent = `-- name: GetArtifactByContent :one
-SELECT id, content, type, created_at, last_modified, collection_id FROM artifacts WHERE content = ?1
+const createArtifact = `-- name: CreateArtifact :one
+INSERT INTO artifacts (content, content_sha256, type, collection_id) VALUES (?1, sha256(?1), ?2, ?3) RETURNING id, content, content_sha256, type, last_modified, collection_id
 `
 
-func (q *Queries) GetArtifactByContent(ctx context.Context, content []byte) (Artifact, error) {
-	row := q.db.QueryRowContext(ctx, getArtifactByContent, content)
+type CreateArtifactParams struct {
+	Content      []byte
+	Type         string
+	CollectionID sql.NullString
+}
+
+func (q *Queries) CreateArtifact(ctx context.Context, arg CreateArtifactParams) (Artifact, error) {
+	row := q.db.QueryRowContext(ctx, createArtifact, arg.Content, arg.Type, arg.CollectionID)
 	var i Artifact
 	err := row.Scan(
 		&i.ID,
 		&i.Content,
+		&i.ContentSha256,
 		&i.Type,
-		&i.CreatedAt,
 		&i.LastModified,
 		&i.CollectionID,
 	)
 	return i, err
+}
+
+const getArtifactByContent = `-- name: GetArtifactByContent :one
+SELECT id, content, content_sha256, type, last_modified, collection_id FROM artifacts WHERE content_sha256 = sha256(?1) AND collection_id = ?2
+`
+
+type GetArtifactByContentParams struct {
+	Content      interface{}
+	CollectionID sql.NullString
+}
+
+func (q *Queries) GetArtifactByContent(ctx context.Context, arg GetArtifactByContentParams) (Artifact, error) {
+	row := q.db.QueryRowContext(ctx, getArtifactByContent, arg.Content, arg.CollectionID)
+	var i Artifact
+	err := row.Scan(
+		&i.ID,
+		&i.Content,
+		&i.ContentSha256,
+		&i.Type,
+		&i.LastModified,
+		&i.CollectionID,
+	)
+	return i, err
+}
+
+const updateArtifactLastModified = `-- name: UpdateArtifactLastModified :exec
+UPDATE artifacts SET last_modified = unixepoch() WHERE id = ?1
+`
+
+func (q *Queries) UpdateArtifactLastModified(ctx context.Context, id interface{}) error {
+	_, err := q.db.ExecContext(ctx, updateArtifactLastModified, id)
+	return err
 }
