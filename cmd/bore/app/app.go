@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	"go.trulyao.dev/bore/pkg/config"
-	"go.trulyao.dev/bore/pkg/dao"
+	"go.trulyao.dev/bore/pkg/daos"
 	"go.trulyao.dev/bore/pkg/db"
 )
 
@@ -33,8 +33,8 @@ func New(configPath string) (*App, error) {
 	return a, nil
 }
 
-func (a *App) Daos() *dao.Dao {
-	return dao.New(a.db)
+func (a *App) Daos() *daos.Dao {
+	return daos.New(a.db)
 }
 
 func (a *App) UpdateConfigPath(configPath string) error {
