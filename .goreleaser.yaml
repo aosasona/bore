@@ -17,10 +17,14 @@ builds:
   - main: ./cmd/bore
     env:
       - CGO_ENABLED=1
+    ldflags:
+      - -s -w -X main.version={{.Version}}
     goos:
       - linux
       - windows
       - darwin
+    goarch:
+      - amd64
 
 archives:
   - format: tar.gz

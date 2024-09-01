@@ -12,6 +12,8 @@ var (
 	// TODD: find a way to init this before anything is setup
 	app *boreapp.App
 	err error
+
+	version = "0.1.0"
 )
 
 func Execute() error {
@@ -26,8 +28,9 @@ func Execute() error {
 
 func CreateRootCommand() *cli.App {
 	return &cli.App{
-		Name:  "bore",
-		Usage: "A minimal clipboard manager for terminal/headless environments",
+		Name:    "bore",
+		Usage:   "A minimal clipboard manager for terminal/headless environments",
+		Version: version,
 		Action: func(c *cli.Context) error {
 			cli.ShowAppHelp(c)
 			return nil
