@@ -25,7 +25,12 @@ func (a *App) CopyCommand() *cli.Command {
 }
 
 func (a *App) PasteCommand() *cli.Command {
-	panic("not implemented")
+	return &cli.Command{
+		Name:   "paste",
+		Usage:  "Paste the last copied content",
+		Action: a.Paste,
+		Flags:  []cli.Flag{}, // Add flags for: last ranges of copied content, file to write to, collection to paste from etc.
+	}
 }
 
 func (a *App) Copy(ctx *cli.Context) error {
@@ -54,4 +59,13 @@ func (a *App) CopyFromStdin(ctx *cli.Context) error {
 
 func (a *App) CopyFromFile(ctx *cli.Context) error {
 	return fmt.Errorf("not implemented")
+}
+
+func (a *App) Paste(ctx *cli.Context) error {
+	err := a.Handler().PasteLastCopied(ctx.App.Writer)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

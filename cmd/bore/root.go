@@ -58,6 +58,7 @@ func CreateRootCommand() *cli.App {
 		Commands: []*cli.Command{
 			app.ConfigCommand(),
 			app.CopyCommand(),
+			app.PasteCommand(),
 		},
 	}
 }

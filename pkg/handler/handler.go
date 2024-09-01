@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"io"
 	"time"
 
@@ -21,7 +22,9 @@ type CopyOpts struct {
 type HandlerInterface interface {
 	Copy(r io.Reader, opts CopyOpts) (string, error)
 
-	Paste(artifactIds []string) (io.Reader, error)
+	PasteLastCopied(io.Writer) error
+
+	// TODO: add a PasteManyIdx method that returns a list of artifacts with their numeric index from the bottom (which is then mapped to their UUID ids) with 0 being most recent
 }
 
 type Handler struct {
@@ -61,9 +64,20 @@ func (h *Handler) Copy(r io.Reader, opts CopyOpts) (string, error) {
 	return artifact.ID, nil
 }
 
-// Paste returns the content of the given IDs or the last content if no IDs are provided
-func (h *Handler) Paste(ids []string) (io.Reader, error) {
-	return nil, nil
+// PasteLastCopied returns the content of the last artifact (sorted by last modified time) from the database
+func (h *Handler) PasteLastCopied(w io.Writer) error {
+	ctx, _ := context.WithTimeout(context.TODO(), 10*time.Second)
+	artifact, err := h.dao.GetMostRecentArtifact(ctx)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("No content to paste")
+		}
+
+		return err
+	}
+
+	_, err = w.Write(artifact.Content)
+	return err
 }
 
 var _ HandlerInterface = (*Handler)(nil)

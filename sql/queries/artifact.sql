@@ -6,3 +6,6 @@ INSERT INTO artifacts (content, content_sha256, type, collection_id) VALUES (:co
 
 -- name: UpdateArtifactLastModified :exec
 UPDATE artifacts SET last_modified = unixepoch() WHERE id = :id;
+
+-- name: GetMostRecentArtifact :one
+SELECT * FROM artifacts ORDER BY last_modified DESC LIMIT 1;

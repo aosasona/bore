@@ -10,6 +10,24 @@ import (
 	"database/sql"
 )
 
+const getMostRecentArtifact = `-- name: GetMostRecentArtifact :one
+SELECT id, content, content_sha256, type, last_modified, collection_id FROM artifacts ORDER BY last_modified DESC LIMIT 1
+`
+
+func (q *Queries) GetMostRecentArtifact(ctx context.Context) (Artifact, error) {
+	row := q.db.QueryRowContext(ctx, getMostRecentArtifact)
+	var i Artifact
+	err := row.Scan(
+		&i.ID,
+		&i.Content,
+		&i.ContentSha256,
+		&i.Type,
+		&i.LastModified,
+		&i.CollectionID,
+	)
+	return i, err
+}
+
 const updateArtifactLastModified = `-- name: UpdateArtifactLastModified :exec
 UPDATE artifacts SET last_modified = unixepoch() WHERE id = ?1
 `
