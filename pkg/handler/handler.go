@@ -9,10 +9,19 @@ import (
 	"go.trulyao.dev/bore/pkg/daos"
 )
 
-type HandlerInterface interface {
-	Copy(string, io.Reader) (string, error)
+const (
+	ArtifactTypeText = "text/plain"
+)
 
-	Paste([]string) (io.Reader, error)
+type CopyOpts struct {
+	CollectionId string
+	ArtifactType string
+}
+
+type HandlerInterface interface {
+	Copy(r io.Reader, opts CopyOpts) (string, error)
+
+	Paste(artifactIds []string) (io.Reader, error)
 }
 
 type Handler struct {
@@ -24,7 +33,7 @@ func New(dao *daos.Queries) *Handler {
 }
 
 // Copy copies the content of the reader to the database and returns the ID of the content
-func (h *Handler) Copy(id string, r io.Reader) (string, error) {
+func (h *Handler) Copy(r io.Reader, opts CopyOpts) (string, error) {
 	content, err := io.ReadAll(r)
 	if err != nil {
 		return "", nil
@@ -34,17 +43,22 @@ func (h *Handler) Copy(id string, r io.Reader) (string, error) {
 	// TODO: write to the native clipboard regardless if enabled
 
 	ctx, _ := context.WithTimeout(context.TODO(), 10*time.Second)
-	article, err := h.dao.GetArtifactByContent(ctx, daos.GetArtifactByContentParams{
-		Content:      string(content),
-		CollectionID: sql.NullString{String: id, Valid: true},
-	})
-	if err != nil && err != sql.ErrNoRows {
+
+	createArtifactParams := daos.UpsertArtifactParams{Content: content, ArtifactType: "text"}
+	if opts.CollectionId != "" {
+		createArtifactParams.CollectionID = sql.NullString{String: opts.CollectionId, Valid: true}
+	}
+
+	if opts.ArtifactType != "" {
+		createArtifactParams.ArtifactType = opts.ArtifactType
+	}
+
+	artifact, err := h.dao.UpsertArtifact(ctx, createArtifactParams)
+	if err != nil {
 		return "", err
 	}
 
-	_ = article
-
-	return "", nil
+	return artifact.ID, nil
 }
 
 // Paste returns the content of the given IDs or the last content if no IDs are provided

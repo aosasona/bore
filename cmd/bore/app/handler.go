@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/urfave/cli/v2"
+	"go.trulyao.dev/bore/pkg/handler"
 )
 
 func (a *App) CopyCommand() *cli.Command {
@@ -36,9 +37,10 @@ func (a *App) Copy(ctx *cli.Context) error {
 }
 
 // CopyFromStdin copies the content from the STDIN to the database
+// TODO: implement collections and artifact types
 func (a *App) CopyFromStdin(ctx *cli.Context) error {
 	content := bufio.NewReader(ctx.App.Reader)
-	id, err := a.Handler().Copy(content)
+	id, err := a.Handler().Copy(content, handler.CopyOpts{})
 	if err != nil {
 		return err
 	}
@@ -51,5 +53,5 @@ func (a *App) CopyFromStdin(ctx *cli.Context) error {
 }
 
 func (a *App) CopyFromFile(ctx *cli.Context) error {
-	panic("not implemented")
+	return fmt.Errorf("not implemented")
 }
