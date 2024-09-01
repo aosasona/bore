@@ -39,6 +39,10 @@ func CreateRootCommand() *cli.App {
 				Usage:   "Load configuration from `FILE`",
 				Value:   config.DefaultConfigFilePath(),
 			},
+			&cli.BoolFlag{
+				Name:  "json",
+				Usage: "Output the result in JSON format",
+			},
 		},
 
 		// Global flags have to be passed in BEFORE subcommands e.g `bore -c config.toml config dump`
@@ -53,6 +57,7 @@ func CreateRootCommand() *cli.App {
 		},
 		Commands: []*cli.Command{
 			app.ConfigCommand(),
+			app.CopyCommand(),
 		},
 	}
 }

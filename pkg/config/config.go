@@ -4,19 +4,23 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
 	// Path is the path to the configuration file
-	Path string `toml:"-"`
+	Path string `toml:"-" json:"config_path"`
 
 	// DataDir is the path to the directory where the application stores its data
-	DataDir string `toml:"data_dir"`
+	DataDir string `toml:"data_dir" json:"data_dir"`
 
 	// EnableNativeClipboard enables passing clipboard data to the native clipboard on copy
-	EnableNativeClipboard bool `toml:"enable_native_clipboard"`
+	EnableNativeClipboard bool `toml:"enable_native_clipboard" json:"enable_native_clipboard"`
+
+	// ShowIdOnCopy shows the ID of the copied content after a successful copy
+	ShowIdOnCopy bool `toml:"show_id_on_copy" json:"show_id_on_copy"`
 }
 
 func CreateDirIfNotExists(path string) error {
@@ -50,12 +54,22 @@ func DefaultDataDir() string {
 
 // DefaultConfigFilePath returns the default configuration file path
 func DefaultConfigFilePath() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		home = "~"
+	var (
+		configRoot string
+		err        error
+	)
+
+	if runtime.GOOS == "darwin" {
+		configRoot, err = os.UserHomeDir()
+		if err != nil {
+			configRoot = "~"
+		}
+		configRoot = filepath.Join(configRoot, ".config")
+	} else {
+		configRoot, err = os.UserConfigDir()
 	}
 
-	return filepath.Join(home, ".config", "bore", "config.toml")
+	return filepath.Join(configRoot, "bore", "config.toml")
 }
 
 func DefaultConfig() *Config {

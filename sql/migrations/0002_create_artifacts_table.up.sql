@@ -5,6 +5,6 @@ create table artifacts (
   created_at integer not null default `(unixepoch())`,
   last_modified integer,
 
-  collection_id integer,
+  collection_id text,
   foreign key (collection_id) references collections(id)
 ) strict;

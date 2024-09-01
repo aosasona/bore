@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -43,10 +44,26 @@ func (a *App) ConfigCommand() *cli.Command {
 }
 
 func (a *App) DumpCurrentConfig(ctx *cli.Context) error {
+	if a.config == nil {
+		return fmt.Errorf("Config is not loaded")
+	}
+
+	if ctx.Bool("json") {
+		jsonConfig, err := json.Marshal(a.config)
+		if err != nil {
+			return fmt.Errorf("Failed to marshal config to JSON: %s", err)
+		}
+
+		fmt.Fprintf(ctx.App.Writer, "%s", jsonConfig)
+		return nil
+	}
+
 	output := fmt.Sprintf(`Loaded configuration from %s
 DataDir: %s
 EnableNativeClipboard: %t
-`, a.config.Path, a.config.DataDir, a.config.EnableNativeClipboard)
+ShowIdOnCopy: %t
+`,
+		a.config.Path, a.config.DataDir, a.config.EnableNativeClipboard, a.config.ShowIdOnCopy)
 
 	fmt.Fprintf(ctx.App.Writer, "%s", output)
 	return nil

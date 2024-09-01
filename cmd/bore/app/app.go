@@ -6,6 +6,7 @@ import (
 	"go.trulyao.dev/bore/pkg/config"
 	"go.trulyao.dev/bore/pkg/daos"
 	"go.trulyao.dev/bore/pkg/db"
+	"go.trulyao.dev/bore/pkg/handler"
 )
 
 type App struct {
@@ -33,8 +34,12 @@ func New(configPath string) (*App, error) {
 	return a, nil
 }
 
-func (a *App) Daos() *daos.Dao {
+func (a *App) Daos() *daos.Queries {
 	return daos.New(a.db)
+}
+
+func (a *App) Handler() handler.HandlerInterface {
+	return handler.New(a.Daos())
 }
 
 func (a *App) UpdateConfigPath(configPath string) error {

@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"database/sql"
 	"io"
+
+	"go.trulyao.dev/bore/pkg/daos"
 )
 
 type HandlerInterface interface {
@@ -12,15 +13,23 @@ type HandlerInterface interface {
 }
 
 type Handler struct {
-	db *sql.DB
+	dao *daos.Queries
 }
 
-func New(db *sql.DB) *Handler {
-	return &Handler{db: db}
+func New(dao *daos.Queries) *Handler {
+	return &Handler{dao: dao}
 }
 
 // Copy copies the content of the reader to the database and returns the ID of the content
 func (h *Handler) Copy(r io.Reader) (string, error) {
+	content, err := io.ReadAll(r)
+	if err != nil {
+		return "", nil
+	}
+
+	// TODO: remove
+	_ = content
+
 	return "", nil
 }
 
