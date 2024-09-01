@@ -47,7 +47,10 @@ func (h *Handler) Copy(r io.Reader, opts CopyOpts) (string, error) {
 
 	ctx, _ := context.WithTimeout(context.TODO(), 10*time.Second)
 
-	createArtifactParams := daos.UpsertArtifactParams{Content: content, ArtifactType: "text"}
+	createArtifactParams := daos.UpsertArtifactParams{
+		Content:      content,
+		ArtifactType: ArtifactTypeText,
+	}
 	if opts.CollectionId != "" {
 		createArtifactParams.CollectionID = sql.NullString{String: opts.CollectionId, Valid: true}
 	}
@@ -75,6 +78,8 @@ func (h *Handler) PasteLastCopied(w io.Writer) error {
 
 		return err
 	}
+
+	// TODO: escape text content
 
 	_, err = w.Write(artifact.Content)
 	return err
