@@ -15,7 +15,7 @@ before:
 
 builds:
   - main: ./cmd/bore
-  - env:
+    env:
       - CGO_ENABLED=1
     goos:
       - linux
