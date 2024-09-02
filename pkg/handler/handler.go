@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"io"
 	"time"
 
@@ -68,13 +67,11 @@ func (h *Handler) PasteLastCopied(w io.Writer) error {
 	artifact, err := h.dao.GetMostRecentArtifact(ctx)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return fmt.Errorf("No content to paste")
+			return nil
 		}
 
 		return err
 	}
-
-	// TODO: escape text content
 
 	_, err = w.Write(artifact.Content)
 	return err
