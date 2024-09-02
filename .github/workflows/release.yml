@@ -1,9 +1,6 @@
 name: release
 
 on:
-  push:
-    tags:
-      - "*"
   release:
     types: [created]
 
@@ -34,4 +31,4 @@ jobs:
           project_path: "./cmd/bore"
           binary_name: "bore"
           upload: true
-          ldflags: -s -w -X main.version={{.Version}}
+          ldflags: -s -w -X main.version=${{ github.ref_name }}
