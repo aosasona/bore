@@ -9,7 +9,6 @@ import (
 )
 
 var (
-	// TODD: find a way to init this before anything is setup
 	app *boreapp.App
 	err error
 

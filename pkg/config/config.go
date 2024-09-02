@@ -130,6 +130,10 @@ func ParseConfig(path string) (*Config, error) {
 	s, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
+			if path == DefaultConfigFilePath() {
+				return DefaultConfig(), nil
+			}
+
 			return nil, fmt.Errorf("Config file does not exist: %s", path)
 		}
 

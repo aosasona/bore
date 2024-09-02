@@ -48,15 +48,10 @@ func (h *Handler) Copy(r io.Reader, opts CopyOpts) (string, error) {
 	ctx, _ := context.WithTimeout(context.TODO(), 10*time.Second)
 
 	createArtifactParams := daos.UpsertArtifactParams{
-		Content:      content,
-		ArtifactType: ArtifactTypeText,
+		Content: content,
 	}
 	if opts.CollectionId != "" {
 		createArtifactParams.CollectionID = sql.NullString{String: opts.CollectionId, Valid: true}
-	}
-
-	if opts.ArtifactType != "" {
-		createArtifactParams.ArtifactType = opts.ArtifactType
 	}
 
 	artifact, err := h.dao.UpsertArtifact(ctx, createArtifactParams)
