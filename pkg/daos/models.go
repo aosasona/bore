@@ -12,7 +12,6 @@ type Artifact struct {
 	ID            string
 	Content       []byte
 	ContentSha256 string
-	Type          string
 	LastModified  int64
 	CollectionID  sql.NullString
 }
