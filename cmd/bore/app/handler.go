@@ -10,15 +10,23 @@ import (
 	"go.trulyao.dev/bore/pkg/handler"
 )
 
+const (
+	FormatBase64    = "base64"
+	FormatPlainText = "plain-text"
+)
+
+// TODO: implement formats support
+// TODO: implement native clipboard support
 func (a *App) CopyCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "copy",
-		Usage: "Copy the content of the provided file or STDIN to the clipboard",
+		Usage: "Copy content from STDIN or prompt",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "file",
+				Name:    "format",
 				Aliases: []string{"f"},
-				Usage:   "Path to the file to copy",
+				Usage:   "The format of the content to copy. Available formats: base64, plain-text",
+				Value:   FormatPlainText,
 			},
 		},
 		Action: a.Copy,
@@ -28,9 +36,23 @@ func (a *App) CopyCommand() *cli.Command {
 func (a *App) PasteCommand() *cli.Command {
 	return &cli.Command{
 		Name:   "paste",
-		Usage:  "Paste the last copied content",
+		Usage:  "Paste from the bore database",
 		Action: a.Paste,
-		Flags:  []cli.Flag{}, // Add flags for: last ranges of copied content, file to write to, collection to paste from etc.
+
+		// TODO: Add flags for: last ranges of copied content, file to write to, collection to paste from etc.
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "format",
+				Aliases: []string{"f"},
+				Usage:   "The format of the content to copy. Available formats: base64, plain-text",
+				Value:   FormatPlainText,
+			},
+			&cli.BoolFlag{
+				Name:    "from-system",
+				Aliases: []string{"s"},
+				Usage:   "Paste from the system clipboard instead of the bore clipboard (also imports the content into the bore clipboard)",
+			},
+		},
 	}
 }
 
