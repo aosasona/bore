@@ -21,6 +21,9 @@ type Config struct {
 
 	// ShowIdOnCopy shows the ID of the copied content after a successful copy
 	ShowIdOnCopy bool `toml:"show_id_on_copy" json:"show_id_on_copy"`
+
+	// DeleteOnPaste deletes the content after it has been pasted
+	DeleteOnPaste bool `toml:"delete_on_paste" json:"delete_on_paste"`
 }
 
 func CreateDirIfNotExists(path string) error {

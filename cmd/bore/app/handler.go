@@ -49,6 +49,12 @@ func (a *App) PasteCommand() *cli.Command {
 				Aliases: []string{"s"},
 				Usage:   "Paste from the system clipboard instead of the bore clipboard (also imports the content into the bore clipboard)",
 			},
+			// TODO: implement this
+			&cli.BoolFlag{
+				Name:    "delete",
+				Aliases: []string{"d"},
+				Usage:   "Delete the content after pasting",
+			},
 		},
 	}
 }
