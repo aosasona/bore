@@ -6,7 +6,7 @@ type nativeClipboard struct {
 	binName string
 }
 
-func NewNativeClipboard() NativeClipboardInterface {
+func NewNativeClipboard() (NativeClipboardInterface, error) {
 	panic("not implemented")
 }
 

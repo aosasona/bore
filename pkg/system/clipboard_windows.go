@@ -4,8 +4,8 @@ package system
 
 type nativeClipboard struct{}
 
-func NewNativeClipboard() NativeClipboardInterface {
-	return &nativeClipboard{}
+func NewNativeClipboard() (NativeClipboardInterface, error) {
+	return &nativeClipboard{}, nil
 }
 
 // IsAvailable checks if the clipboard is available on the current system
