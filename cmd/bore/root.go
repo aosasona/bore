@@ -12,7 +12,7 @@ var (
 	app *boreapp.App
 	err error
 
-	version = "0.1.0"
+	version = "latest"
 )
 
 func Execute() error {
