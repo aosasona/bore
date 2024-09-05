@@ -13,7 +13,7 @@ import (
 
 const (
 	FormatBase64    = "base64"
-	FormatPlainText = "plain-text"
+	FormatPlainText = "plain"
 )
 
 type CopyOpts struct {

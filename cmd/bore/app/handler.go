@@ -12,7 +12,6 @@ import (
 	"go.trulyao.dev/bore/pkg/handler"
 )
 
-// TODO: implement formats support
 // TODO: implement native clipboard support
 func (a *App) CopyCommand() *cli.Command {
 	return &cli.Command{
