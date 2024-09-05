@@ -10,18 +10,18 @@ func NewNativeClipboard() (NativeClipboardInterface, error) {
 	panic("not implemented")
 }
 
-// IsAvailable checks if the clipboard is available on the current system
+// IsAvailable checks if a clipboard is available on the current system
 func (n *nativeClipboard) IsAvailable() bool {
 	panic("not implemented")
 }
 
-// PasteToNativeClipboard pastes the provided content to the system clipboard
-func (n *nativeClipboard) Paste(content []byte) error {
+// Copy copies the content to the system clipboard
+func (n *nativeClipboard) Copy(content []byte) error {
 	panic("not implemented")
 }
 
-// CopyFromNativeClipboard copies the content from the system clipboard
-func (n *nativeClipboard) Copy() ([]byte, error) {
+// Paste returns the last copied content from the system clipboard
+func (n *nativeClipboard) Paste() ([]byte, error) {
 	panic("not implemented")
 }
 
