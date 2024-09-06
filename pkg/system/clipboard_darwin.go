@@ -59,4 +59,12 @@ func (n *nativeClipboard) Paste() ([]byte, error) {
 	return cmd.Output()
 }
 
+// Paths returns the programs used for copying and pasting
+func (n *nativeClipboard) Paths() ProgramPaths {
+	return ProgramPaths{
+		CopyBinPath:  n.copyBinPath,
+		PasteBinPath: n.pasteBinPath,
+	}
+}
+
 var _ NativeClipboardInterface = (*nativeClipboard)(nil)
