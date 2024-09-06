@@ -2,16 +2,20 @@ package app
 
 import (
 	"database/sql"
+	"fmt"
+	"os"
 
 	"go.trulyao.dev/bore/pkg/config"
 	"go.trulyao.dev/bore/pkg/daos"
 	"go.trulyao.dev/bore/pkg/db"
 	"go.trulyao.dev/bore/pkg/handler"
+	"go.trulyao.dev/bore/pkg/system"
 )
 
 type App struct {
-	config *config.Config
-	db     *sql.DB
+	config          *config.Config
+	db              *sql.DB
+	nativeClipboard system.NativeClipboardInterface
 }
 
 func New(configPath string) (*App, error) {
@@ -31,6 +35,8 @@ func New(configPath string) (*App, error) {
 	}
 	a.db = db
 
+	a.loadNativeClipboard()
+
 	return a, nil
 }
 
@@ -39,7 +45,18 @@ func (a *App) Daos() *daos.Queries {
 }
 
 func (a *App) Handler() handler.HandlerInterface {
-	return handler.New(a.Daos())
+	return handler.New(a.Daos(), a.config, a.nativeClipboard)
+}
+
+func (a *App) loadNativeClipboard() {
+	a.nativeClipboard, _ = system.NewNativeClipboard()
+
+	if !a.nativeClipboard.IsAvailable() {
+		fmt.Fprint(
+			os.Stderr,
+			"[WARNING] Native clipbaord passthrough is enabled but no clipboard was found on this system",
+		)
+	}
 }
 
 func (a *App) UpdateConfigPath(configPath string) error {
@@ -54,6 +71,8 @@ func (a *App) UpdateConfigPath(configPath string) error {
 	if a.db, err = db.Connect(a.config.DataDir); err != nil {
 		return err
 	}
+
+	a.loadNativeClipboard()
 
 	return nil
 }
