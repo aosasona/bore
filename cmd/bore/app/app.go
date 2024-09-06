@@ -2,8 +2,6 @@ package app
 
 import (
 	"database/sql"
-	"fmt"
-	"os"
 
 	"go.trulyao.dev/bore/pkg/config"
 	"go.trulyao.dev/bore/pkg/daos"
@@ -35,7 +33,7 @@ func New(configPath string) (*App, error) {
 	}
 	a.db = db
 
-	a.loadNativeClipboard()
+	a.nativeClipboard, _ = system.NewNativeClipboard()
 
 	return a, nil
 }
@@ -49,14 +47,6 @@ func (a *App) Handler() handler.HandlerInterface {
 }
 
 func (a *App) loadNativeClipboard() {
-	a.nativeClipboard, _ = system.NewNativeClipboard()
-
-	if !a.nativeClipboard.IsAvailable() {
-		fmt.Fprint(
-			os.Stderr,
-			"[WARNING] Native clipbaord passthrough is enabled but no clipboard was found on this system",
-		)
-	}
 }
 
 func (a *App) UpdateConfigPath(configPath string) error {
@@ -72,7 +62,7 @@ func (a *App) UpdateConfigPath(configPath string) error {
 		return err
 	}
 
-	a.loadNativeClipboard()
+	a.nativeClipboard, _ = system.NewNativeClipboard()
 
 	return nil
 }

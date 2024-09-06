@@ -73,6 +73,11 @@ func (a *App) DumpCurrentConfig(ctx *cli.Context) error {
 		"%t",
 		a.nativeClipboard.IsAvailable(),
 	)
+	props["Native clipboard paths"] = fmt.Sprintf(
+		"Copy: %s, Paste: %s",
+		a.nativeClipboard.Paths().CopyBinPath,
+		a.nativeClipboard.Paths().PasteBinPath,
+	)
 
 	var output string
 	for key, value := range props {
