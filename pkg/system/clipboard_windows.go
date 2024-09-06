@@ -1,5 +1,3 @@
-//go:build windows
-
 package system
 
 type nativeClipboard struct{}

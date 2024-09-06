@@ -1,5 +1,3 @@
-//go:build linux
-
 package system
 
 type nativeClipboard struct {
@@ -7,12 +5,14 @@ type nativeClipboard struct {
 }
 
 func NewNativeClipboard() (NativeClipboardInterface, error) {
+	// TODO: look for all common clipbaord managers on linux
+	// xclip | xsel | (wl-copy & wl-paste)
 	panic("not implemented")
 }
 
 // IsAvailable checks if a clipboard is available on the current system
 func (n *nativeClipboard) IsAvailable() bool {
-	panic("not implemented")
+	return n.binName != ""
 }
 
 // Copy copies the content to the system clipboard
