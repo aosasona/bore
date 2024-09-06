@@ -41,7 +41,7 @@ func (n *nativeClipboard) IsAvailable() bool {
 
 // Copy copies the content to the system clipboard
 func (n *nativeClipboard) Copy(content []byte) error {
-	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, n.copyBinPath)
