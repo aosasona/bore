@@ -76,7 +76,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		Path:                  DefaultConfigFilePath(),
 		DataDir:               DefaultDataDir(),
-		EnableNativeClipboard: true,
+		EnableNativeClipboard: false,
 	}
 }
 
