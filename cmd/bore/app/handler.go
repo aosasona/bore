@@ -37,10 +37,11 @@ func (a *App) PasteCommand() *cli.Command {
 
 		// TODO: Add flags for: last ranges of copied content, file to write to, collection to paste from etc.
 		Flags: []cli.Flag{
+			// TODO: implement format support for pasting
 			&cli.StringFlag{
 				Name:    "format",
 				Aliases: []string{"f"},
-				Usage:   "The format of the content to copy. Available formats: base64, plain-text",
+				Usage:   "The format to paste the content in. Available formats: base64, plain-text",
 				Value:   handler.FormatPlainText,
 			},
 			&cli.BoolFlag{
@@ -119,7 +120,11 @@ func (a *App) CopyFromStdin(ctx *cli.Context) (io.Reader, error) {
 	return bufio.NewReader(ctx.App.Reader), nil
 }
 
+// Paste handles the paste command
 func (a *App) Paste(ctx *cli.Context) error {
-	err := a.Handler().PasteLastCopied(ctx.App.Writer)
-	return err
+	if ctx.Bool("from-system") {
+		return a.Handler().PasteFromSystemClipboard(ctx.App.Writer)
+	}
+
+	return a.Handler().PasteLastCopied(ctx.App.Writer)
 }
