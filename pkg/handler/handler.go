@@ -60,7 +60,8 @@ func (h *Handler) Copy(r io.Reader, opts CopyOpts) (string, error) {
 
 	// Check if the content already exists, if it does, just update the last modified time
 	// TODO: write to the native clipboard regardless if enabled
-	ctx, _ := context.WithTimeout(context.TODO(), 10*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.TODO(), 10*time.Second)
+	defer cancelFn()
 
 	createArtifactParams := daos.UpsertArtifactParams{Content: content}
 	if opts.CollectionId != "" {
