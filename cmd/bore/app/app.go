@@ -7,6 +7,7 @@ import (
 	"go.trulyao.dev/bore/pkg/daos"
 	"go.trulyao.dev/bore/pkg/db"
 	"go.trulyao.dev/bore/pkg/handler"
+	"golang.design/x/clipboard"
 )
 
 type App struct {
@@ -23,6 +24,12 @@ func New(configPath string) (*App, error) {
 		return a, err
 	}
 	a.config = conf
+
+	if a.config.EnableNativeClipboard {
+		if err := clipboard.Init(); err != nil {
+			return nil, err
+		}
+	}
 
 	// Initialize the database connection
 	db, err := db.Connect(conf.DataDir)

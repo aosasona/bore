@@ -10,9 +10,9 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/pkg/handler"
+	"golang.design/x/clipboard"
 )
 
-// TODO: implement native clipboard support
 func (a *App) CopyCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "copy",
@@ -79,13 +79,17 @@ func (a *App) Copy(ctx *cli.Context) error {
 		return err
 	}
 
-	id, err := a.Handler().Copy(reader, handler.CopyOpts{Format: format})
+	artifact, err := a.Handler().Copy(reader, handler.CopyOpts{Format: format})
 	if err != nil {
 		return err
 	}
 
 	if a.config.ShowIdOnCopy {
-		fmt.Fprintln(ctx.App.Writer, fmt.Sprintf("Copied content with ID: %s", id))
+		fmt.Fprintln(ctx.App.Writer, fmt.Sprintf("Copied content with ID: %s", artifact.ID))
+	}
+
+	if a.config.EnableNativeClipboard {
+		clipboard.Write(clipboard.FmtText, artifact.Content)
 	}
 
 	return nil

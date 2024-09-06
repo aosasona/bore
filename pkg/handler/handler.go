@@ -25,7 +25,7 @@ type CopyOpts struct {
 }
 
 type HandlerInterface interface {
-	Copy(r io.Reader, opts CopyOpts) (string, error)
+	Copy(r io.Reader, opts CopyOpts) (daos.Artifact, error)
 
 	PasteLastCopied(io.Writer) error
 
@@ -44,22 +44,21 @@ func New(dao *daos.Queries) *Handler {
 }
 
 // Copy copies the content of the reader to the database and returns the ID of the content
-func (h *Handler) Copy(r io.Reader, opts CopyOpts) (string, error) {
+func (h *Handler) Copy(r io.Reader, opts CopyOpts) (daos.Artifact, error) {
 	if !ValidateFormat(opts.Format) {
-		return "", fmt.Errorf("unsupported format: %s", opts.Format)
+		return daos.Artifact{}, fmt.Errorf("unsupported format: %s", opts.Format)
 	}
 
 	content, err := io.ReadAll(r)
 	if err != nil {
-		return "", nil
+		return daos.Artifact{}, err
 	}
 
 	if content, err = h.DecodeToFormat(content, opts.Format); err != nil {
-		return "", err
+		return daos.Artifact{}, err
 	}
 
 	// Check if the content already exists, if it does, just update the last modified time
-	// TODO: write to the native clipboard regardless if enabled
 	ctx, cancelFn := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancelFn()
 
@@ -68,12 +67,7 @@ func (h *Handler) Copy(r io.Reader, opts CopyOpts) (string, error) {
 		createArtifactParams.CollectionID = sql.NullString{String: opts.CollectionId, Valid: true}
 	}
 
-	artifact, err := h.dao.UpsertArtifact(ctx, createArtifactParams)
-	if err != nil {
-		return "", err
-	}
-
-	return artifact.ID, nil
+	return h.dao.UpsertArtifact(ctx, createArtifactParams)
 }
 
 // PasteLastCopied returns the content of the last artifact (sorted by last modified time) from the database
