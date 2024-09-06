@@ -32,6 +32,8 @@ type HandlerInterface interface {
 
 	PasteLastCopied(io.Writer) error
 
+	PasteFromSystemClipboard(io.Writer) error
+
 	// DecodeToFormat decodes the content to the specified format
 	DecodeToFormat([]byte, string) ([]byte, error)
 
@@ -85,7 +87,7 @@ func (h *Handler) Copy(r io.Reader, opts CopyOpts) (string, error) {
 	// Write to native clipboard if enabled and present
 	if h.config.EnableNativeClipboard {
 		if !h.nativeClipboard.IsAvailable() {
-			fmt.Fprint(
+			fmt.Fprintln(
 				os.Stderr,
 				"[WARNING] `EnableNativeClipboard` is set to true in your config but no native clipboard was found on this machine",
 			)
@@ -116,6 +118,20 @@ func (h *Handler) PasteLastCopied(w io.Writer) error {
 	}
 
 	_, err = w.Write(artifact.Content)
+	return err
+}
+
+func (h *Handler) PasteFromSystemClipboard(w io.Writer) error {
+	if !h.nativeClipboard.IsAvailable() {
+		return fmt.Errorf("no native clipboard found")
+	}
+
+	content, err := h.nativeClipboard.Paste()
+	if err != nil {
+		return fmt.Errorf("failed to paste from system clipboard: %s", err.Error())
+	}
+
+	_, err = w.Write(content)
 	return err
 }
 
