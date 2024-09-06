@@ -6,9 +6,12 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"os"
 	"time"
 
+	"go.trulyao.dev/bore/pkg/config"
 	"go.trulyao.dev/bore/pkg/daos"
+	"go.trulyao.dev/bore/pkg/system"
 )
 
 const (
@@ -29,6 +32,8 @@ type HandlerInterface interface {
 
 	PasteLastCopied(io.Writer) error
 
+	PasteFromSystemClipboard(io.Writer) error
+
 	// DecodeToFormat decodes the content to the specified format
 	DecodeToFormat([]byte, string) ([]byte, error)
 
@@ -36,11 +41,17 @@ type HandlerInterface interface {
 }
 
 type Handler struct {
-	dao *daos.Queries
+	dao             *daos.Queries
+	config          *config.Config
+	nativeClipboard system.NativeClipboardInterface
 }
 
-func New(dao *daos.Queries) *Handler {
-	return &Handler{dao: dao}
+func New(
+	dao *daos.Queries,
+	config *config.Config,
+	nativeClipboard system.NativeClipboardInterface,
+) *Handler {
+	return &Handler{dao: dao, config: config, nativeClipboard: nativeClipboard}
 }
 
 // Copy copies the content of the reader to the database and returns the ID of the content
@@ -59,17 +70,36 @@ func (h *Handler) Copy(r io.Reader, opts CopyOpts) (string, error) {
 	}
 
 	// Check if the content already exists, if it does, just update the last modified time
-	// TODO: write to the native clipboard regardless if enabled
-	ctx, _ := context.WithTimeout(context.TODO(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+	defer cancel()
 
 	createArtifactParams := daos.UpsertArtifactParams{Content: content}
 	if opts.CollectionId != "" {
 		createArtifactParams.CollectionID = sql.NullString{String: opts.CollectionId, Valid: true}
 	}
 
+	// Persist to main store
 	artifact, err := h.dao.UpsertArtifact(ctx, createArtifactParams)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Failed to write to bore store: %s", err.Error())
+	}
+
+	// Write to native clipboard if enabled and present
+	if h.config.EnableNativeClipboard {
+		if !h.nativeClipboard.IsAvailable() {
+			fmt.Fprintln(
+				os.Stderr,
+				"[WARNING] `EnableNativeClipboard` is set to true in your config but no native clipboard was found on this machine",
+			)
+			return artifact.ID, nil
+		}
+
+		if err = h.nativeClipboard.Copy(content); err != nil {
+			return artifact.ID, fmt.Errorf(
+				"Copied to bore store but failed to write to native clipboard: %s",
+				err.Error(),
+			)
+		}
 	}
 
 	return artifact.ID, nil
@@ -88,6 +118,20 @@ func (h *Handler) PasteLastCopied(w io.Writer) error {
 	}
 
 	_, err = w.Write(artifact.Content)
+	return err
+}
+
+func (h *Handler) PasteFromSystemClipboard(w io.Writer) error {
+	if !h.nativeClipboard.IsAvailable() {
+		return fmt.Errorf("no native clipboard found")
+	}
+
+	content, err := h.nativeClipboard.Paste()
+	if err != nil {
+		return fmt.Errorf("failed to paste from system clipboard: %s", err.Error())
+	}
+
+	_, err = w.Write(content)
 	return err
 }
 

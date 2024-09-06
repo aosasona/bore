@@ -3,6 +3,8 @@ package migrations
 import (
 	"embed"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -47,10 +49,12 @@ func Migrate(databasePath string) error {
 		return fmt.Errorf("failed to create source driver: %w", err)
 	}
 
+	dsn := "sqlite3:" + strings.Repeat(string(os.PathSeparator), 2) + databasePath
+
 	migrator, err := migrate.NewWithSourceInstance(
 		"iofs",
 		sourceDriver,
-		"sqlite3://"+databasePath,
+		dsn,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create migrator: %w", err)

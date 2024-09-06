@@ -1,5 +1,10 @@
 package system
 
+type ProgramPaths struct {
+	CopyBinPath  string
+	PasteBinPath string
+}
+
 // NativeClipboard is the interface for interacting with the underlying clipboard
 type NativeClipboardInterface interface {
 	// IsAvailable checks if a native system clipboard is available
@@ -10,4 +15,7 @@ type NativeClipboardInterface interface {
 
 	// Paste returns the last copied content from the system clipboard
 	Paste() ([]byte, error)
+
+	// Paths returns the programs used for copying and pasting
+	Paths() ProgramPaths
 }

@@ -58,12 +58,31 @@ func (a *App) DumpCurrentConfig(ctx *cli.Context) error {
 		return nil
 	}
 
-	output := fmt.Sprintf(`Loaded configuration from %s
-DataDir: %s
-EnableNativeClipboard: %t
-ShowIdOnCopy: %t
-`,
-		a.config.Path, a.config.DataDir, a.config.EnableNativeClipboard, a.config.ShowIdOnCopy)
+	props := map[string]string{}
+	props["Config path"] = a.config.Path
+	props["Data directory"] = a.config.DataDir
+	props["Enable native clipboard passthrough directory"] = fmt.Sprintf(
+		"%t",
+		a.config.EnableNativeClipboard,
+	)
+	props["Show ID on copy"] = fmt.Sprintf(
+		"%t",
+		a.config.ShowIdOnCopy,
+	)
+	props["Native clipboard is present"] = fmt.Sprintf(
+		"%t",
+		a.nativeClipboard.IsAvailable(),
+	)
+	props["Native clipboard paths"] = fmt.Sprintf(
+		"Copy: %s, Paste: %s",
+		a.nativeClipboard.Paths().CopyBinPath,
+		a.nativeClipboard.Paths().PasteBinPath,
+	)
+
+	var output string
+	for key, value := range props {
+		output += "- " + key + ": " + value + "\n"
+	}
 
 	fmt.Fprintf(ctx.App.Writer, "%s", output)
 	return nil
