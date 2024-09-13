@@ -10,6 +10,25 @@ import (
 	"database/sql"
 )
 
+const deleteAndReturnLatestArtifact = `-- name: DeleteAndReturnLatestArtifact :one
+DELETE FROM artifacts WHERE id = (
+  SELECT id FROM artifacts ORDER BY last_modified DESC LIMIT 1
+) RETURNING id, content, content_sha256, last_modified, collection_id
+`
+
+func (q *Queries) DeleteAndReturnLatestArtifact(ctx context.Context) (Artifact, error) {
+	row := q.db.QueryRowContext(ctx, deleteAndReturnLatestArtifact)
+	var i Artifact
+	err := row.Scan(
+		&i.ID,
+		&i.Content,
+		&i.ContentSha256,
+		&i.LastModified,
+		&i.CollectionID,
+	)
+	return i, err
+}
+
 const deleteArtifactById = `-- name: DeleteArtifactById :exec
 DELETE FROM artifacts WHERE id = ?1
 `

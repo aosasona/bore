@@ -10,6 +10,11 @@ UPDATE artifacts SET last_modified = unixepoch() WHERE id = :id;
 -- name: GetLatestArtifact :one
 SELECT * FROM artifacts ORDER BY last_modified DESC LIMIT 1;
 
+-- name: DeleteAndReturnLatestArtifact :one
+DELETE FROM artifacts WHERE id = (
+  SELECT id FROM artifacts ORDER BY last_modified DESC LIMIT 1
+) RETURNING *;
+
 -- name: DeleteArtifactById :exec
 DELETE FROM artifacts WHERE id = :id;
 
