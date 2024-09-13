@@ -16,6 +16,9 @@ type NativeClipboardInterface interface {
 	// Paste returns the last copied content from the system clipboard
 	Paste() ([]byte, error)
 
+	// Clear clears the system clipboard
+	Clear() error
+
 	// Paths returns the programs used for copying and pasting
 	Paths() ProgramPaths
 }

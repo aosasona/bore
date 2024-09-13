@@ -59,6 +59,10 @@ func (n *nativeClipboard) Paste() ([]byte, error) {
 	return cmd.Output()
 }
 
+func (n *nativeClipboard) Clear() error {
+	return n.Copy([]byte{})
+}
+
 // Paths returns the programs used for copying and pasting
 func (n *nativeClipboard) Paths() ProgramPaths {
 	return ProgramPaths{
