@@ -22,7 +22,7 @@ func (a *App) CopyCommand() *cli.Command {
 				Name:    "format",
 				Aliases: []string{"f"},
 				Usage:   "The format of the content to copy. Available formats: base64, plain-text",
-				Value:   handler.FormatPlainText,
+				Value:   handler.FormatPlainText.String(),
 			},
 		},
 		Action: a.Copy,
@@ -42,17 +42,16 @@ func (a *App) PasteCommand() *cli.Command {
 				Name:    "format",
 				Aliases: []string{"f"},
 				Usage:   "The format to paste the content in. Available formats: base64, plain-text",
-				Value:   handler.FormatPlainText,
+				Value:   handler.FormatPlainText.String(),
 			},
 			&cli.BoolFlag{
 				Name:    "from-system",
 				Aliases: []string{"s"},
 				Usage:   "Paste from the system clipboard instead of the bore clipboard (also imports the content into the bore clipboard)",
 			},
-			// TODO: implement this
 			&cli.BoolFlag{
 				Name:    "delete",
-				Aliases: []string{"d"},
+				Aliases: []string{"D"},
 				Usage:   "Delete the content after pasting",
 			},
 		},
@@ -60,7 +59,7 @@ func (a *App) PasteCommand() *cli.Command {
 }
 
 func (a *App) Copy(ctx *cli.Context) error {
-	format := ctx.String("format")
+	format := handler.Format(ctx.String("format"))
 	if !handler.ValidateFormat(format) {
 		return fmt.Errorf("unsupported format: %s", format)
 	}
@@ -128,9 +127,17 @@ func (a *App) CopyFromStdin(ctx *cli.Context) (io.Reader, error) {
 
 // Paste handles the paste command
 func (a *App) Paste(ctx *cli.Context) error {
+	source := handler.SourceBore
 	if ctx.Bool("from-system") {
-		return a.Handler().PasteFromSystemClipboard(ctx.App.Writer)
+		source = handler.SourceSystem
 	}
 
-	return a.Handler().PasteLastCopied(ctx.App.Writer)
+	// Delete the content if the delete flag is set or the config is set to delete on paste
+	deleteOnPaste := ctx.Bool("delete") || a.config.DeleteOnPaste
+
+	// Paste the content from the specified source
+	_, err := a.Handler().
+		PasteLast(source, ctx.App.Writer, handler.PasteOpts{DeleteOnPaste: deleteOnPaste})
+
+	return err
 }

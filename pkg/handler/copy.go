@@ -11,6 +11,14 @@ import (
 	"go.trulyao.dev/bore/pkg/daos"
 )
 
+type CopyOpts struct {
+	// Collection ID to associate the copied content with
+	CollectionId string
+
+	// Format of the content to copy
+	Format Format
+}
+
 // Copy copies the content of the reader to the database and returns the ID of the content
 func (h *Handler) Copy(r io.Reader, opts CopyOpts) (string, error) {
 	if !ValidateFormat(opts.Format) {

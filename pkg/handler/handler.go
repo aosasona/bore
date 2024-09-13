@@ -11,20 +11,13 @@ import (
 	"go.trulyao.dev/bore/pkg/system"
 )
 
-type CopyOpts struct {
-	// Collection ID to associate the copied content with
-	CollectionId string
-
-	// Format of the content to copy
-	Format Format
-}
-
+// TODO: add PasteIdx method
 type HandlerInterface interface {
 	// Copy the content from the reader to the clipboard
 	Copy(r io.Reader, opts CopyOpts) (string, error)
 
-	// Paste the last copied content from the specified source to the writer
-	Paste(Source, io.Writer) (string, error)
+	// PasteLast the last copied content from the specified source to the writer
+	PasteLast(Source, io.Writer, PasteOpts) (string, error)
 
 	// RemoveLast the clipboard's content (last copied content)
 	RemoveLast(Source) error
