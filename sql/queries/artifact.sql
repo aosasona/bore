@@ -7,8 +7,18 @@ INSERT INTO artifacts (content, content_sha256, collection_id) VALUES (:content,
 -- name: UpdateArtifactLastModified :exec
 UPDATE artifacts SET last_modified = unixepoch() WHERE id = :id;
 
--- name: GetMostRecentArtifact :one
+-- name: GetLatestArtifact :one
 SELECT * FROM artifacts ORDER BY last_modified DESC LIMIT 1;
+
+-- name: DeleteAndReturnLatestArtifact :one
+DELETE FROM artifacts WHERE id = (
+  SELECT id FROM artifacts ORDER BY last_modified DESC LIMIT 1
+) RETURNING *;
 
 -- name: DeleteArtifactById :exec
 DELETE FROM artifacts WHERE id = :id;
+
+-- name: DeleteLatestArtifact :exec
+DELETE FROM artifacts WHERE id = (
+  SELECT id FROM artifacts ORDER BY last_modified DESC LIMIT 1
+);

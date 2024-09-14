@@ -2,11 +2,8 @@ package handler
 
 import (
 	"context"
-	"database/sql"
-	"encoding/base64"
 	"fmt"
 	"io"
-	"os"
 	"time"
 
 	"go.trulyao.dev/bore/pkg/config"
@@ -14,28 +11,23 @@ import (
 	"go.trulyao.dev/bore/pkg/system"
 )
 
-const (
-	FormatBase64    = "base64"
-	FormatPlainText = "plain"
-)
-
-type CopyOpts struct {
-	// Collection ID to associate the copied content with
-	CollectionId string
-
-	// Format of the content to copy
-	Format string
-}
-
+// TODO: add PasteIdx method
 type HandlerInterface interface {
+	// Copy the content from the reader to the clipboard
 	Copy(r io.Reader, opts CopyOpts) (string, error)
 
-	PasteLastCopied(io.Writer) error
+	// PasteLast the last copied content from the specified source to the writer
+	PasteLast(Source, io.Writer, PasteOpts) (string, error)
 
-	PasteFromSystemClipboard(io.Writer) error
+	// RemoveLast the clipboard's content (last copied content)
+	RemoveLast(Source) error
 
-	// DecodeToFormat decodes the content to the specified format
-	DecodeToFormat([]byte, string) ([]byte, error)
+	// Delete the content at the specified index
+	// NOTE: this is only applicable to the bore clipboard
+	RemoveIdx(source Source, id string) error
+
+	// Decodes the content from the specified format
+	Decode(content []byte, from Format) ([]byte, error)
 
 	// TODO: add a PasteManyIdx method that returns a list of artifacts with their numeric index from the bottom (which is then mapped to their UUID ids) with 0 being most recent
 }
@@ -54,105 +46,46 @@ func New(
 	return &Handler{dao: dao, config: config, nativeClipboard: nativeClipboard}
 }
 
-// Copy copies the content of the reader to the database and returns the ID of the content
-func (h *Handler) Copy(r io.Reader, opts CopyOpts) (string, error) {
-	if !ValidateFormat(opts.Format) {
-		return "", fmt.Errorf("unsupported format: %s", opts.Format)
+// Remove the last copied content from the clipboard
+func (h *Handler) RemoveLast(source Source) error {
+	switch source {
+	case SourceBore:
+		ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
+		defer cancel()
+
+		if err := h.dao.DeleteLatestArtifact(ctx); err != nil {
+			return fmt.Errorf("failed to delete latest artifact: %s", err.Error())
+		}
+
+		return nil
+
+	case SourceSystem:
+		if !h.nativeClipboard.IsAvailable() {
+			return fmt.Errorf("no native clipboard found")
+		}
+
+		return h.nativeClipboard.Clear()
+
+	default:
+		return fmt.Errorf("unsupported source: %s", source)
+	}
+}
+
+// RemoveIdx removes the content at the specified index from the clipboard
+// NOTE: this is only applicable to the bore clipboard
+func (h *Handler) RemoveIdx(source Source, id string) error {
+	if source != SourceBore {
+		return fmt.Errorf("unsupported source: %s", source)
 	}
 
-	content, err := io.ReadAll(r)
-	if err != nil {
-		return "", nil
-	}
-
-	if content, err = h.DecodeToFormat(content, opts.Format); err != nil {
-		return "", err
-	}
-
-	// Check if the content already exists, if it does, just update the last modified time
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
-	createArtifactParams := daos.UpsertArtifactParams{Content: content}
-	if opts.CollectionId != "" {
-		createArtifactParams.CollectionID = sql.NullString{String: opts.CollectionId, Valid: true}
+	if err := h.dao.DeleteArtifactById(ctx, id); err != nil {
+		return fmt.Errorf("failed to delete artifact: %s", err.Error())
 	}
 
-	// Persist to main store
-	artifact, err := h.dao.UpsertArtifact(ctx, createArtifactParams)
-	if err != nil {
-		return "", fmt.Errorf("Failed to write to bore store: %s", err.Error())
-	}
-
-	// Write to native clipboard if enabled and present
-	if h.config.EnableNativeClipboard {
-		if !h.nativeClipboard.IsAvailable() {
-			fmt.Fprintln(
-				os.Stderr,
-				"[WARNING] `EnableNativeClipboard` is set to true in your config but no native clipboard was found on this machine",
-			)
-			return artifact.ID, nil
-		}
-
-		if err = h.nativeClipboard.Copy(content); err != nil {
-			return artifact.ID, fmt.Errorf(
-				"Copied to bore store but failed to write to native clipboard: %s",
-				err.Error(),
-			)
-		}
-	}
-
-	return artifact.ID, nil
-}
-
-// PasteLastCopied returns the content of the last artifact (sorted by last modified time) from the database
-func (h *Handler) PasteLastCopied(w io.Writer) error {
-	ctx, _ := context.WithTimeout(context.TODO(), 10*time.Second)
-	artifact, err := h.dao.GetMostRecentArtifact(ctx)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil
-		}
-
-		return err
-	}
-
-	_, err = w.Write(artifact.Content)
-	return err
-}
-
-func (h *Handler) PasteFromSystemClipboard(w io.Writer) error {
-	if !h.nativeClipboard.IsAvailable() {
-		return fmt.Errorf("no native clipboard found")
-	}
-
-	content, err := h.nativeClipboard.Paste()
-	if err != nil {
-		return fmt.Errorf("failed to paste from system clipboard: %s", err.Error())
-	}
-
-	_, err = w.Write(content)
-	return err
-}
-
-// DecodeToFormat decodes the content to the specified (and supported) format
-func (h *Handler) DecodeToFormat(content []byte, format string) ([]byte, error) {
-	switch format {
-	case FormatBase64:
-		destination := make([]byte, base64.StdEncoding.DecodedLen(len(content)))
-		if _, err := base64.StdEncoding.Decode(destination, content); err != nil {
-			return nil, err
-		}
-		return destination, nil
-	case FormatPlainText:
-		return content, nil
-	default:
-		return nil, fmt.Errorf("unsupported format: %s", format)
-	}
-}
-
-func ValidateFormat(format string) bool {
-	return format == FormatBase64 || format == FormatPlainText
+	return nil
 }
 
 var _ HandlerInterface = (*Handler)(nil)

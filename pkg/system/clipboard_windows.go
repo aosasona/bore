@@ -58,6 +58,11 @@ func (n *nativeClipboard) Paste() ([]byte, error) {
 	return cmd.Output()
 }
 
+// Clear clears the system clipboard
+func (n *nativeClipboard) Clear() error {
+	return n.Copy([]byte{})
+}
+
 func (n *nativeClipboard) Paths() ProgramPaths {
 	return ProgramPaths{
 		CopyBinPath:  n.copyBinPath,

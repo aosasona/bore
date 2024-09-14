@@ -14,6 +14,10 @@ type App struct {
 	config          *config.Config
 	db              *sql.DB
 	nativeClipboard system.NativeClipboardInterface
+
+	// Singletons
+	handler handler.HandlerInterface
+	daos    *daos.Queries
 }
 
 func New(configPath string) (*App, error) {
@@ -39,14 +43,19 @@ func New(configPath string) (*App, error) {
 }
 
 func (a *App) Daos() *daos.Queries {
-	return daos.New(a.db)
+	if a.daos == nil {
+		a.daos = daos.New(a.db)
+	}
+
+	return a.daos
 }
 
 func (a *App) Handler() handler.HandlerInterface {
-	return handler.New(a.Daos(), a.config, a.nativeClipboard)
-}
+	if a.handler == nil {
+		a.handler = handler.New(a.Daos(), a.config, a.nativeClipboard)
+	}
 
-func (a *App) loadNativeClipboard() {
+	return a.handler
 }
 
 func (a *App) UpdateConfigPath(configPath string) error {
