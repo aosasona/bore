@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 	boreapp "go.trulyao.dev/bore/cmd/bore/app"
@@ -10,14 +11,31 @@ import (
 )
 
 var (
-	app *boreapp.App
+	app           *boreapp.App
+	dirConfigPath = ""
 
-	version = "latest"
+	version = "master"
+
+	dirPaths = []string{"./bore.toml", "./.bore/config.toml"}
 )
 
 func Execute() error {
+	configPath := config.DefaultConfigFilePath()
+
+	// Check for the presence of the config files in the current directory (`./bore.toml` or `.bore/config.toml`)
+	for _, path := range dirPaths {
+		if s, err := os.Stat(path); err == nil && !s.IsDir() {
+			dirConfigPath = path
+			break
+		}
+	}
+
+	if dirConfigPath != "" {
+		configPath = dirConfigPath
+	}
+
 	var err error
-	app, err = boreapp.New(config.DefaultConfigFilePath())
+	app, err = boreapp.New(configPath)
 	if err != nil {
 		return err
 	}
@@ -45,7 +63,6 @@ func CreateRootCommand() *cli.App {
 				Name:    "config",
 				Aliases: []string{"c"},
 				Usage:   "Load configuration from `FILE`",
-				Value:   config.DefaultConfigFilePath(),
 			},
 			&cli.BoolFlag{
 				Name:  "json",
@@ -61,7 +78,19 @@ func CreateRootCommand() *cli.App {
 
 		// Global flags have to be passed in BEFORE subcommands e.g `bore -c config.toml config dump`
 		Before: func(c *cli.Context) error {
-			return app.UpdateConfigPath(c.String("config"))
+			configPath := strings.TrimSpace(c.String("config"))
+
+			// Use the directory's config file if it exists and the user hasn't specified a config file
+			if dirConfigPath != "" && configPath == "" {
+				configPath = dirConfigPath
+			}
+
+			// If we still do not have a config file at this point, it is safe to use the default config file
+			if configPath == "" {
+				configPath = config.DefaultConfigFilePath()
+			}
+
+			return app.UpdateConfigPath(configPath)
 		},
 		Authors: []*cli.Author{
 			{
