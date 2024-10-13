@@ -14,7 +14,7 @@ var (
 	app           *boreapp.App
 	dirConfigPath = ""
 
-	version = "master"
+	version = "source"
 
 	dirPaths = []string{"./bore.toml", "./.bore/config.toml"}
 )
