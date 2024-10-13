@@ -3,7 +3,6 @@ package app
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -64,7 +63,7 @@ func (a *App) Copy(ctx *cli.Context) error {
 		return fmt.Errorf("unsupported format: %s", format)
 	}
 
-	var fn func(*cli.Context) (io.Reader, error) = a.CopyFromPrompt
+	fn := a.CopyFromPrompt
 
 	// If the program was piped to, read directly from STDIN
 	fi, err := os.Stdin.Stat()
@@ -73,11 +72,6 @@ func (a *App) Copy(ctx *cli.Context) error {
 	}
 	if (fi.Mode() & os.ModeCharDevice) == 0 {
 		fn = a.CopyFromStdin
-	}
-
-	// Sanity check
-	if fn == nil {
-		return errors.New("unsupported input method")
 	}
 
 	reader, err := fn(ctx)
@@ -91,7 +85,7 @@ func (a *App) Copy(ctx *cli.Context) error {
 	}
 
 	if a.config.ShowIdOnCopy {
-		fmt.Fprintln(ctx.App.Writer, fmt.Sprintf("Copied content with ID: %s", id))
+		fmt.Fprintf(ctx.App.Writer, "Copied content with ID: %s", id)
 	}
 
 	return nil

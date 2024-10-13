@@ -6,16 +6,17 @@ import (
 	"github.com/urfave/cli/v2"
 	boreapp "go.trulyao.dev/bore/cmd/bore/app"
 	"go.trulyao.dev/bore/pkg/config"
+	"go.trulyao.dev/bore/pkg/handler"
 )
 
 var (
 	app *boreapp.App
-	err error
 
 	version = "latest"
 )
 
 func Execute() error {
+	var err error
 	app, err = boreapp.New(config.DefaultConfigFilePath())
 	if err != nil {
 		return err
@@ -31,8 +32,13 @@ func CreateRootCommand() *cli.App {
 		Usage:   "A minimal clipboard manager for terminal/headless environments",
 		Version: version,
 		Action: func(c *cli.Context) error {
-			cli.ShowAppHelp(c)
-			return nil
+			// If the program was piped to, read directly from STDIN
+			fi, _ := os.Stdin.Stat()
+			if (fi.Mode() & os.ModeCharDevice) == 0 {
+				return app.Copy(c)
+			}
+
+			return app.Paste(c)
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -44,6 +50,12 @@ func CreateRootCommand() *cli.App {
 			&cli.BoolFlag{
 				Name:  "json",
 				Usage: "Output the result in JSON format",
+			},
+			&cli.StringFlag{
+				Name:    "format",
+				Aliases: []string{"f"},
+				Usage:   "The format of the content to copy. Available formats: base64, plain-text",
+				Value:   handler.FormatPlainText.String(),
 			},
 		},
 
