@@ -50,6 +50,11 @@ func CreateRootCommand() *cli.App {
 		Usage:   "A minimal clipboard manager for terminal/headless environments",
 		Version: version,
 		Action: func(c *cli.Context) error {
+			// If there was any argument passed, simply raise the help message
+			if c.NArg() > 0 {
+				return cli.ShowAppHelp(c)
+			}
+
 			// If the program was piped to, read directly from STDIN
 			fi, _ := os.Stdin.Stat()
 			if (fi.Mode() & os.ModeCharDevice) == 0 {
