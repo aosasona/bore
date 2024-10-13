@@ -65,7 +65,7 @@ func (a *App) DumpCurrentConfig(ctx *cli.Context) error {
 
 	columns := []table.Column{
 		{Title: "Property", Width: 30},
-		{Title: "Value", Width: 12},
+		{Title: "Value", Width: 14},
 		{Title: "Description", Width: 16},
 	}
 
