@@ -2,7 +2,7 @@ import os
 import re
 import sys
 
-MIGRATION_DIR = "internal/database/migrations"
+MIGRATION_DIR = "migrations"
 
 
 class Migration:
