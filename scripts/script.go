@@ -16,6 +16,7 @@ var (
 	migrationName       = ""
 )
 
+// Usage: go run script.go [-down] create-migration [migration_name]
 func main() {
 	flag.BoolVar(&createDownMigration, "down", false, "Create a down migration file")
 	flag.Parse()
@@ -65,7 +66,7 @@ func createMigration() {
 	if err != nil {
 		log.Fatalf("Error creating up migration file: %v", err)
 	}
-	defer upFile.Close()
+	defer must(upFile.Close())
 
 	_, err = upFile.WriteString("-- Up migration SQL goes here\n")
 	if err != nil {
@@ -77,7 +78,7 @@ func createMigration() {
 		if err != nil {
 			log.Fatalf("Error creating down migration file: %v", err)
 		}
-		defer downFile.Close()
+		defer must(downFile.Close())
 
 		_, err = downFile.WriteString("-- Down migration SQL goes here\n")
 		if err != nil {
@@ -102,7 +103,7 @@ func getLastMigrationIndex() (int, error) {
 		return -1, err
 	}
 
-	var lastMigrationIndex int = -1
+	lastMigrationIndex := -1
 	for _, file := range files {
 		if file.IsDir() || !strings.HasSuffix(file.Name(), ".sql") {
 			continue
@@ -126,4 +127,10 @@ func getLastMigrationIndex() (int, error) {
 	}
 
 	return lastMigrationIndex, nil
+}
+
+func must(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }
