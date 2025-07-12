@@ -16,24 +16,19 @@ type macClipboard struct {
 }
 
 // NewNativeClipboard creates a new instance of NativeClipboard for macOS using the pbcopy and pbpaste binaries.
-func NewNativeClipboard(binaries Binaries) (NativeClipboard, error) {
+func NewNativeClipboard() (NativeClipboard, error) {
 	var (
 		err error
 
-		copyBinary, pasteBinary string
+		binaries = Binaries{}
 	)
 
-	if copyBinary, err = exec.LookPath("pbcopy"); err != nil {
+	if binaries.copy, err = exec.LookPath("pbcopy"); err != nil {
 		return nil, fmt.Errorf("pbcopy binary not found in PATH: %w", err)
 	}
 
-	if pasteBinary, err = exec.LookPath("pbpaste"); err != nil {
+	if binaries.paste, err = exec.LookPath("pbpaste"); err != nil {
 		return nil, fmt.Errorf("pbpaste binary not found in PATH: %w", err)
-	}
-
-	binaries = Binaries{
-		copy:  copyBinary,
-		paste: pasteBinary,
 	}
 
 	if binaries.Empty() {
