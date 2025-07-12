@@ -12,5 +12,22 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
       - uses: actions/checkout@v4
+      # ---------------------------------------------------------------
+      # Linux-only: install clipboard deps + virtual X server
+      # ---------------------------------------------------------------
+      - name: Install clipboard deps (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y xvfb xclip
+      # ---------------------------------------------------------------
+      # - macOS / Windows: plain
+      # - Linux: under `xvfb-run` so xclip finds a DISPLAY (:99)
+      # ---------------------------------------------------------------
       - name: Test
-        run: go test ./...
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test ./...
+          else
+            go test ./...
+          fi
