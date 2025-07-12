@@ -1,6 +1,6 @@
 //go:build darwin
 
-package system
+package clipboard
 
 import (
 	"bytes"
