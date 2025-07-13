@@ -1,5 +1,5 @@
 create table collections (
-  id text primary key default (ulid()), -- uuid
+  id text primary key, -- uuid
   name text not null, -- the name of the collection
   folder_hash text, -- the folder names are not stored but the path hash is stored and used for lookup with "." as separator
   pinned_at integer, -- timestamp in seconds when the collection was pinned
