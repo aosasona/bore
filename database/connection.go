@@ -54,12 +54,6 @@ func dsn(dataDir string) string {
 }
 
 func createDbConnection(dataDir string) (*sql.DB, error) {
-	/*
-		if err := setupCustomFunctions(); err != nil {
-			return nil, err
-		}
-	*/
-
 	connection, err := sql.Open(sqliteshim.ShimName, dsn(dataDir))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database connection: %w", err)
@@ -118,37 +112,3 @@ func runPragmas(ctx context.Context, tx bun.IDB) error {
 
 	return nil
 }
-
-// func setupCustomFunctions() error {
-// 	if slices.Contains(sql.Drivers(), DriverCustom) {
-// 		return errors.New("custom SQLite driver is already registered")
-// 	}
-//
-// 	sql.Register(DriverCustom, &sqlite3.SQLiteDriver{
-// 		ConnectHook: func(sc *sqlite3.SQLiteConn) error {
-// 			// ULID function
-// 			if err := sc.RegisterFunc("ulid", ulid, true); err != nil {
-// 				return fmt.Errorf("failed to register ulid function: %w", err)
-// 			}
-//
-// 			// SHA256 function
-// 			if err := sc.RegisterFunc("sha256", sha256, true); err != nil {
-// 				return fmt.Errorf("failed to register sha256 function: %w", err)
-// 			}
-//
-// 			return nil
-// 		},
-// 	})
-//
-// 	return nil
-// }
-//
-// func ulid() string {
-// 	return ulidv2.Make().String()
-// }
-//
-// func sha256(input string) string {
-// 	c := sha256mod.New()
-// 	c.Write([]byte(input))
-// 	return fmt.Sprintf("%x", c.Sum(nil))
-// }
