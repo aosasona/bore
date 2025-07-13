@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -39,6 +40,8 @@ func createMigration() {
 	if migrationName == "" {
 		log.Fatal("Migration name is required")
 	}
+	migrationName = regexp.MustCompile("[^a-zA-Z0-9_]").
+		ReplaceAllString(strings.ToLower(migrationName), "_")
 
 	println("Creating new migration...")
 
@@ -66,7 +69,7 @@ func createMigration() {
 	if err != nil {
 		log.Fatalf("Error creating up migration file: %v", err)
 	}
-	defer must(upFile.Close())
+	defer upFile.Close()
 
 	_, err = upFile.WriteString("-- Up migration SQL goes here\n")
 	if err != nil {
@@ -78,7 +81,7 @@ func createMigration() {
 		if err != nil {
 			log.Fatalf("Error creating down migration file: %v", err)
 		}
-		defer must(downFile.Close())
+		defer downFile.Close()
 
 		_, err = downFile.WriteString("-- Down migration SQL goes here\n")
 		if err != nil {
@@ -127,10 +130,4 @@ func getLastMigrationIndex() (int, error) {
 	}
 
 	return lastMigrationIndex, nil
-}
-
-func must(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
 }
