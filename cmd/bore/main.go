@@ -1,7 +1,13 @@
 package main
 
-import "log/slog"
+import (
+	"fmt"
+	"os"
+)
 
 func main() {
-	slog.Info("Hello, world!")
+	if err := execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
