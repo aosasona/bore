@@ -3,6 +3,8 @@ module go.trulyao.dev/bore/v2
 go 1.24.4
 
 require (
+	github.com/apparentlymart/go-userdirs v0.0.0-20200915174352-b0c018a67c13
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/uptrace/bun v1.2.14
 	github.com/uptrace/bun/dialect/sqlitedialect v1.2.14
 	github.com/uptrace/bun/driver/sqliteshim v1.2.14
@@ -10,7 +12,6 @@ require (
 )
 
 require (
-	github.com/apparentlymart/go-userdirs v0.0.0-20200915174352-b0c018a67c13 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
