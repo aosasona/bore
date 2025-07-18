@@ -9,3 +9,7 @@ import (
 func execute() error {
 	panic("not implemented")
 }
+
+func createRootCmd() *cli.App {
+	return &cli.App{}
+}
