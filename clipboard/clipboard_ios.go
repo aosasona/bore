@@ -19,6 +19,10 @@ import (
 
 type iosClipboard struct{}
 
+func NewNativeClipboard() (NativeClipboard, error) {
+	return &iosClipboard{}, nil
+}
+
 // Available implements NativeClipboard.
 func (i *iosClipboard) Available() bool {
 	return true
