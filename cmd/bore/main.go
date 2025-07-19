@@ -6,7 +6,9 @@ import (
 )
 
 func main() {
-	if err := execute(); err != nil {
+	cli := NewCli()
+
+	if err := cli.execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
