@@ -15,9 +15,9 @@ func defaultConfigPath() string {
 	return directories.CachePath("config.toml")
 }
 
-// defaultDataDir returns the default data directory for the application.
+// defaultDataPath returns the default data directory for the application.
 // NOTE: The directory may or may not exist, depending on the platform and user configuration.
-func defaultDataDir() string {
+func defaultDataPath() string {
 	if len(directories.DataDirs) > 0 {
 		return directories.DataDirs[0]
 	}

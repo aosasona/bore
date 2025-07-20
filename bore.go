@@ -16,6 +16,9 @@ type (
 	Args struct {
 		// DataPath is the path to the storage directory.
 		DataPath string
+
+		// Config is the configuration for the bore instance.
+		Config Config // optional, can be nil
 	}
 )
 
@@ -24,12 +27,13 @@ var (
 	ErrStoragePathRequired = errors.New("storage path is required")
 )
 
-func New(args *Args) (*Bore, error) {
-	if args == nil {
+// New creates a new Bore instance with the provided configuration.
+func New(config *Config) (*Bore, error) {
+	if config == nil {
 		return nil, ErrInvalidArgs
 	}
 
-	if strings.TrimSpace(args.DataPath) == "" {
+	if strings.TrimSpace(config.DataDir) == "" {
 		return nil, ErrStoragePathRequired
 	}
 
