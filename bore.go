@@ -28,6 +28,7 @@ var (
 )
 
 // New creates a new Bore instance with the provided configuration.
+// TODO: create data dir if it does not exist
 func New(config *Config) (*Bore, error) {
 	if config == nil {
 		return nil, ErrInvalidArgs

@@ -17,7 +17,6 @@ func NewCli() (*Cli, error) {
 	if err != nil {
 		return nil, err
 	}
-	config.DataDir = defaultDataPath()
 
 	bore, err := bore.New(&config)
 	if err != nil {
@@ -53,7 +52,7 @@ func readConfigFile(path string) (bore.Config, error) {
 	}
 
 	var config bore.Config
-	if err := config.Load(configStr); err != nil {
+	if _, err := config.FromBytes(configStr); err != nil {
 		return bore.Config{}, errors.New("failed to read config file: " + err.Error())
 	}
 	config.DataDir = defaultDataPath()
