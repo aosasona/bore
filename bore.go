@@ -2,23 +2,20 @@ package bore
 
 import (
 	"errors"
+	"os"
 	"strings"
 
 	"github.com/uptrace/bun"
+	"go.trulyao.dev/bore/v2/database"
 )
 
 type (
 	Bore struct {
 		// connection is the database connection used by this bore instance
 		db *bun.DB
-	}
 
-	Args struct {
-		// DataPath is the path to the storage directory.
-		DataPath string
-
-		// Config is the configuration for the bore instance.
-		Config Config // optional, can be nil
+		// config holds the configuration for this bore instance
+		config *Config
 	}
 )
 
@@ -28,7 +25,7 @@ var (
 )
 
 // New creates a new Bore instance with the provided configuration.
-// TODO: create data dir if it does not exist
+// TODO: add native clipboard in Bore struct
 func New(config *Config) (*Bore, error) {
 	if config == nil {
 		return nil, ErrInvalidArgs
@@ -38,5 +35,34 @@ func New(config *Config) (*Bore, error) {
 		return nil, ErrStoragePathRequired
 	}
 
-	panic("todo")
+	if err := os.MkdirAll(config.DataDir, 0755); err != nil {
+		return nil, errors.New("failed to create data directory: " + err.Error())
+	}
+
+	conn, err := database.Connect(config.DataDir)
+	if err != nil {
+		return nil, errors.New("failed to connect to database: " + err.Error())
+	}
+
+	return &Bore{
+		db:     conn,
+		config: config,
+	}, nil
+}
+
+func (b *Bore) DB() *bun.DB {
+	if b.db == nil {
+		panic("database connection is not initialized")
+	}
+
+	return b.db
+}
+
+// Config returns the configuration of the Bore instance.
+func (b *Bore) Config() *Config {
+	if b.config == nil {
+		panic("configuration is not initialized")
+	}
+
+	return b.config
 }
