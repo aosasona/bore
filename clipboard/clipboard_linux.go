@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"sync"
 	"time"
 )
 
@@ -21,6 +22,8 @@ const (
 
 // linuxClipboard implements the NativeClipboard interface for Linux systems, with support for xsel, xclip, or wl-clipboard binaries.
 type linuxClipboard struct {
+	mu sync.Mutex
+
 	// Program specifies which clipboard program to use.
 	program Program
 
@@ -88,6 +91,9 @@ func (l *linuxClipboard) Read(ctx context.Context) ([]byte, error) {
 		return nil, errors.New("clipboard binaries not available")
 	}
 
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -113,6 +119,9 @@ func (l *linuxClipboard) Write(ctx context.Context, data []byte) error {
 	if !l.Available() {
 		return errors.New("clipboard binaries not available")
 	}
+
+	l.mu.Lock()
+	defer l.mu.Unlock()
 
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()

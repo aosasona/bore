@@ -7,10 +7,13 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"sync"
 	"time"
 )
 
 type macClipboard struct {
+	mu sync.Mutex
+
 	// binaries holds the paths to the binaries used for clipboard operations.
 	binaries Binaries
 }
@@ -35,7 +38,7 @@ func NewNativeClipboard() (NativeClipboard, error) {
 		return nil, fmt.Errorf("required clipboard binaries not found in PATH: %v", binaries)
 	}
 
-	return &macClipboard{binaries}, nil
+	return &macClipboard{binaries: binaries}, nil
 }
 
 // Available implements NativeClipboard.
@@ -55,6 +58,9 @@ func (n *macClipboard) Clear(ctx context.Context) error {
 
 // Read implements NativeClipboard.
 func (n *macClipboard) Read(ctx context.Context) ([]byte, error) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -69,6 +75,9 @@ func (n *macClipboard) Read(ctx context.Context) ([]byte, error) {
 
 // Write implements NativeClipboard.
 func (n *macClipboard) Write(ctx context.Context, data []byte) error {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 

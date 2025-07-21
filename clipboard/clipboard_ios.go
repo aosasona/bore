@@ -17,7 +17,9 @@ import (
 	"unsafe"
 )
 
-type iosClipboard struct{}
+type iosClipboard struct {
+	mu sync.Mutex
+}
 
 func NewNativeClipboard() (NativeClipboard, error) {
 	return &iosClipboard{}, nil
@@ -40,6 +42,9 @@ func (i *iosClipboard) Clear(ctx context.Context) error {
 
 // Read implements NativeClipboard.
 func (i *iosClipboard) Read(ctx context.Context) ([]byte, error) {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+
 	cStr := C.readClipboard()
 	if cStr == nil {
 		return nil, nil // or an error if you prefer
@@ -50,6 +55,9 @@ func (i *iosClipboard) Read(ctx context.Context) ([]byte, error) {
 
 // Write implements NativeClipboard.
 func (i *iosClipboard) Write(ctx context.Context, data []byte) error {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+
 	rawText := C.CString(string(data))
 	defer C.free(unsafe.Pointer(rawText))
 	C.writeClipboard(rawText)
