@@ -2,10 +2,10 @@ package bore
 
 type Config struct {
 	// DataDir is the path to the storage directory.
-	DataDir string `toml:"data_path" json:"data_path"`
+	DataDir string `toml:"data_dir" json:"data_dir"`
 
-	// SystemClipboardPassthrough enables passing the bore clipboard data to the native clipboard on copy
-	SystemClipboardPassthrough bool `toml:"system_clipboard_passthrough" json:"system_clipboard_passthrough"`
+	// ClipboardPassthrough enables passing the bore clipboard data to the native clipboard on copy
+	ClipboardPassthrough bool `toml:"clipboard_passthrough" json:"clipboard_passthrough"`
 
 	// DeleteOnPaste deletes the content after it has been pasted
 	DeleteOnPaste bool `toml:"delete_on_paste" json:"delete_on_paste"`
