@@ -1,5 +1,11 @@
 package bore
 
+import (
+	"bytes"
+
+	"github.com/BurntSushi/toml"
+)
+
 type Config struct {
 	// DataDir is the path to the storage directory.
 	DataDir string `toml:"data_dir" json:"data_dir"`
@@ -14,20 +20,28 @@ type Config struct {
 // DefaultConfig returns the default configuration for the bore application.
 func DefaultConfig() Config {
 	return Config{
-		DataDir:                    ".",
-		SystemClipboardPassthrough: true,
-		DeleteOnPaste:              false,
+		DataDir:              ".",
+		ClipboardPassthrough: true,
+		DeleteOnPaste:        false,
 	}
 }
 
-// Load reads the configuration from a byte slice and populates the Config struct.
-func (c *Config) Load(data []byte) error {
-	panic("not implemented")
+// FromBytes reads the configuration from a byte slice and populates the Config struct.
+func (c *Config) FromBytes(data []byte) (*Config, error) {
+	decoder := toml.NewDecoder(bytes.NewReader(data))
+	if _, err := decoder.Decode(c); err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 // TOML exports the configuration to a byte slice in TOML format.
 func (c *Config) TOML() ([]byte, error) {
-	// Export the configuration to a byte slice in TOML format.
-	// This is a placeholder implementation.
-	panic("not implemented")
+	var buf bytes.Buffer
+	encoder := toml.NewEncoder(&buf)
+	if err := encoder.Encode(c); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }

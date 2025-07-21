@@ -3,6 +3,7 @@ module go.trulyao.dev/bore/v2
 go 1.24.4
 
 require (
+	github.com/BurntSushi/toml v1.5.0
 	github.com/apparentlymart/go-userdirs v0.0.0-20200915174352-b0c018a67c13
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/uptrace/bun v1.2.14
