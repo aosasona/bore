@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS events (
 	id         TEXT PRIMARY KEY,
-	aggregate_id TEXT NOT NULL, -- the id of the aggregate this event belongs to
+	aggregate_id TEXT, -- the id of the aggregate this event belongs to
 	action     TEXT NOT NULL,
 	version    INTEGER NOT NULL DEFAULT 1,
 	payload    BLOB NOT NULL,
