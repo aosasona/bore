@@ -1,11 +1,13 @@
 package bore
 
 import (
+	"context"
 	"errors"
 	"os"
 	"strings"
 
 	"github.com/uptrace/bun"
+	"go.trulyao.dev/bore/v2/clipboard"
 	"go.trulyao.dev/bore/v2/database"
 )
 
@@ -16,6 +18,9 @@ type (
 
 		// config holds the configuration for this bore instance
 		config *Config
+
+		// clipboard is the native clipboard interface for the current platform
+		clipboard clipboard.NativeClipboard
 	}
 )
 
@@ -25,7 +30,6 @@ var (
 )
 
 // New creates a new Bore instance with the provided configuration.
-// TODO: add native clipboard in Bore struct
 func New(config *Config) (*Bore, error) {
 	if config == nil {
 		return nil, ErrInvalidArgs
@@ -44,9 +48,15 @@ func New(config *Config) (*Bore, error) {
 		return nil, errors.New("failed to connect to database: " + err.Error())
 	}
 
+	clipboard, err := clipboard.NewNativeClipboard()
+	if err != nil {
+		return nil, errors.New("failed to create native clipboard: " + err.Error())
+	}
+
 	return &Bore{
-		db:     conn,
-		config: config,
+		db:        conn,
+		config:    config,
+		clipboard: clipboard,
 	}, nil
 }
 
@@ -65,4 +75,30 @@ func (b *Bore) Config() *Config {
 	}
 
 	return b.config
+}
+
+// Copy copies the provided data to the Bore instance.
+func (b *Bore) Copy(ctx context.Context, data []byte) error {
+	if !b.clipboard.Available() {
+		return errors.New("clipboard is not available on this platform")
+	}
+
+	return b.clipboard.Write(ctx, data)
+}
+
+// Paste retrieves the last copied data from the Bore instance.
+func (b *Bore) Paste(ctx context.Context) ([]byte, error) {
+	if !b.clipboard.Available() {
+		return nil, errors.New("clipboard is not available on this platform")
+	}
+
+	return b.clipboard.Read(ctx)
+}
+
+func (b *Bore) Close() error {
+	if err := b.db.Close(); err != nil {
+		return errors.New("failed to close database connection: " + err.Error())
+	}
+
+	return nil
 }
