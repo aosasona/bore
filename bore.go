@@ -13,6 +13,11 @@ import (
 
 type (
 	Bore struct {
+		// deviceId is the unique identifier for this device
+		// TODO: init device ID on first run
+		// TODO: load device ID from `.device_id` file
+		deviceId string
+
 		// connection is the database connection used by this bore instance
 		db *bun.DB
 
