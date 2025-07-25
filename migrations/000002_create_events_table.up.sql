@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS events (
 	device_id  TEXT NOT NULL,
 	created_at TIMESTAMP NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
 	UNIQUE (aggregate_id, version) -- ensure that each event for an aggregate has a unique version
-) STRICT;
+);
 
 -- bun:split
 CREATE INDEX IF NOT EXISTS events_agg_idx ON events (action, created_at);
