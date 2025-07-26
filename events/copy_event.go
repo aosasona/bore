@@ -2,11 +2,6 @@ package events
 
 import "github.com/uptrace/bun"
 
-//go:generate go tool github.com/abice/go-enum --marshal
-
-// ENUM(text)
-type MimeType string
-
 // copyEvent is emitted when a copy operation is performed.
 type copyEvent struct {
 	// The content that was copied to the clipboard
