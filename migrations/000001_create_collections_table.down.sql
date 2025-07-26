@@ -1,1 +1,2 @@
-DROP TABLE collections;
+DROP TABLE IF EXISTS collections;
+
