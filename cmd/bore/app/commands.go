@@ -1,20 +1,13 @@
-package main
+package app
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/urfave/cli/v2"
 )
 
-var Version = "source"
-
-// TODO: move path to the CLI itself (can be overriden by using the -c flag)
-// TODO: automatically detect the data directory for each platform and remove this config option
-func (c *Cli) execute() error {
-	panic("not implemented")
-}
-
-func (c *Cli) createRootCmd() *cli.App {
+func (a *App) createRootCmd() *cli.App {
 	return &cli.App{
 		Name:    "bore",
 		Usage:   "A clipboard manager for the terminal",
@@ -59,10 +52,34 @@ func (c *Cli) createRootCmd() *cli.App {
 			},
 		},
 		Before: func(ctx *cli.Context) error {
-			c.SetConfigPath(ctx.String("config"))
-			c.SetDataDir(ctx.String("data-dir"))
+			a.SetConfigPath(ctx.String("config"))
+			a.SetDataDir(ctx.String("data-dir"))
 
-			return c.InstantiateBore()
+			return a.Load()
+		},
+		Commands: []*cli.Command{
+			a.infoCommand(),
+		},
+	}
+}
+
+func (a *App) infoCommand() *cli.Command {
+	return &cli.Command{
+		Name:  "info",
+		Usage: "Display information about the current bore instance",
+		Action: func(ctx *cli.Context) error {
+			deviceID := a.bore.DeviceID()
+			if deviceID == "" {
+				deviceID = "<not set>"
+			}
+
+			fmt.Println("Bore Version:", Version)
+			fmt.Println("Data Directory:", a.dataDir)
+			fmt.Println("Config Path:", a.configPath)
+			fmt.Println("Device ID:", deviceID)
+			fmt.Println("Clipboard Passthrough:", a.bore.Config().ClipboardPassthrough)
+			fmt.Println("Delete on Paste:", a.bore.Config().DeleteOnPaste)
+			return nil
 		},
 	}
 }

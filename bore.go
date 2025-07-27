@@ -65,6 +65,10 @@ func New(config *Config) (*Bore, error) {
 	}, nil
 }
 
+func (b *Bore) DeviceID() string {
+	return b.deviceId
+}
+
 func (b *Bore) DB() *bun.DB {
 	if b.db == nil {
 		panic("database connection is not initialized")
