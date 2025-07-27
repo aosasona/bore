@@ -2,7 +2,7 @@ package migrations
 
 import (
 	"embed"
-	"fmt"
+	"log/slog"
 
 	"github.com/uptrace/bun/migrate"
 )
@@ -13,9 +13,9 @@ var sqlMigrations embed.FS
 var Migrations = migrate.NewMigrations()
 
 func init() {
-	fmt.Println("Running migrations...")
+	slog.Debug("Initializing migrations")
 	if err := Migrations.Discover(sqlMigrations); err != nil {
 		panic("Failed to discover migrations: " + err.Error())
 	}
-	fmt.Println("Migrations ran successfully")
+	slog.Debug("Migrations ran successfully")
 }
