@@ -19,6 +19,9 @@ func (c *Cli) createRootCmd() *cli.App {
 		Name:    "bore",
 		Usage:   "A clipboard manager for the terminal",
 		Version: Version,
+		Authors: []*cli.Author{
+			{Name: "Ayodeji O.", Email: "ayodeji@trulyao.dev"},
+		},
 		Action: func(ctx *cli.Context) error {
 			if ctx.NArg() > 0 {
 				return cli.ShowAppHelp(ctx)
@@ -35,6 +38,31 @@ func (c *Cli) createRootCmd() *cli.App {
 			}
 
 			panic("paste not implemented yet")
+		},
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "config",
+				Aliases: []string{"c"},
+				Usage:   "Path to the configuration file",
+				Value:   defaultConfigPath(),
+			},
+			&cli.StringFlag{
+				Name:    "data-dir",
+				Aliases: []string{"d"},
+				Usage:   "Path to the data directory where data is stored",
+				Value:   defaultDataPath(),
+			},
+			&cli.StringFlag{
+				Name:    "format",
+				Aliases: []string{"o"},
+				Usage:   "Output format for the current command (e.g., json, base64, text)",
+			},
+		},
+		Before: func(ctx *cli.Context) error {
+			c.SetConfigPath(ctx.String("config"))
+			c.SetDataDir(ctx.String("data-dir"))
+
+			return c.InstantiateBore()
 		},
 	}
 }

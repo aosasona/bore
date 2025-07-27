@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 )
 
 func main() {
 	cli, err := NewCli()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to create CLI:", err)
+		slog.Error(err.Error())
 		os.Exit(1)
 	}
 
