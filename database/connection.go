@@ -85,7 +85,6 @@ func runMigration(db *bun.DB) error {
 	}
 
 	if groups.IsZero() {
-		fmt.Println("no new migrations to run")
 		return nil
 	}
 
