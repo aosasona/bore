@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/uptrace/bun"
-	"go.trulyao.dev/bore/v2/clipboard"
 	"go.trulyao.dev/bore/v2/database"
+	"go.trulyao.dev/bore/v2/pkg/clipboard"
 )
 
 type (

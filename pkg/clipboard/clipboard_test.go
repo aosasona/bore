@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"go.trulyao.dev/bore/v2/clipboard"
+	"go.trulyao.dev/bore/v2/pkg/clipboard"
 )
 
 func Test_IsAvailable(t *testing.T) {

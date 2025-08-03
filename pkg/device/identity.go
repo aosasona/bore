@@ -9,23 +9,40 @@ import (
 	"github.com/oklog/ulid/v2"
 )
 
-var (
-	identifier string
-	mu         sync.Mutex
-)
-
 const IdentityFileName = ".identity"
 
-// GetIdentifier reads the device identifier from either the cache or the identity file.
-func GetIdentifier(dataDir string) string {
-	mu.Lock()
-	defer mu.Unlock()
+var instance *identity
 
-	if identifier != "" {
-		return identifier
+type identity struct {
+	// identifier is the unique device identifier.
+	// It is initialized to an empty string and will be set when the identifier is created or read from the identity file.
+	identifier string
+
+	// dataDir is the directory where the application's data is stored; same as the one provided on initialization.
+	dataDir string
+
+	sync.Mutex
+}
+
+// Identity returns a shared instance of the identity manager.
+func Identity(dataDir string) *identity {
+	if instance == nil {
+		instance = &identity{dataDir: dataDir}
 	}
 
-	f, err := readIdentityFile(dataDir)
+	return instance
+}
+
+// GetIdentifier reads the device identifier from either the cache or the identity file.
+func (i *identity) GetIdentifier() string {
+	i.Lock()
+	defer i.Unlock()
+
+	if i.identifier != "" {
+		return i.identifier
+	}
+
+	f, err := i.readIdentityFile()
 	if err != nil {
 		if os.IsNotExist(err) {
 			return CreateIdentifier(dataDir)
@@ -42,7 +59,7 @@ func GetIdentifier(dataDir string) string {
 // The identity file is stored in the provided data directory.
 //
 // NOTE: The data is not written to the database to prevent accidental duplication of device identifiers when or if the database is reset, copied, or moved.
-func CreateIdentifier(dataDir string) string {
+func (i *identity) CreateIdentifier() string {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -68,7 +85,7 @@ func CreateIdentifier(dataDir string) string {
 }
 
 // readIdentityFile reads the device identifier from the identity file in the specified data directory
-func readIdentityFile(dataDir string) (string, error) {
+func (i *identity) readIdentityFile(dataDir string) (string, error) {
 	filePath := filepath.Join(dataDir, IdentityFileName)
 	f, err := os.ReadFile(filePath)
 	if err != nil {
@@ -79,7 +96,7 @@ func readIdentityFile(dataDir string) (string, error) {
 }
 
 // writeIdentityFile writes the device identifier to the identity file in the specified data directory
-func writeIdentityFile(dataDir, identifier string) error {
+func (i *identity) writeIdentityFile(dataDir, identifier string) error {
 	filePath := filepath.Join(dataDir, IdentityFileName)
 	if err := os.WriteFile(filePath, []byte(identifier), 0o600); err != nil {
 		return err
@@ -89,12 +106,12 @@ func writeIdentityFile(dataDir, identifier string) error {
 }
 
 // generateNewIdentifier generates a new ULID identifier
-func generateNewIdentifier() string {
+func (i *identity) generateNewIdentifier() string {
 	return ulid.Make().String()
 }
 
 // isValidIdentifier checks if the provided identifier is a valid ULID
-func isValidIdentifier(id string) bool {
+func (i *identity) isValidIdentifier(id string) bool {
 	parsedUlid, err := ulid.Parse(id)
 	return err == nil && !parsedUlid.IsZero()
 }

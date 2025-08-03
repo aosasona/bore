@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"go.trulyao.dev/bore/v2/clipboard/internal/win32"
+	"go.trulyao.dev/bore/v2/pkg/clipboard/internal/win32"
 )
 
 type windowsClipboard struct {
