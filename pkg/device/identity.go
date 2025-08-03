@@ -1,6 +1,7 @@
 package device
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,83 +12,92 @@ import (
 
 const IdentityFileName = ".identity"
 
-var instance *identity
-
 type identity struct {
 	// identifier is the unique device identifier.
 	// It is initialized to an empty string and will be set when the identifier is created or read from the identity file.
 	identifier string
 
-	// dataDir is the directory where the application's data is stored; same as the one provided on initialization.
-	dataDir string
+	// path is the path to the identity file.
+	path string
 
 	sync.Mutex
 }
 
 // Identity returns a shared instance of the identity manager.
 func Identity(dataDir string) *identity {
-	if instance == nil {
-		instance = &identity{dataDir: dataDir}
+	return &identity{
+		path:       filepath.Join(dataDir, IdentityFileName),
+		identifier: "",
 	}
-
-	return instance
 }
 
 // GetIdentifier reads the device identifier from either the cache or the identity file.
-func (i *identity) GetIdentifier() string {
+func (i *identity) GetIdentifier() (string, error) {
 	i.Lock()
 	defer i.Unlock()
 
 	if i.identifier != "" {
-		return i.identifier
+		return i.identifier, nil
 	}
 
 	f, err := i.readIdentityFile()
 	if err != nil {
 		if os.IsNotExist(err) {
-			return CreateIdentifier(dataDir)
+			return i.CreateIdentifier()
 		}
 
-		panic("failed to read identity file: " + err.Error())
+		return "", fmt.Errorf("[GetIdentifier] failed to read identity file: %w", err)
 	}
 
-	identifier = f
-	return identifier
+	i.identifier = f
+	return i.identifier, nil
 }
 
 // CreateIdentifier creates a new device identifier and writes it to the identity file.
 // The identity file is stored in the provided data directory.
 //
 // NOTE: The data is not written to the database to prevent accidental duplication of device identifiers when or if the database is reset, copied, or moved.
-func (i *identity) CreateIdentifier() string {
-	mu.Lock()
-	defer mu.Unlock()
+func (i *identity) CreateIdentifier() (string, error) {
+	i.Lock()
+	defer i.Unlock()
 
 	// We should NOT overwrite the identifier if it already exists and is valid.
-	content, err := readIdentityFile(dataDir)
+	content, err := i.readIdentityFile()
 	if err != nil && !os.IsNotExist(err) {
-		panic("failed to read identity file: " + err.Error())
+		return "", fmt.Errorf("[CreateIdentifier] failed to read identity file: %w", err)
 	}
 
 	content = strings.TrimSpace(content)
-	if isValidIdentifier(content) {
-		identifier = content
-		return content
+	if i.isValidIdentifier(content) {
+		i.identifier = content
+		return content, nil
 	}
 
-	id := generateNewIdentifier()
-	if err := writeIdentityFile(dataDir, id); err != nil {
-		panic("failed to write identity file: " + err.Error())
+	id := i.generateNewIdentifier()
+	if err := i.writeIdentityFile(id); err != nil {
+		return "", fmt.Errorf("[CreateIdentifier] failed to write identity file: %w", err)
 	}
 
-	identifier = id
-	return id
+	i.identifier = id
+	return id, nil
+}
+
+func (i *identity) RsetIdentifier() error {
+	i.Lock()
+	defer i.Unlock()
+
+	// Reset the identifier by removing the identity file
+	if err := os.Remove(i.path); err != nil && !os.IsNotExist(err) {
+		return err
+	}
+
+	i.identifier = ""
+	return nil
 }
 
 // readIdentityFile reads the device identifier from the identity file in the specified data directory
-func (i *identity) readIdentityFile(dataDir string) (string, error) {
-	filePath := filepath.Join(dataDir, IdentityFileName)
-	f, err := os.ReadFile(filePath)
+func (i *identity) readIdentityFile() (string, error) {
+	f, err := os.ReadFile(i.path)
 	if err != nil {
 		return "", err
 	}
@@ -96,9 +106,8 @@ func (i *identity) readIdentityFile(dataDir string) (string, error) {
 }
 
 // writeIdentityFile writes the device identifier to the identity file in the specified data directory
-func (i *identity) writeIdentityFile(dataDir, identifier string) error {
-	filePath := filepath.Join(dataDir, IdentityFileName)
-	if err := os.WriteFile(filePath, []byte(identifier), 0o600); err != nil {
+func (i *identity) writeIdentityFile(identifier string) error {
+	if err := os.WriteFile(i.path, []byte(identifier), 0o600); err != nil {
 		return err
 	}
 
