@@ -43,7 +43,7 @@ func (i *identity) GetIdentifier() (string, error) {
 	f, err := i.readIdentityFile()
 	if err != nil {
 		if os.IsNotExist(err) {
-			return i.CreateIdentifier()
+			return i.createIdentifier()
 		}
 
 		return "", fmt.Errorf("[GetIdentifier] failed to read identity file: %w", err)
@@ -53,14 +53,11 @@ func (i *identity) GetIdentifier() (string, error) {
 	return i.identifier, nil
 }
 
-// CreateIdentifier creates a new device identifier and writes it to the identity file.
+// createIdentifier creates a new device identifier and writes it to the identity file.
 // The identity file is stored in the provided data directory.
 //
 // NOTE: The data is not written to the database to prevent accidental duplication of device identifiers when or if the database is reset, copied, or moved.
-func (i *identity) CreateIdentifier() (string, error) {
-	i.Lock()
-	defer i.Unlock()
-
+func (i *identity) createIdentifier() (string, error) {
 	// We should NOT overwrite the identifier if it already exists and is valid.
 	content, err := i.readIdentityFile()
 	if err != nil && !os.IsNotExist(err) {
@@ -68,7 +65,7 @@ func (i *identity) CreateIdentifier() (string, error) {
 	}
 
 	content = strings.TrimSpace(content)
-	if i.isValidIdentifier(content) {
+	if i.IsValidIdentifier(content) {
 		i.identifier = content
 		return content, nil
 	}
@@ -119,8 +116,8 @@ func (i *identity) generateNewIdentifier() string {
 	return ulid.Make().String()
 }
 
-// isValidIdentifier checks if the provided identifier is a valid ULID
-func (i *identity) isValidIdentifier(id string) bool {
+// IsValidIdentifier checks if the provided identifier is a valid ULID
+func (i *identity) IsValidIdentifier(id string) bool {
 	parsedUlid, err := ulid.Parse(id)
 	return err == nil && !parsedUlid.IsZero()
 }
