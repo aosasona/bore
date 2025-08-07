@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	"go.trulyao.dev/bore/v2/cmd/bore/app"
+	"go.trulyao.dev/bore/v2/cmd/bore-cli/app"
 )
 
 func main() {

@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS events (
 	action     TEXT NOT NULL,
 	version    INTEGER NOT NULL DEFAULT 1,
 	payload    BLOB NOT NULL,
-	device_id  TEXT NOT NULL,
 	created_at TIMESTAMP NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
 	UNIQUE (aggregate_id, version) -- ensure that each event for an aggregate has a unique version
 );

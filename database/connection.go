@@ -81,6 +81,10 @@ func runMigration(db *bun.DB) error {
 
 	groups, err := migrator.Migrate(ctx)
 	if err != nil {
+		fmt.Printf("Applied migrations:\n")
+		for _, group := range groups.Migrations.Applied() {
+			fmt.Printf("- %s\n", group.String())
+		}
 		return err
 	}
 
