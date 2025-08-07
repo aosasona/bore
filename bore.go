@@ -9,13 +9,12 @@ import (
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database"
 	"go.trulyao.dev/bore/v2/pkg/clipboard"
+	"go.trulyao.dev/bore/v2/pkg/device"
 )
 
 type (
 	Bore struct {
 		// deviceId is the unique identifier for this device
-		// TODO: init device ID on first run
-		// TODO: load device ID from `.device_id` file
 		deviceId string
 
 		// connection is the database connection used by this bore instance
@@ -58,10 +57,16 @@ func New(config *Config) (*Bore, error) {
 		return nil, errors.New("failed to create native clipboard: " + err.Error())
 	}
 
+	identifier, err := device.Identity(config.DataDir).GetIdentifier()
+	if err != nil {
+		return nil, errors.New("failed to get device identifier: " + err.Error())
+	}
+
 	return &Bore{
 		db:        conn,
 		config:    config,
 		clipboard: clipboard,
+		deviceId:  identifier,
 	}, nil
 }
 
