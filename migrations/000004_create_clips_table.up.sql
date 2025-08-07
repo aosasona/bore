@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS `clips` (
   mimetype TEXT NOT NULL DEFAULT 'text/plain',
   size INTEGER NOT NULL DEFAULT 0,
 
-  created_at TIMESTAMP NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-  updated_at TIMESTAMP NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  created_at TIMESTAMP NOT NULL DEFAULT (unixepoch()),
+  updated_at TIMESTAMP NOT NULL DEFAULT (unixepoch()),
 
   collection_id TEXT,
 
