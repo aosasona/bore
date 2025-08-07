@@ -116,3 +116,11 @@ func (b *Bore) Close() error {
 
 	return nil
 }
+
+func (b *Bore) Reset() error {
+	if err := os.RemoveAll(b.config.DataDir); err != nil {
+		return errors.New("failed to remove data directory: " + err.Error())
+	}
+
+	return nil
+}

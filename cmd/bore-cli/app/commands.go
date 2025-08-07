@@ -83,3 +83,22 @@ func (a *App) infoCommand() *cli.Command {
 		},
 	}
 }
+
+func (a *App) resetCommand() *cli.Command {
+	return &cli.Command{
+		Name:  "reset",
+		Usage: "Reset the bore instance, clearing all data",
+		Action: func(ctx *cli.Context) error {
+			if err := a.bore.Reset(); err != nil {
+				return cli.Exit("failed to reset bore: "+err.Error(), 1)
+			}
+
+			if err := os.Remove(a.configPath); err != nil {
+				return cli.Exit("failed to remove configuration file: "+err.Error(), 1)
+			}
+
+			fmt.Println("Bore instance has been reset successfully.")
+			return nil
+		},
+	}
+}
