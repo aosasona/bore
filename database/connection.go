@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -92,7 +93,7 @@ func runMigration(db *bun.DB) error {
 		return nil
 	}
 
-	fmt.Printf("migrated %d groups\n", len(groups.Migrations.Applied()))
+	slog.Debug(fmt.Sprintf("migrated %d groups\n", len(groups.Migrations.Applied())))
 	return nil
 }
 
