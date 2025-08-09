@@ -1,0 +1,3 @@
+ALTER TABLE `events` ADD COLUMN `logged_at` TIMESTAMP NULL;
+ALTER TABLE `events` ADD COLUMN `applied_at` TIMESTAMP NULL;
+

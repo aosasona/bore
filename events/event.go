@@ -17,8 +17,14 @@ type Metadata struct {
 	// Version is the version of the event schema.
 	Version int `json:"version"`
 
-	// Timestamp is the time when the event was created.
-	Timestamp int64 `json:"timestamp"`
+	// LoggedAt is the time when the event was logged on the source device.
+	LoggedAt int64 `json:"logged_at"`
+
+	// IngestedAt is the time when the event was ingested into the database on the current device.
+	IngestedAt int64 `json:"ingested_at"`
+
+	// AppliedAt is the time when the event was applied to the database, e.g. when the actual database operation like creating a clip was performed.
+	AppliedAt int64 `json:"applied_at"`
 }
 
 type Event interface {
