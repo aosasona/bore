@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS `clips` (
-  id TEXT PRIMARY KEY,
+  id TEXT PRIMARY KEY NOT NULL,
   content TEXT NOT NULL,
   hash TEXT NOT NULL,
   mimetype TEXT NOT NULL DEFAULT 'text/plain',

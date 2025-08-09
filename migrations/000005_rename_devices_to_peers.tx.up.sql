@@ -2,7 +2,7 @@ DROP TABLE IF EXISTS `devices`;
 
 -- bun:split
 CREATE TABLE IF NOT EXISTS `relays` (
-	`id` TEXT PRIMARY KEY,
+	`id` TEXT PRIMARY KEY NOT NULL,
 	`alias` TEXT NOT NULL,
 	`address` TEXT NOT NULL,
 	`metadata` TEXT DEFAULT '{}',
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `relays` (
 
 -- bun:split
 CREATE TABLE IF NOT EXISTS `peers` (
-	`id` TEXT PRIMARY KEY, -- This will ideally be in the format "<source>:<identifier>" where source can be p2p, relay or anything else  in the future
+	`id` TEXT PRIMARY KEY NOT NULL, -- This will ideally be in the format "<source>:<identifier>" where source can be p2p, relay or anything else  in the future
 	`name` TEXT NOT NULL,
 	`relay_id` TEXT, -- This is the relay that this peer is connected to
 	`metadata` TEXT DEFAULT '{}',

@@ -1,5 +1,5 @@
 CREATE TABLE collections (
-  id TEXT PRIMARY KEY,
+  id TEXT PRIMARY KEY NOT NULL,
   name TEXT NOT NULL,
   hash TEXT NOT NULL, -- the folder names are not stored but the path hash is stored and used for lookup with "." as separator
   pinned_at TIMESTAMP, -- timestamp in seconds when the collection was pinned

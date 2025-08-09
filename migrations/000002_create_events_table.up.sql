@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS events (
-	id         TEXT PRIMARY KEY,
+	id         TEXT PRIMARY KEY NOT NULL,
 	aggregate_id TEXT, -- the id of the aggregate this event belongs to
 	action     TEXT NOT NULL,
 	version    INTEGER NOT NULL DEFAULT 1,
