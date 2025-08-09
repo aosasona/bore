@@ -8,6 +8,7 @@ import (
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database"
+	"go.trulyao.dev/bore/v2/events"
 	"go.trulyao.dev/bore/v2/pkg/clipboard"
 	"go.trulyao.dev/bore/v2/pkg/device"
 )
@@ -25,6 +26,9 @@ type (
 
 		// clipboard is the native clipboard interface for the current platform
 		clipboard clipboard.NativeClipboard
+
+		// events is the event manager for this bore instance
+		events *events.Manager
 	}
 )
 
@@ -67,6 +71,7 @@ func New(config *Config) (*Bore, error) {
 		config:    config,
 		clipboard: clipboard,
 		deviceId:  identifier,
+		events:    events.NewManager(conn),
 	}, nil
 }
 

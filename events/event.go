@@ -1,10 +1,24 @@
 package events
 
 import (
+	"time"
+
 	"github.com/uptrace/bun"
 )
 
 // TODO: add device registration event
+
+// Timestamp holds the timestamps for different stages of an event's lifecycle.
+type Timestamp struct {
+	// LoggedAt is the time when the event was logged on the source device.
+	LoggedAt time.Time `json:"logged_at"`
+
+	// IngestedAt is the time when the event was ingested into the database on the current device.
+	IngestedAt time.Time `json:"ingested_at"`
+
+	// AppliedAt is the time when the event was applied to the database, e.g. when the actual database operation like creating a clip was performed.
+	AppliedAt time.Time `json:"applied_at"`
+}
 
 // Metadata hold data about the event such as the device ID, aggregate ID, version, and timestamp.
 type Metadata struct {
@@ -17,14 +31,8 @@ type Metadata struct {
 	// Version is the version of the event schema.
 	Version int `json:"version"`
 
-	// LoggedAt is the time when the event was logged on the source device.
-	LoggedAt int64 `json:"logged_at"`
-
-	// IngestedAt is the time when the event was ingested into the database on the current device.
-	IngestedAt int64 `json:"ingested_at"`
-
-	// AppliedAt is the time when the event was applied to the database, e.g. when the actual database operation like creating a clip was performed.
-	AppliedAt int64 `json:"applied_at"`
+	// Timestamp holds the timestamps for different stages of the event's lifecycle.
+	Timestamp Timestamp `json:"timestamp"`
 }
 
 type Event interface {
