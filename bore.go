@@ -92,6 +92,7 @@ func (b *Bore) Config() *Config {
 }
 
 // Copy copies the provided data to the Bore instance.
+// TODO: implement database op and optionally use system clipbpard
 func (b *Bore) Copy(ctx context.Context, data []byte) error {
 	if !b.clipboard.Available() {
 		return errors.New("clipboard is not available on this platform")
@@ -101,6 +102,7 @@ func (b *Bore) Copy(ctx context.Context, data []byte) error {
 }
 
 // Paste retrieves the last copied data from the Bore instance.
+// TODO: implement database op and optionally use system clipbpard
 func (b *Bore) Paste(ctx context.Context) ([]byte, error) {
 	if !b.clipboard.Available() {
 		return nil, errors.New("clipboard is not available on this platform")

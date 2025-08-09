@@ -27,10 +27,4 @@ type Event interface {
 
 	// Apply replays an event against the provided database connection.
 	Apply(db *bun.DB) error
-
-	// Returns the SQL query to apply the event
-	Query() string
-
-	// Returns the arguments to be used in the SQL query
-	Args() []any
 }

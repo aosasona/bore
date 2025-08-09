@@ -27,17 +27,6 @@ func (c *copyEvent) Apply(db *bun.DB) error {
 	panic("unimplemented")
 }
 
-// Args implements Event.
-func (c *copyEvent) Args() []any {
-	panic("unimplemented")
-}
-
-// Query implements Event.
-func (c *copyEvent) Query() string {
-	panic("unimplemented")
-	// return `INSERT INTO `
-}
-
 // MarshalJSON implements Event.
 func (c *copyEvent) MarshalJSON() ([]byte, error) {
 	panic("unimplemented")
