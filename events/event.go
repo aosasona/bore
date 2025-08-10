@@ -4,13 +4,7 @@ import (
 	"time"
 
 	"github.com/uptrace/bun"
-)
-
-type Action string
-
-const (
-	ActionCopyV1           Action = "copy_v1"
-	ActionCreateCollection Action = "create_collection"
+	"go.trulyao.dev/bore/v2/models"
 )
 
 // TODO: add device registration event
@@ -49,7 +43,7 @@ type Log struct {
 
 type Event interface {
 	// Action returns the type of the event as a string.
-	Action() Action
+	Action() models.Action
 
 	// Apply executes the appropriate database operations for this event and returns a proper Log that can be saved to the events log and replayed later, or streamed to other devices.
 	Apply(db *bun.DB) (Log, error)

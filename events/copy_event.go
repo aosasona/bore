@@ -1,6 +1,9 @@
 package events
 
-import "github.com/uptrace/bun"
+import (
+	"github.com/uptrace/bun"
+	"go.trulyao.dev/bore/v2/models"
+)
 
 // copyEvent is emitted when a copy operation is performed.
 type copyEvent struct {
@@ -18,8 +21,8 @@ type copyEvent struct {
 }
 
 // Action implements Event.
-func (c *copyEvent) Action() Action {
-	return ActionCopyV1
+func (c *copyEvent) Action() models.Action {
+	return models.ActionCopyV1
 }
 
 // Replay implements Event.
