@@ -6,6 +6,13 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type Action string
+
+const (
+	ActionCopyV1           Action = "copy_v1"
+	ActionCreateCollection Action = "create_collection"
+)
+
 // TODO: add device registration event
 
 // Timestamp holds the timestamps for different stages of an event's lifecycle.
@@ -30,15 +37,24 @@ type Metadata struct {
 
 	// Version is the version of the event schema.
 	Version int `json:"version"`
+}
+
+type Log struct {
+	// Metadata holds the metadata about the event itself
+	Metadata Metadata `json:"metadata"`
 
 	// Timestamp holds the timestamps for different stages of the event's lifecycle.
 	Timestamp Timestamp `json:"timestamp"`
 }
 
 type Event interface {
-	// Type returns the type of the event as a string.
-	Type() string
+	// Action returns the type of the event as a string.
+	Action() Action
 
-	// Apply replays an event against the provided database connection.
-	Apply(db *bun.DB) error
+	// Apply executes the appropriate database operations for this event and returns a proper Log that can be saved to the events log and replayed later, or streamed to other devices.
+	Apply(db *bun.DB) (Log, error)
+
+	// Replay replays a log entry from a previously saved event log.
+	// TODO: this should be on the event manager itself
+	Replay(db *bun.DB) error
 }

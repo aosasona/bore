@@ -17,13 +17,18 @@ type copyEvent struct {
 	CollectionID string `json:"collection_id"`
 }
 
-// Type implements Event.
-func (c *copyEvent) Type() string {
-	return "copy_v1"
+// Action implements Event.
+func (c *copyEvent) Action() Action {
+	return ActionCopyV1
+}
+
+// Replay implements Event.
+func (c *copyEvent) Replay(db *bun.DB) error {
+	panic("unimplemented")
 }
 
 // Apply implements Event.
-func (c *copyEvent) Apply(db *bun.DB) error {
+func (c *copyEvent) Apply(db *bun.DB) (Log, error) {
 	panic("unimplemented")
 }
 
