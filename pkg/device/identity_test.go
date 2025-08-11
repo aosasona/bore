@@ -16,7 +16,7 @@ func init() {
 }
 
 func Test_GetIdentifier(t *testing.T) {
-	i := device.Identity(testDir)
+	i := device.NewIdentity(testDir)
 
 	identifier, err := i.GetIdentifier()
 	if err != nil {
