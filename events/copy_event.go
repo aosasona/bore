@@ -8,10 +8,13 @@ import (
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/models"
+	"go.trulyao.dev/bore/v2/pkg/device"
 )
 
 // copyEvent is emitted when a copy operation is performed.
 type copyEvent struct {
+	identity *device.Identity `json:"-" mapstructure:"-"`
+
 	// The content that was copied to the clipboard
 	Content []byte `json:"content" mapstructure:"content"`
 

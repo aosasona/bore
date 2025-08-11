@@ -62,12 +62,14 @@ func New(config *Config) (*Bore, error) {
 		return nil, errors.New("failed to create native clipboard: " + err.Error())
 	}
 
+	identity := device.NewIdentity(config.DataDir)
+
 	return &Bore{
 		db:        conn,
 		config:    config,
 		clipboard: clipboard,
-		identity:  device.NewIdentity(config.DataDir),
-		events:    events.NewManager(conn),
+		identity:  identity,
+		events:    events.NewManager(conn, identity),
 	}, nil
 }
 
