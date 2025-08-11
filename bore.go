@@ -3,6 +3,7 @@ package bore
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 
@@ -16,7 +17,7 @@ import (
 type (
 	Bore struct {
 		// deviceId is the unique identifier for this device
-		deviceId string
+		identity *device.Identity
 
 		// connection is the database connection used by this bore instance
 		db *bun.DB
@@ -61,39 +62,39 @@ func New(config *Config) (*Bore, error) {
 		return nil, errors.New("failed to create native clipboard: " + err.Error())
 	}
 
-	identifier, err := device.Identity(config.DataDir).GetIdentifier()
-	if err != nil {
-		return nil, errors.New("failed to get device identifier: " + err.Error())
-	}
-
 	return &Bore{
 		db:        conn,
 		config:    config,
 		clipboard: clipboard,
-		deviceId:  identifier,
+		identity:  device.NewIdentity(config.DataDir),
 		events:    events.NewManager(conn),
 	}, nil
 }
 
-func (b *Bore) DeviceID() string {
-	return b.deviceId
-}
-
-func (b *Bore) DB() *bun.DB {
-	if b.db == nil {
-		panic("database connection is not initialized")
+func (b *Bore) DeviceID() (string, error) {
+	id, err := b.identity.GetIdentifier()
+	if err != nil {
+		return "", fmt.Errorf("failed to get device identifier: %w", err)
 	}
 
-	return b.db
+	return id, nil
+}
+
+func (b *Bore) DB() (*bun.DB, error) {
+	if b.db == nil {
+		return nil, errors.New("database connection is not initialized")
+	}
+
+	return b.db, nil
 }
 
 // Config returns the configuration of the Bore instance.
-func (b *Bore) Config() *Config {
+func (b *Bore) Config() (*Config, error) {
 	if b.config == nil {
-		panic("configuration is not initialized")
+		return nil, errors.New("configuration is not initialized")
 	}
 
-	return b.config
+	return b.config, nil
 }
 
 // Copy copies the provided data to the Bore instance.
