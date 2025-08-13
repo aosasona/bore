@@ -9,6 +9,7 @@ import (
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database"
+	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/events"
 	"go.trulyao.dev/bore/v2/pkg/clipboard"
 	"go.trulyao.dev/bore/v2/pkg/device"
@@ -30,6 +31,9 @@ type (
 
 		// events is the event manager for this bore instance
 		events *events.Manager
+
+		// repository is the interface for accessing database operations
+		repository repository.Repository
 	}
 )
 

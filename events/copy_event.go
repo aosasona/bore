@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/uptrace/bun"
-	"go.trulyao.dev/bore/v2/models"
+	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/device"
 )
 
@@ -29,8 +29,8 @@ type copyEvent struct {
 }
 
 // Action implements Event.
-func (c *copyEvent) Action() models.Action {
-	return models.ActionCopyV1
+func (c *copyEvent) Action() repository.Action {
+	return repository.ActionCopyV1
 }
 
 // Replay implements Event.

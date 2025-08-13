@@ -6,20 +6,34 @@ import (
 	"github.com/uptrace/bun"
 )
 
-type baseRepository struct {
+type ClipRepository interface{}
+
+type Repository interface {
+	Clips() ClipRepository
+}
+
+type repo struct {
 	mu sync.Mutex
 	db *bun.DB
+
+	clips ClipRepository
 }
 
-func New(db *bun.DB) *baseRepository {
-	return &baseRepository{
-		db: db,
-	}
+// Clips implements Repository.
+func (r *repo) Clips() ClipRepository {
+	return withLock(r, func(r *repo) ClipRepository {
+		if r.clips == nil {
+			r.clips = &clipRepository{db: r.db}
+		}
+		return r.clips
+	})
 }
 
-// withLock is a helper function to execute a function with a lock on the repository.
-func (b *baseRepository) withLock(f func()) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	f()
+func withLock[T any](r *repo, fn func(*repo) T) T {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	return fn(r)
 }
+
+var _ Repository = (*repo)(nil)
