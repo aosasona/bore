@@ -6,7 +6,9 @@ import (
 	"github.com/uptrace/bun"
 )
 
-type ClipRepository interface{}
+type ClipRepository interface {
+	GetLastClip() (Clip, error)
+}
 
 type Repository interface {
 	Clips() ClipRepository
