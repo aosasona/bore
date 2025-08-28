@@ -61,6 +61,11 @@ func (a *App) pasteCommand() *cli.Command {
 				Usage:   "Delete the content from the clipboard after pasting",
 				Value:   false,
 			},
+			&cli.StringFlag{
+				Name:  "output-file",
+				Usage: "Path to a file where the pasted content will be saved. If not provided, content will be printed to stdout.",
+				Value: "",
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			panic("not implemented")

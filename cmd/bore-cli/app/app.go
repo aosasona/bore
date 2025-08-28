@@ -9,6 +9,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
+	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/handler"
 )
 
 var Version string
@@ -39,6 +40,8 @@ type App struct {
 	dataDir string
 
 	bore *bore.Bore
+
+	handler *handler.Handler
 }
 
 func New() (*App, error) {
@@ -93,6 +96,8 @@ func (a *App) Load() error {
 	}
 
 	a.bore = bore
+	a.handler = handler.New(bore)
+
 	return nil
 }
 
