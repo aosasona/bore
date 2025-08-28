@@ -1,13 +1,8 @@
 package app
 
-import "github.com/urfave/cli/v2"
-
-type PasteFormat string
-
-const (
-	PasteFormatText   PasteFormat = "text"
-	PasteFormatJSON   PasteFormat = "json"
-	PasteFormatBase64 PasteFormat = "base64"
+import (
+	"github.com/urfave/cli/v2"
+	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/handler"
 )
 
 func (a *App) copyCommand() *cli.Command {
@@ -25,6 +20,12 @@ func (a *App) copyCommand() *cli.Command {
 				Aliases: []string{"m"},
 				Usage:   "MIME type of the content being copied (e.g., text/plain, image/png)",
 				Value:   "text/plain",
+			},
+			&cli.StringFlag{
+				Name:    "input-file",
+				Aliases: []string{"i"},
+				Usage:   "Path to a file to read content from. If not provided, content will be read from stdin.",
+				Value:   "",
 			},
 		},
 		Action: func(ctx *cli.Context) error {
@@ -47,7 +48,7 @@ func (a *App) pasteCommand() *cli.Command {
 				Name:    "format",
 				Aliases: []string{"f"},
 				Usage:   "Format to output the pasted content (text, json, base64)",
-				Value:   string(PasteFormatText),
+				Value:   string(handler.PasteFormatText),
 			},
 			&cli.BoolFlag{
 				Name:    "from-system",
@@ -62,9 +63,10 @@ func (a *App) pasteCommand() *cli.Command {
 				Value:   false,
 			},
 			&cli.StringFlag{
-				Name:  "output-file",
-				Usage: "Path to a file where the pasted content will be saved. If not provided, content will be printed to stdout.",
-				Value: "",
+				Name:    "output-file",
+				Aliases: []string{"o"},
+				Usage:   "Path to a file where the pasted content will be saved. If not provided, content will be printed to stdout.",
+				Value:   "",
 			},
 		},
 		Action: func(ctx *cli.Context) error {

@@ -6,6 +6,14 @@ import (
 	"go.trulyao.dev/bore/v2"
 )
 
+type PasteFormat string
+
+const (
+	PasteFormatText   PasteFormat = "text"
+	PasteFormatJSON   PasteFormat = "json"
+	PasteFormatBase64 PasteFormat = "base64"
+)
+
 type Handler struct {
 	bore *bore.Bore
 }
