@@ -59,6 +59,7 @@ func (a *App) createRootCmd() *cli.App {
 		},
 		Commands: []*cli.Command{
 			a.infoCommand(),
+			a.resetCommand(),
 		},
 	}
 }

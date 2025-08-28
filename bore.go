@@ -69,14 +69,16 @@ func New(config *Config) (*Bore, error) {
 	identity := device.NewIdentity(config.DataDir)
 
 	return &Bore{
-		db:        conn,
-		config:    config,
-		clipboard: clipboard,
-		identity:  identity,
-		events:    events.NewManager(conn, identity),
+		db:         conn,
+		config:     config,
+		clipboard:  clipboard,
+		identity:   identity,
+		events:     events.NewManager(conn, identity),
+		repository: repository.NewRepository(conn),
 	}, nil
 }
 
+// Returns the unique device identifier for this device and instance.
 func (b *Bore) DeviceID() (string, error) {
 	id, err := b.identity.GetIdentifier()
 	if err != nil {
@@ -84,6 +86,24 @@ func (b *Bore) DeviceID() (string, error) {
 	}
 
 	return id, nil
+}
+
+// Repository returns the current repository implementation for the current Bore instance.
+func (b *Bore) Repository() (repository.Repository, error) {
+	if b.repository == nil {
+		return nil, errors.New("repository is not initialized")
+	}
+
+	return b.repository, nil
+}
+
+// SystemClipboard returns the native clipboard interface for the current platform.
+func (b *Bore) SystemClipboard() (clipboard.NativeClipboard, error) {
+	if b.clipboard == nil {
+		return nil, errors.New("clipboard is not initialized")
+	}
+
+	return b.clipboard, nil
 }
 
 func (b *Bore) DB() (*bun.DB, error) {
