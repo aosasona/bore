@@ -1,13 +1,14 @@
 package repository
 
 import (
+	"context"
 	"sync"
 
 	"github.com/uptrace/bun"
 )
 
 type ClipRepository interface {
-	GetLastClip() (Clip, error)
+	GetLastClip(context.Context) (Clip, error)
 }
 
 type Repository interface {
@@ -19,6 +20,10 @@ type repo struct {
 	db *bun.DB
 
 	clips ClipRepository
+}
+
+func NewRepository(db *bun.DB) Repository {
+	return &repo{db: db}
 }
 
 // Clips implements Repository.
