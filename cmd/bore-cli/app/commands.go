@@ -35,19 +35,19 @@ func (a *App) createRootCmd() *cli.App {
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "config",
+				Name:    handler.FlagConfig,
 				Aliases: []string{"c"},
 				Usage:   "Path to the configuration file",
 				Value:   defaultConfigPath(),
 			},
 			&cli.StringFlag{
-				Name:    "data-dir",
+				Name:    handler.FlagDataDir,
 				Aliases: []string{"d"},
 				Usage:   "Path to the data directory where data is stored",
 				Value:   defaultDataPath(),
 			},
 			&cli.StringFlag{
-				Name:    "format",
+				Name:    handler.FlagFormat,
 				Aliases: []string{"o"},
 				Usage:   "Output format for the current command (e.g., json, base64, text)",
 			},
@@ -125,18 +125,18 @@ func (a *App) copyCommand() *cli.Command {
 		Usage: "Copy content to the clipboard",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "collection",
+				Name:    handler.FlagCollection,
 				Aliases: []string{"c"},
 				Usage:   "Collection ID to associate with the copied content",
 			},
 			&cli.StringFlag{
-				Name:    "mime-type",
+				Name:    handler.FlagMimeType,
 				Aliases: []string{"m"},
 				Usage:   "MIME type of the content being copied (e.g., text/plain, image/png)",
 				Value:   "text/plain",
 			},
 			&cli.StringFlag{
-				Name:    "input-file",
+				Name:    handler.FlagInputFile,
 				Aliases: []string{"i"},
 				Usage:   "Path to a file to read content from. If not provided, content will be read from stdin.",
 				Value:   "",
@@ -154,30 +154,30 @@ func (a *App) pasteCommand() *cli.Command {
 		Usage: "Paste content from the clipboard",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "collection",
+				Name:    handler.FlagCollection,
 				Aliases: []string{"c"},
 				Usage:   "Collection ID to paste content from",
 			},
 			&cli.StringFlag{
-				Name:    "format",
+				Name:    handler.FlagFormat,
 				Aliases: []string{"f"},
 				Usage:   "Format to output the pasted content (text, json, base64)",
 				Value:   string(handler.PasteFormatText),
 			},
 			&cli.BoolFlag{
-				Name:    "from-system",
+				Name:    handler.FlagFromSystem,
 				Aliases: []string{"s"},
 				Usage:   "Paste content from the system clipboard instead",
 				Value:   false,
 			},
 			&cli.BoolFlag{
-				Name:    "delete",
+				Name:    handler.FlagDelete,
 				Aliases: []string{"d"},
 				Usage:   "Delete the content from the clipboard after pasting",
 				Value:   false,
 			},
 			&cli.StringFlag{
-				Name:    "output-file",
+				Name:    handler.FlagOutputFile,
 				Aliases: []string{"o"},
 				Usage:   "Path to a file where the pasted content will be saved. If not provided, content will be printed to stdout.",
 				Value:   "",
