@@ -165,7 +165,7 @@ func (a *App) pasteCommand() *cli.Command {
 				Value:   string(handler.PasteFormatText),
 			},
 			&cli.BoolFlag{
-				Name:    handler.FlagFromSystem,
+				Name:    handler.FlagSystem,
 				Aliases: []string{"s"},
 				Usage:   "Paste content from the system clipboard instead",
 				Value:   false,

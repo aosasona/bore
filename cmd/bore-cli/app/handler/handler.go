@@ -22,7 +22,7 @@ const (
 	FlagDataDir    = "data-dir"
 	FlagDelete     = "delete"
 	FlagFormat     = "format"
-	FlagFromSystem = "system"
+	FlagSystem     = "system"
 	FlagInputFile  = "input-file"
 	FlagMimeType   = "mime-type"
 	FlagOutputFile = "output-file"
@@ -51,7 +51,7 @@ func (h *Handler) Paste(ctx *cli.Context) error {
 		OutputFile:    ctx.String(FlagOutputFile),
 	}
 
-	if ctx.Bool(FlagFromSystem) {
+	if ctx.Bool(FlagSystem) {
 		return h.pasteFromSystem(ctx, options)
 	}
 
