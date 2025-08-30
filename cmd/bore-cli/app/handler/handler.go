@@ -3,9 +3,11 @@ package handler
 import (
 	"encoding/base64"
 	"encoding/json"
+	"os"
 
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
+	"go.trulyao.dev/bore/v2/events"
 )
 
 type PasteFormat string
@@ -107,9 +109,10 @@ func (h *Handler) pasteFromDatabase(ctx *cli.Context, options *PasteOptions) err
 }
 
 func (h *Handler) writeToFile(ctx *cli.Context, filename string, content []byte) error {
-	panic("implement me")
+	return os.WriteFile(filename, content, 0644)
 }
 
 func (h *Handler) writeToStdout(ctx *cli.Context, content []byte) error {
-	panic("implement me")
+	_, err := ctx.App.Writer.Write(content)
+	return err
 }
