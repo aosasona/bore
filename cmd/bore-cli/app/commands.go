@@ -141,6 +141,12 @@ func (a *App) copyCommand() *cli.Command {
 				Usage:   "Path to a file to read content from. If not provided, content will be read from stdin.",
 				Value:   "",
 			},
+			&cli.BoolFlag{
+				Name:    handler.FlagSystem,
+				Aliases: []string{"s"},
+				Usage:   "Copy content to the system clipboard ONLY",
+				Value:   false,
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			panic("not implemented")

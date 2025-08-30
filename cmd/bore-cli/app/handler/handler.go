@@ -10,6 +10,8 @@ import (
 	"go.trulyao.dev/bore/v2/events"
 )
 
+var ErrClipboardNotAvailable = cli.Exit("system clipboard is not available", 1)
+
 type PasteFormat string
 
 const (
@@ -30,12 +32,21 @@ const (
 	FlagOutputFile = "output-file"
 )
 
-type PasteOptions struct {
-	Collection    string
-	Format        PasteFormat
-	DeleteOnPaste bool
-	OutputFile    string
-}
+type (
+	PasteOptions struct {
+		Collection    string
+		DeleteOnPaste bool
+		Format        PasteFormat
+		OutputFile    string
+	}
+
+	CopyOptions struct {
+		Collection string
+		InputFile  string
+		MimeType   events.MimeType
+		System     bool
+	}
+)
 
 type Handler struct {
 	bore *bore.Bore
@@ -43,6 +54,10 @@ type Handler struct {
 
 func New(bore *bore.Bore) *Handler {
 	return &Handler{bore: bore}
+}
+
+func (h *Handler) Copy(ctx *cli.Context) error {
+	panic("implement me")
 }
 
 func (h *Handler) Paste(ctx *cli.Context) error {
@@ -64,6 +79,10 @@ func (h *Handler) pasteFromSystem(ctx *cli.Context, options *PasteOptions) error
 	clipboard, err := h.bore.SystemClipboard()
 	if err != nil {
 		return err
+	}
+
+	if !clipboard.Available() {
+		return ErrClipboardNotAvailable
 	}
 
 	content, err := clipboard.Read(ctx.Context)
