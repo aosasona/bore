@@ -12,9 +12,6 @@ type Config struct {
 
 	// ClipboardPassthrough enables passing the bore clipboard data to the native clipboard on copy
 	ClipboardPassthrough bool `toml:"clipboard_passthrough" json:"clipboard_passthrough"`
-
-	// DeleteOnPaste deletes the content after it has been pasted
-	DeleteOnPaste bool `toml:"delete_on_paste" json:"delete_on_paste"`
 }
 
 // DefaultConfig returns the default configuration for the bore application.
@@ -22,7 +19,6 @@ func DefaultConfig() Config {
 	return Config{
 		DataDir:              ".",
 		ClipboardPassthrough: true,
-		DeleteOnPaste:        false,
 	}
 }
 

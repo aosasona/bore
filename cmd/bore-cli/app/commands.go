@@ -94,7 +94,6 @@ func (a *App) infoCommand() *cli.Command {
 			fmt.Println("Config Path:", a.configPath)
 			fmt.Println("Device ID:", deviceID)
 			fmt.Println("Clipboard Passthrough:", config.ClipboardPassthrough)
-			fmt.Println("Delete on Paste:", config.DeleteOnPaste)
 			return nil
 		},
 	}
