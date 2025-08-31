@@ -4,9 +4,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"os"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
+	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/events"
 )
 
@@ -101,24 +103,8 @@ func (h *Handler) pasteFromSystem(ctx *cli.Context, options *PasteOptions) error
 		}
 	}
 
-	switch options.Format {
-	case PasteFormatText:
-		break
-
-	case PasteFormatBase64:
-		base64Content := make([]byte, base64.StdEncoding.EncodedLen(len(content)))
-		base64.StdEncoding.Encode(base64Content, content)
-		content = base64Content
-
-	case PasteFormatJSON:
-		jsonContent, err := json.Marshal(map[string]string{"content": string(content)})
-		if err != nil {
-			return err
-		}
-		content = jsonContent
-
-	default:
-		return cli.Exit("unsupported format: "+string(options.Format), 1)
+	if content, err = h.contentToFormat(content, options.Format); err != nil {
+		return err
 	}
 
 	if options.OutputFile != "" {
@@ -129,7 +115,36 @@ func (h *Handler) pasteFromSystem(ctx *cli.Context, options *PasteOptions) error
 }
 
 func (h *Handler) pasteFromDatabase(ctx *cli.Context, options *PasteOptions) error {
-	panic("implement me")
+	repo, err := h.bore.Repository()
+	if err != nil {
+		return err
+	}
+
+	var clip *repository.Clip
+
+	if strings.TrimSpace(options.Identifier) != "" {
+		if clip, err = repo.Clips().FindById(ctx.Context, options.Identifier); err != nil {
+			return err
+		}
+	} else {
+		if clip, err = repo.Clips().FindLatestClip(ctx.Context, options.Collection); err != nil {
+			return err
+		}
+	}
+
+	if clip == nil {
+		return cli.Exit("no clip found", 1)
+	}
+
+	content := clip.Content
+	if content, err = h.contentToFormat(content, options.Format); err != nil {
+		return err
+	}
+
+	// TODO: handle delete on paste
+	// TODO: handle output to file
+
+	panic("not implemented")
 }
 
 func (h *Handler) writeToFile(ctx *cli.Context, filename string, content []byte) error {
@@ -139,4 +154,26 @@ func (h *Handler) writeToFile(ctx *cli.Context, filename string, content []byte)
 func (h *Handler) writeToStdout(ctx *cli.Context, content []byte) error {
 	_, err := ctx.App.Writer.Write(content)
 	return err
+}
+
+func (h *Handler) contentToFormat(content []byte, format PasteFormat) ([]byte, error) {
+	switch format {
+	case PasteFormatText:
+		return content, nil
+
+	case PasteFormatBase64:
+		base64Content := make([]byte, base64.StdEncoding.EncodedLen(len(content)))
+		base64.StdEncoding.Encode(base64Content, content)
+		return base64Content, nil
+
+	case PasteFormatJSON:
+		jsonContent, err := json.Marshal(map[string]string{"content": string(content)})
+		if err != nil {
+			return nil, err
+		}
+		return jsonContent, nil
+
+	default:
+		return nil, cli.Exit("unsupported format: "+string(format), 1)
+	}
 }
