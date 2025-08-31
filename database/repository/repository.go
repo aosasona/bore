@@ -3,12 +3,16 @@ package repository
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/uptrace/bun"
 )
 
+var timeout = time.Second * 5
+
 type ClipRepository interface {
-	GetLastClip(context.Context) (Clip, error)
+	FindLatestClip(ctx context.Context, collectionID string) (*Clip, error)
+	FindClipById(ctx context.Context, identifier string) (*Clip, error)
 }
 
 type Repository interface {
@@ -34,6 +38,10 @@ func (r *repo) Clips() ClipRepository {
 		}
 		return r.clips
 	})
+}
+
+func withContext(ctx context.Context) (context.Context, func()) {
+	return context.WithTimeout(ctx, timeout)
 }
 
 func withLock[T any](r *repo, fn func(*repo) T) T {
