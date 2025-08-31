@@ -13,8 +13,8 @@ type clipRepository struct {
 	db *bun.DB
 }
 
-// FindClipById implements ClipRepository.
-func (c *clipRepository) FindClipById(ctx context.Context, identifier string) (*Clip, error) {
+// FindById implements ClipRepository.
+func (c *clipRepository) FindById(ctx context.Context, identifier string) (*Clip, error) {
 	ctx, cancel := withContext(ctx)
 	defer cancel()
 
