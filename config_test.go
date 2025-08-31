@@ -41,7 +41,6 @@ func Test_TOML(t *testing.T) {
 
 	expected := `data_dir = "~/.local/share/bore"
 clipboard_passthrough = false
-delete_on_paste = true
 `
 
 	if string(tomlData) != expected {
