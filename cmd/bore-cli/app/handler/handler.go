@@ -26,6 +26,7 @@ const (
 	FlagDataDir    = "data-dir"
 	FlagDelete     = "delete"
 	FlagFormat     = "format"
+	FlagIdentifier = "identifier"
 	FlagSystem     = "system"
 	FlagInputFile  = "input-file"
 	FlagMimeType   = "mime-type"
@@ -34,7 +35,9 @@ const (
 
 type (
 	PasteOptions struct {
-		Collection    string
+		Identifier string
+		Collection string
+
 		DeleteOnPaste bool
 		Format        PasteFormat
 		OutputFile    string
@@ -62,7 +65,9 @@ func (h *Handler) Copy(ctx *cli.Context) error {
 
 func (h *Handler) Paste(ctx *cli.Context) error {
 	options := &PasteOptions{
-		Collection:    ctx.String(FlagCollection),
+		Collection: ctx.String(FlagCollection),
+		Identifier: ctx.String(FlagIdentifier),
+
 		Format:        PasteFormat(ctx.String(FlagFormat)),
 		DeleteOnPaste: ctx.Bool(FlagDelete),
 		OutputFile:    ctx.String(FlagOutputFile),
