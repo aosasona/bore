@@ -64,7 +64,7 @@ func (c *copyEvent) UnmarshalJSON([]byte) error {
 		return fmt.Errorf("failed to decode copy event: %w", err)
 	}
 
-	if c.Content == nil || len(c.Content) == 0 {
+	if len(c.Content) == 0 {
 		return errors.New("content cannot be empty")
 	}
 
