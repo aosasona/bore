@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/go-viper/mapstructure/v2"
-	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/device"
 )
@@ -34,12 +33,12 @@ func (c *copyEvent) Action() repository.Action {
 }
 
 // Replay implements Event.
-func (c *copyEvent) Replay(db *bun.DB) error {
+func (c *copyEvent) Replay(repository repository.Repository) error {
 	panic("unimplemented")
 }
 
 // Apply implements Event.
-func (c *copyEvent) Apply(db *bun.DB) (Log, error) {
+func (c *copyEvent) Apply(repository repository.Repository) (Log, error) {
 	panic("unimplemented")
 }
 
@@ -54,9 +53,9 @@ func (c *copyEvent) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON implements Event.
-func (c *copyEvent) UnmarshalJSON([]byte) error {
+func (c *copyEvent) UnmarshalJSON(raw []byte) error {
 	data := map[string]any{}
-	if err := json.Unmarshal([]byte{}, &data); err != nil {
+	if err := json.Unmarshal(raw, &data); err != nil {
 		return err
 	}
 
