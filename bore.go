@@ -67,14 +67,15 @@ func New(config *Config) (*Bore, error) {
 	}
 
 	identity := device.NewIdentity(config.DataDir)
+	repository := repository.NewRepository(conn)
 
 	return &Bore{
 		db:         conn,
 		config:     config,
 		clipboard:  clipboard,
 		identity:   identity,
-		events:     events.NewManager(conn, identity),
-		repository: repository.NewRepository(conn),
+		events:     events.NewManager(repository, identity),
+		repository: repository,
 	}, nil
 }
 
