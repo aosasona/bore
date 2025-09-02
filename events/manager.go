@@ -19,7 +19,7 @@ func NewManager(repository repository.Repository, identity *device.Identity) *Ma
 	}
 }
 
-func (m *Manager) NewCopyV1Event(
+func (m *Manager) Copy(
 	content []byte,
 	mimeType MimeType,
 	collectionID string,
@@ -31,6 +31,17 @@ func (m *Manager) NewCopyV1Event(
 		MimeType:     mimeType,
 		CollectionID: collectionID,
 	}
+}
+
+func (m *Manager) DeleteClip(identifier string) *deleteClipEvent {
+	return &deleteClipEvent{
+		identity:   m.identity,
+		Identifier: identifier,
+	}
+}
+
+func (m *Manager) Log(event Event) (Log, error) {
+	return event.Apply(m.repository)
 }
 
 func hash(content []byte) string {

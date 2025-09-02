@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 
 	"go.trulyao.dev/bore/v2/database/repository"
+	"go.trulyao.dev/bore/v2/pkg/device"
 )
 
 type deleteClipEvent struct {
-	identity *string `json:"-" mapstructure:"-"`
+	identity *device.Identity `json:"-" mapstructure:"-"`
 
 	// Identifier is the unique identifier of the clip to be deleted.
 	Identifier string `json:"identifier" mapstructure:"identifier"`
@@ -32,11 +33,6 @@ func (d *deleteClipEvent) UnmarshalJSON(raw []byte) error {
 	}
 
 	return nil
-}
-
-// Identity implements Event.
-func (d *deleteClipEvent) Identity() *string {
-	return d.identity
 }
 
 // Action implements Event.
