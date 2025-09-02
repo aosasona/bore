@@ -1,9 +1,9 @@
 package events
 
 import (
+	"encoding/json"
 	"time"
 
-	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/repository"
 )
 
@@ -42,13 +42,16 @@ type Log struct {
 }
 
 type Event interface {
+	json.Marshaler
+	json.Unmarshaler
+
 	// Action returns the type of the event as a string.
 	Action() repository.Action
 
 	// Apply executes the appropriate database operations for this event and returns a proper Log that can be saved to the events log and replayed later, or streamed to other devices.
-	Apply(db *bun.DB) (Log, error)
+	Apply(repository.Repository) (Log, error)
 
 	// Replay replays a log entry from a previously saved event log.
 	// TODO: this should be on the event manager itself
-	Replay(db *bun.DB) error
+	Replay(repository.Repository) error
 }

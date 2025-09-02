@@ -3,19 +3,19 @@ package events
 import (
 	"crypto/sha256"
 
-	"github.com/uptrace/bun"
+	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/device"
 )
 
 type Manager struct {
-	identity *device.Identity
-	db       *bun.DB
+	identity   *device.Identity
+	repository repository.Repository
 }
 
-func NewManager(db *bun.DB, identity *device.Identity) *Manager {
+func NewManager(repository repository.Repository, identity *device.Identity) *Manager {
 	return &Manager{
-		identity: identity,
-		db:       db,
+		identity:   identity,
+		repository: repository,
 	}
 }
 
