@@ -33,10 +33,10 @@ func (m *Manager) Copy(
 	}
 }
 
-func (m *Manager) DeleteClip(identifier string) *deleteClipEvent {
+func (m *Manager) DeleteClip(clipId string) *deleteClipEvent {
 	return &deleteClipEvent{
-		identity:   m.identity,
-		Identifier: identifier,
+		identity: m.identity,
+		ClipId:   clipId,
 	}
 }
 

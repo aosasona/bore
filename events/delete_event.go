@@ -1,7 +1,9 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
+	"time"
 
 	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/device"
@@ -10,14 +12,14 @@ import (
 type deleteClipEvent struct {
 	identity *device.Identity `json:"-" mapstructure:"-"`
 
-	// Identifier is the unique identifier of the clip to be deleted.
-	Identifier string `json:"identifier" mapstructure:"identifier"`
+	// ClipId is the unique identifier of the clip to be deleted.
+	ClipId string `json:"clipId" mapstructure:"clipId"`
 }
 
 // MarshalJSON implements Event.
 func (d *deleteClipEvent) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]any{
-		"identifier": d.Identifier,
+		"clipId": d.ClipId,
 	})
 }
 
@@ -28,8 +30,8 @@ func (d *deleteClipEvent) UnmarshalJSON(raw []byte) error {
 		return err
 	}
 
-	if v, ok := data["identifier"].(string); ok {
-		d.Identifier = v
+	if v, ok := data["clipId"].(string); ok {
+		d.ClipId = v
 	}
 
 	return nil
@@ -42,7 +44,31 @@ func (d *deleteClipEvent) Action() repository.Action {
 
 // Apply implements Event.
 func (d *deleteClipEvent) Apply(repository repository.Repository) (Log, error) {
-	panic("unimplemented")
+	parentCtx := context.Background()
+	ctx, cancel := context.WithCancel(parentCtx)
+	defer cancel()
+
+	err := repository.Clips().DeleteById(ctx, d.ClipId)
+	if err != nil {
+		return Log{}, err
+	}
+
+	identity, err := d.identity.GetIdentifier()
+	if err != nil {
+		return Log{}, err
+	}
+
+	return Log{
+		Metadata: Metadata{
+			DeviceID:    identity,
+			AggregateID: d.ClipId,
+			Version:     1,
+		},
+		Timestamp: Timestamp{
+			IngestedAt: time.Now(),
+			AppliedAt:  time.Now(),
+		},
+	}, nil
 }
 
 // Replay implements Event.

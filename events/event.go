@@ -11,9 +11,6 @@ import (
 
 // Timestamp holds the timestamps for different stages of an event's lifecycle.
 type Timestamp struct {
-	// LoggedAt is the time when the event was logged on the source device.
-	LoggedAt time.Time `json:"logged_at"`
-
 	// IngestedAt is the time when the event was ingested into the database on the current device.
 	IngestedAt time.Time `json:"ingested_at"`
 

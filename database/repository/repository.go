@@ -13,6 +13,7 @@ var timeout = time.Second * 5
 type ClipRepository interface {
 	FindLatestClip(ctx context.Context, collectionID string) (*Clip, error)
 	FindById(ctx context.Context, identifier string) (*Clip, error)
+	DeleteById(ctx context.Context, identifier string) error
 }
 
 type Repository interface {

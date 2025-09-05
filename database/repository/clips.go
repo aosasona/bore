@@ -13,6 +13,11 @@ type clipRepository struct {
 	db *bun.DB
 }
 
+// DeleteById implements ClipRepository.
+func (c *clipRepository) DeleteById(ctx context.Context, identifier string) error {
+	panic("unimplemented")
+}
+
 // FindById implements ClipRepository.
 func (c *clipRepository) FindById(ctx context.Context, identifier string) (*Clip, error) {
 	ctx, cancel := withContext(ctx)
