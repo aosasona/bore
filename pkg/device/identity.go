@@ -79,7 +79,7 @@ func (i *Identity) createIdentifier() (string, error) {
 	return id, nil
 }
 
-func (i *Identity) RsetIdentifier() error {
+func (i *Identity) ResetIdentifier() error {
 	i.Lock()
 	defer i.Unlock()
 
