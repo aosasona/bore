@@ -15,7 +15,16 @@ type clipRepository struct {
 
 // DeleteById implements ClipRepository.
 func (c *clipRepository) DeleteById(ctx context.Context, identifier string) error {
-	panic("unimplemented")
+	ctx, cancel := withContext(ctx)
+	defer cancel()
+
+	identifier = strings.TrimSpace(identifier)
+	_, err := c.db.NewDelete().Model((*Clip)(nil)).Where("id = ?", identifier).Exec(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // FindById implements ClipRepository.
