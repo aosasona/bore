@@ -32,11 +32,6 @@ func (c *copyEvent) Action() repository.Action {
 	return repository.ActionCopyV1
 }
 
-// Replay implements Event.
-func (c *copyEvent) Replay(repository repository.Repository) error {
-	panic("unimplemented")
-}
-
 // Apply implements Event.
 func (c *copyEvent) Apply(repository repository.Repository) (Log, error) {
 	panic("unimplemented")
@@ -80,6 +75,11 @@ func (c *copyEvent) UnmarshalJSON(raw []byte) error {
 	}
 
 	return nil
+}
+
+// Play implements Event.
+func (c *copyEvent) Play(repository.Repository, Log) error {
+	panic("unimplemented")
 }
 
 var _ Event = (*copyEvent)(nil)

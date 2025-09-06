@@ -31,6 +31,9 @@ type Metadata struct {
 }
 
 type Log struct {
+	// Action is the name of the event, e.g. "CreateClipEvent"
+	Action repository.Action `json:"action"`
+
 	// Metadata holds the metadata about the event itself
 	Metadata Metadata `json:"metadata"`
 
@@ -48,7 +51,7 @@ type Event interface {
 	// Apply executes the appropriate database operations for this event and returns a proper Log that can be saved to the events log and replayed later, or streamed to other devices.
 	Apply(repository.Repository) (Log, error)
 
-	// Replay replays a log entry from a previously saved event log.
-	// TODO: this should be on the event manager itself
-	Replay(repository.Repository) error
+	// Play replays the event from a log entry.
+	// For example, if the event is a CreateClipEvent, it will create the clip in the database with the same ID and data as in the log instead of generating a new ID.
+	Play(repository.Repository, Log) error
 }

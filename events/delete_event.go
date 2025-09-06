@@ -59,6 +59,7 @@ func (d *deleteClipEvent) Apply(repository repository.Repository) (Log, error) {
 	}
 
 	return Log{
+		Action: d.Action(),
 		Metadata: Metadata{
 			DeviceID:    identity,
 			AggregateID: d.ClipId,
@@ -71,8 +72,8 @@ func (d *deleteClipEvent) Apply(repository repository.Repository) (Log, error) {
 	}, nil
 }
 
-// Replay implements Event.
-func (d *deleteClipEvent) Replay(repository repository.Repository) error {
+// Play implements Event.
+func (d *deleteClipEvent) Play(repository.Repository, Log) error {
 	panic("unimplemented")
 }
 
