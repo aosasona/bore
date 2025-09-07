@@ -50,7 +50,7 @@ func (c *clipRepository) FindById(ctx context.Context, identifier string) (*Clip
 }
 
 // GetLastClip implements ClipRepository.
-func (c *clipRepository) FindLatestClip(ctx context.Context, collectionID string) (*Clip, error) {
+func (c *clipRepository) FindLatest(ctx context.Context, collectionID string) (*Clip, error) {
 	ctx, cancel := withContext(ctx)
 	defer cancel()
 

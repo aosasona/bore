@@ -127,7 +127,7 @@ func (h *Handler) pasteFromDatabase(ctx *cli.Context, options *PasteOptions) err
 			return err
 		}
 	} else {
-		if clip, err = repo.Clips().FindLatestClip(ctx.Context, options.Collection); err != nil {
+		if clip, err = repo.Clips().FindLatest(ctx.Context, options.Collection); err != nil {
 			return err
 		}
 	}
@@ -148,7 +148,7 @@ func (h *Handler) pasteFromDatabase(ctx *cli.Context, options *PasteOptions) err
 }
 
 func (h *Handler) writeToFile(ctx *cli.Context, filename string, content []byte) error {
-	return os.WriteFile(filename, content, 0644)
+	return os.WriteFile(filename, content, 0o644)
 }
 
 func (h *Handler) writeToStdout(ctx *cli.Context, content []byte) error {
