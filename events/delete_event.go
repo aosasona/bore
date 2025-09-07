@@ -73,7 +73,7 @@ func (d *deleteClipEvent) Apply(repository repository.Repository) (Log, error) {
 }
 
 // Play implements Event.
-func (d *deleteClipEvent) Play(repository.Repository, Log) error {
+func (d *deleteClipEvent) Play(repo repository.Repository, log Log) error {
 	panic("unimplemented")
 }
 
