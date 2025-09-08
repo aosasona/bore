@@ -11,6 +11,7 @@ import (
 var timeout = time.Second * 5
 
 type ClipRepository interface {
+	Create(ctx context.Context, clip *Clip) error
 	FindLatest(ctx context.Context, collectionID string) (*Clip, error)
 	FindById(ctx context.Context, identifier string) (*Clip, error)
 	DeleteById(ctx context.Context, identifier string) error

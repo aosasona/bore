@@ -13,6 +13,11 @@ type clipRepository struct {
 	db *bun.DB
 }
 
+// Create implements ClipRepository.
+func (c *clipRepository) Create(ctx context.Context, clip *Clip) error {
+	panic("unimplemented")
+}
+
 // DeleteById implements ClipRepository.
 func (c *clipRepository) DeleteById(ctx context.Context, identifier string) error {
 	ctx, cancel := withContext(ctx)
