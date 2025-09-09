@@ -15,7 +15,11 @@ type clipRepository struct {
 
 // Create implements ClipRepository.
 func (c *clipRepository) Create(ctx context.Context, clip *Clip) error {
-	panic("unimplemented")
+	ctx, cancel := withContext(ctx)
+	defer cancel()
+
+	_, err := c.db.NewInsert().Model(clip).Exec(ctx)
+	return err
 }
 
 // DeleteById implements ClipRepository.

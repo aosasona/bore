@@ -59,8 +59,11 @@ type Collection struct {
 }
 
 // BeforeInsert implements bun.BeforeInsertHook.
-func (c *Collection) BeforeInsert(ctx context.Context, query *bun.InsertQuery) error {
-	c.ID = ulid.Make().String()
+func (collection *Collection) BeforeInsert(ctx context.Context, query *bun.InsertQuery) error {
+	if collection.ID == "" {
+		collection.ID = ulid.Make().String()
+	}
+
 	return nil
 }
 
@@ -83,8 +86,11 @@ type Event struct {
 }
 
 // BeforeInsert implements bun.BeforeInsertHook.
-func (e *Event) BeforeInsert(ctx context.Context, query *bun.InsertQuery) error {
-	e.ID = ulid.Make().String()
+func (event *Event) BeforeInsert(ctx context.Context, query *bun.InsertQuery) error {
+	if event.ID == "" {
+		event.ID = ulid.Make().String()
+	}
+
 	return nil
 }
 
@@ -107,8 +113,11 @@ type Clip struct {
 }
 
 // BeforeInsert implements bun.BeforeInsertHook.
-func (c *Clip) BeforeInsert(ctx context.Context, query *bun.InsertQuery) error {
-	c.ID = ulid.Make().String()
+func (clip *Clip) BeforeInsert(ctx context.Context, query *bun.InsertQuery) error {
+	if clip.ID == "" {
+		clip.ID = ulid.Make().String()
+	}
+
 	return nil
 }
 
