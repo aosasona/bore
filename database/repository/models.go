@@ -11,6 +11,8 @@ import (
 
 type Action string
 
+// TODO: validation with https://github.com/go-playground/validator
+// TODO: create default collection
 const (
 	ActionCopyV1           Action = "copy_v1"
 	ActionCreateCollection Action = "create_collection"
@@ -22,7 +24,7 @@ type Relay struct {
 	bun.BaseModel `bun:"table:relays,alias:r"`
 
 	ID            string    `bun:"id,pk"`
-	Alias         string    `bun:"alias,notnull"`
+	Alias         string    `bun:"alias,notnull"                                 validate:"min=3,max=32"`
 	Address       string    `bun:"address,notnull"`
 	Metadata      []byte    `bun:"metadata"`
 	AddedAt       time.Time `bun:"added_at,notnull,default:(unixepoch())"`
@@ -33,7 +35,7 @@ type Peer struct {
 	bun.BaseModel `bun:"table:peers,alias:p"`
 
 	ID         string    `bun:"id,pk"`
-	Name       string    `bun:"name,notnull"`
+	Name       string    `bun:"name,notnull"                           validate:"alphanumunicode,min=3,max=32"`
 	Metadata   []byte    `bun:"metadata"`
 	AddedAt    time.Time `bun:"added_at,notnull,default:(unixepoch())"`
 	LastSeenAt string    `bun:"last_seen_at,notnull"`
@@ -53,7 +55,7 @@ type Collection struct {
 	CreatedAt time.Time    `bun:"created_at,notnull,default:(unixepoch())"`
 	UpdatedAt string       `bun:"updated_at,notnull,default:(unixepoch())"`
 
-	PeerID string `bun:",notnull"`
+	PeerID string `bun:"peer_id,notnull"`
 
 	Peer *Peer `bun:"rel:belongs-to,join:peer_id=id"`
 }
@@ -73,14 +75,14 @@ type Event struct {
 	ID          string         `bun:"id,pk"`
 	AggregateID sql.NullString `bun:"aggregate_id"`
 	Action      Action         `bun:"action,notnull"`
-	Version     int            `bun:"version,notnull,default:1"`
+	Version     int            `bun:"version,notnull,default:1" validate:"gte=1"`
 	Payload     []byte         `bun:"payload,notnull"`
 
 	IngestedAt time.Time    `bun:"ingested_at,notnull,default:(unixepoch())"`
 	LoggedAt   bun.NullTime `bun:"logged_at,default:(unixepoch())"`
 	AppliedAt  bun.NullTime `bun:"applied_at,default:(unixepoch())"`
 
-	PeerID string `bun:",notnull"`
+	PeerID string `bun:"peer_id,notnull"`
 
 	Peer *Peer `bun:"rel:belongs-to,join:peer_id=id"`
 }
@@ -97,19 +99,18 @@ func (event *Event) BeforeInsert(ctx context.Context, query *bun.InsertQuery) er
 type Clip struct {
 	bun.BaseModel `bun:"table:clips,alias:cl"`
 
-	ID        string    `bun:"id,pk"`
-	Content   []byte    `bun:"contnet,notnull"`
-	Hash      string    `bun:"hash,notnull"`
-	Mimetype  string    `bun:"mimetype,notnull"`
-	Size      int64     `bun:"size,notnull"`
+	ID      string `bun:"id,pk"                                    validate:"required,ulid"`
+	Content []byte `bun:"contnet,notnull"                          validate:"required"`
+	Hash    string `bun:"hash,notnull"                             validate:"required,sha256"`
+	// TODO: implement custom validator for mimetype
+	Mimetype  string    `bun:"mimetype,notnull"                         validate:"required,mimetype"`
+	Size      int64     `bun:"size,notnull" 						   validate:"required,gt=0"`
 	CreatedAt time.Time `bun:"created_at,notnull,default:(unixepoch())"`
 	UpdatedAt string    `bun:"updated_at,notnull,default:(unixepoch())"`
 
-	CollectionID string `bun:",notnull"`
-	PeerID       string `bun:",notnull"`
+	CollectionID string `bun:"collection_id" validate:"required,ulid"`
 
 	Collection *Collection `bun:"rel:belongs-to,join:collection_id=id"`
-	Peer       *Peer       `bun:"rel:belongs-to,join:peer_id=id"`
 }
 
 // BeforeInsert implements bun.BeforeInsertHook.
