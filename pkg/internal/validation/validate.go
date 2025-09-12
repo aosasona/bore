@@ -42,5 +42,7 @@ func init() {
 		panic("failed to register default translations: " + err.Error())
 	}
 
-	// TODO: register custom validators
+	if err := registerCustomValidators(validate, translator); err != nil {
+		panic("failed to register custom validators: " + err.Error())
+	}
 }
