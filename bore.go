@@ -61,10 +61,7 @@ func New(config *Config) (*Bore, error) {
 		return nil, errors.New("failed to connect to database: " + err.Error())
 	}
 
-	clipboard, err := clipboard.NewNativeClipboard()
-	if err != nil {
-		return nil, errors.New("failed to create native clipboard: " + err.Error())
-	}
+	clipboard, _ := clipboard.NewNativeClipboard()
 
 	identity := device.NewIdentity(config.DataDir)
 	repository := repository.NewRepository(conn)

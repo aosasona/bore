@@ -58,14 +58,11 @@ func NewNativeClipboard() (NativeClipboard, error) {
 		}
 
 		if !binaries.Empty() {
-			return &linuxClipboard{
-				program:  program,
-				binaries: binaries,
-			}, nil
+			return &linuxClipboard{program: program, binaries: binaries}, nil
 		}
 	}
 
-	return nil, errors.New(
+	return &linuxClipboard{}, errors.New(
 		"no supported clipboard found for linux platform, the following are currently supported: `xclip`, `xsel` and `wl-clipboard`",
 	)
 }
