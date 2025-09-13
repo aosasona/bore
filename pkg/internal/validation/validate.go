@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"errors"
 	"reflect"
 	"strings"
 
@@ -48,5 +49,23 @@ func init() {
 }
 
 func ValidateStruct(s any) error {
-	panic("not implemented")
+	err := validate.Struct(s)
+
+	if err == nil {
+		return nil
+	}
+
+	switch err := err.(type) {
+	case *validator.InvalidValidationError:
+		return errors.New("invalid validation error: " + err.Error())
+	case validator.ValidationErrors:
+		validationErrors := NewValidationError()
+		for _, v := range err {
+			validationErrors.Add(v.Field(), v.Translate(translator))
+		}
+
+		return validationErrors
+	default:
+		return err
+	}
 }
