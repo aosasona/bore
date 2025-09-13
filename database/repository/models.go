@@ -12,7 +12,6 @@ import (
 
 type Action string
 
-// TODO: validation with https://github.com/go-playground/validator
 // TODO: create default collection
 const (
 	ActionCopyV1           Action = "copy_v1"
@@ -70,6 +69,10 @@ func (collection *Collection) BeforeInsert(ctx context.Context, query *bun.Inser
 		collection.ID = ulid.Make().String()
 	}
 
+	if err := collection.Validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -98,6 +101,10 @@ func (event *Event) BeforeInsert(ctx context.Context, query *bun.InsertQuery) er
 		event.ID = ulid.Make().String()
 	}
 
+	if err := event.Validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -123,6 +130,10 @@ type Clip struct {
 func (clip *Clip) BeforeInsert(ctx context.Context, query *bun.InsertQuery) error {
 	if clip.ID == "" {
 		clip.ID = ulid.Make().String()
+	}
+
+	if err := clip.Validate(); err != nil {
+		return err
 	}
 
 	return nil
