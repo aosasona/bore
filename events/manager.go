@@ -5,6 +5,7 @@ import (
 
 	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/device"
+	"go.trulyao.dev/bore/v2/pkg/mimetype"
 )
 
 type Manager struct {
@@ -21,7 +22,7 @@ func NewManager(repository repository.Repository, identity *device.Identity) *Ma
 
 func (m *Manager) Copy(
 	content []byte,
-	mimeType MimeType,
+	mimeType mimetype.MimeType,
 	collectionID string,
 ) *copyEvent {
 	return &copyEvent{

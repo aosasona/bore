@@ -9,7 +9,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
 	"go.trulyao.dev/bore/v2/database/repository"
-	"go.trulyao.dev/bore/v2/events"
+	"go.trulyao.dev/bore/v2/pkg/mimetype"
 )
 
 var ErrClipboardNotAvailable = cli.Exit("system clipboard is not available", 1)
@@ -48,7 +48,7 @@ type (
 	CopyOptions struct {
 		Collection string
 		InputFile  string
-		MimeType   events.MimeType
+		MimeType   mimetype.MimeType
 		System     bool
 	}
 )
@@ -136,10 +136,11 @@ func (h *Handler) pasteFromDatabase(ctx *cli.Context, options *PasteOptions) err
 		return cli.Exit("no clip found", 1)
 	}
 
-	content := clip.Content
-	if content, err = h.contentToFormat(content, options.Format); err != nil {
+	content, err := h.contentToFormat(clip.Content, options.Format)
+	if err != nil {
 		return err
 	}
+	_ = content
 
 	// TODO: handle delete on paste
 	// TODO: handle output to file

@@ -8,6 +8,7 @@ import (
 	"github.com/go-viper/mapstructure/v2"
 	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/device"
+	"go.trulyao.dev/bore/v2/pkg/mimetype"
 )
 
 // copyEvent is emitted when a copy operation is performed.
@@ -21,7 +22,7 @@ type copyEvent struct {
 	Hash string `json:"hash" mapstructure:"hash"`
 
 	// MimeType is the MIME type of the content that was copied.
-	MimeType MimeType `json:"mime_type" mapstructure:"mime_type"`
+	MimeType mimetype.MimeType `json:"mime_type" mapstructure:"mime_type"`
 
 	// CollectionID is the identifier of the collection to which this event belongs.
 	CollectionID string `json:"collection_id" mapstructure:"collection_id"`

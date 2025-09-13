@@ -7,6 +7,7 @@ import (
 
 	"github.com/oklog/ulid/v2"
 	"github.com/uptrace/bun"
+	"go.trulyao.dev/bore/v2/pkg/validation"
 )
 
 type Action string
@@ -21,6 +22,7 @@ const (
 )
 
 type Relay struct {
+	validation.ValidateStructMixin
 	bun.BaseModel `bun:"table:relays,alias:r"`
 
 	ID            string    `bun:"id,pk"`
@@ -32,6 +34,7 @@ type Relay struct {
 }
 
 type Peer struct {
+	validation.ValidateStructMixin
 	bun.BaseModel `bun:"table:peers,alias:p"`
 
 	ID         string    `bun:"id,pk"`
@@ -46,6 +49,7 @@ type Peer struct {
 }
 
 type Collection struct {
+	validation.ValidateStructMixin
 	bun.BaseModel `bun:"table:collections,alias:co"`
 
 	ID        string       `bun:"id,pk"`
@@ -70,6 +74,7 @@ func (collection *Collection) BeforeInsert(ctx context.Context, query *bun.Inser
 }
 
 type Event struct {
+	validation.ValidateStructMixin
 	bun.BaseModel `bun:"table:events,alias:e"`
 
 	ID          string         `bun:"id,pk"`
@@ -97,6 +102,7 @@ func (event *Event) BeforeInsert(ctx context.Context, query *bun.InsertQuery) er
 }
 
 type Clip struct {
+	validation.ValidateStructMixin
 	bun.BaseModel `bun:"table:clips,alias:cl"`
 
 	ID      string `bun:"id,pk"                                    validate:"required,ulid"`
