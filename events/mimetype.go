@@ -1,18 +1,20 @@
 package events
 
+import "errors"
+
 type MimeType interface {
 	mimeType() string
 	String() string
 }
 
-func MimeTypeFromString(s string) MimeType {
+func MimeTypeFromString(s string) (MimeType, error) {
 	switch s {
 	case "application/json":
-		return MimeTypeApplicationJSON(s)
+		return MimeTypeApplicationJSON(s), nil
 	case "text/plain":
-		return MimeTypeTextPlain(s)
+		return MimeTypeTextPlain(s), nil
 	default:
-		panic("unknown mime type: " + s)
+		return nil, errors.New("unknown mime type: " + s)
 	}
 }
 

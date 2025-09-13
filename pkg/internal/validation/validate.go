@@ -46,3 +46,7 @@ func init() {
 		panic("failed to register custom validators: " + err.Error())
 	}
 }
+
+func ValidateStruct(s any) error {
+	panic("not implemented")
+}

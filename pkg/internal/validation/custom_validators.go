@@ -10,11 +10,20 @@ type customValidator struct {
 	translation  string
 }
 
-var validators map[string]customValidator = map[string]customValidator{}
+var validators map[string]customValidator = map[string]customValidator{
+	"mimetype": {
+		validateFunc: mimetypeValidator,
+		translation:  "{0} must be a valid MIME type",
+	},
+}
 
 func registerCustomValidators(
 	v *validator.Validate,
 	translator ut.Translator,
 ) error {
+	panic("not implemented")
+}
+
+func mimetypeValidator(fl validator.FieldLevel) bool {
 	panic("not implemented")
 }
