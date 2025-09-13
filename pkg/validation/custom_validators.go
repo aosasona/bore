@@ -5,7 +5,7 @@ import (
 
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
-	"go.trulyao.dev/bore/v2/events"
+	"go.trulyao.dev/bore/v2/pkg/mimetype"
 )
 
 type customValidator struct {
@@ -49,6 +49,6 @@ func registerCustomValidators(
 }
 
 func mimetypeValidator(fl validator.FieldLevel) bool {
-	_, err := events.MimeTypeFromString(fl.Field().String())
+	_, err := mimetype.MimeTypeFromString(fl.Field().String())
 	return err == nil
 }

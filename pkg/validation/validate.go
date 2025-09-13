@@ -69,3 +69,9 @@ func ValidateStruct(s any) error {
 		return err
 	}
 }
+
+type ValidateStructMixin struct{}
+
+func (v *ValidateStructMixin) Validate() error {
+	return ValidateStruct(v)
+}
