@@ -74,6 +74,10 @@ func (d *deleteClipEvent) Apply(repository repository.Repository) (Log, error) {
 
 // Play implements Event.
 func (d *deleteClipEvent) Play(repo repository.Repository, log Log) error {
+	if log.Action != d.Action() {
+		return nil
+	}
+
 	panic("unimplemented")
 }
 
