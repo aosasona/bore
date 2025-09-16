@@ -1,6 +1,0 @@
-CREATE TABLE IF NOT EXISTS devices (
-  id TEXT PRIMARY KEY NOT NULL,
-  name TEXT NOT NULL,
-  added_at TIMESTAMP NOT NULL DEFAULT (unixepoch())
-);
-
