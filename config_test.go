@@ -12,6 +12,7 @@ func Test_FromBytes(t *testing.T) {
 	data := `
 	data_dir = "~/.local/share/bore"
 	clipboard_passthrough = false
+	default_collection = "default"
 	`
 
 	_, err := config.FromBytes([]byte(data))
@@ -32,6 +33,7 @@ func Test_TOML(t *testing.T) {
 	config := &bore.Config{
 		DataDir:              "~/.local/share/bore",
 		ClipboardPassthrough: false,
+		DefaultCollection:    "default",
 	}
 
 	tomlData, err := config.TOML()
@@ -41,6 +43,7 @@ func Test_TOML(t *testing.T) {
 
 	expected := `data_dir = "~/.local/share/bore"
 clipboard_passthrough = false
+default_collection = "default"
 `
 
 	if string(tomlData) != expected {
