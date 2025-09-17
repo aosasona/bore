@@ -43,6 +43,13 @@ func Connect(dataDir string) (*bun.DB, error) {
 	}
 
 	if err = runMigration(db); err != nil {
+		if rollbackErr := rollbackMigration(db); rollbackErr != nil {
+			slog.Error(
+				"failed to rollback migration after failed migration",
+				slog.String("error", rollbackErr.Error()),
+			)
+		}
+
 		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
 
@@ -94,6 +101,32 @@ func runMigration(db *bun.DB) error {
 	}
 
 	slog.Debug(fmt.Sprintf("migrated %d groups\n", len(groups.Migrations.Applied())))
+	return nil
+}
+
+func rollbackMigration(db *bun.DB) error {
+	ctx := context.Background()
+	migrator := migrate.NewMigrator(db, migrations.Migrations)
+
+	if err := migrator.Init(ctx); err != nil {
+		return err
+	}
+
+	if err := migrator.Lock(ctx); err != nil {
+		return err
+	}
+	defer migrator.Unlock(ctx)
+
+	groups, err := migrator.Rollback(ctx)
+	if err != nil {
+		return err
+	}
+
+	if groups.IsZero() {
+		return nil
+	}
+
+	slog.Debug(fmt.Sprintf("rolled back %d groups\n", len(groups.Migrations.Applied())))
 	return nil
 }
 
