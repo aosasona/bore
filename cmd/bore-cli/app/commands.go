@@ -72,18 +72,6 @@ func (a *App) infoCommand() *cli.Command {
 		Name:  "info",
 		Usage: "Display information about the current bore instance",
 		Action: func(ctx *cli.Context) error {
-			deviceID, err := a.bore.DeviceID()
-			if err != nil {
-				return cli.Exit("failed to get device ID: "+err.Error(), 1)
-			}
-
-			if deviceID == "" {
-				return cli.Exit(
-					"device ID is not set. Please run 'bore reset' to generate a new device ID.",
-					1,
-				)
-			}
-
 			config, err := a.bore.Config()
 			if err != nil {
 				return cli.Exit("failed to get bore configuration: "+err.Error(), 1)
@@ -92,7 +80,7 @@ func (a *App) infoCommand() *cli.Command {
 			fmt.Println("Bore Version:", Version)
 			fmt.Println("Data Directory:", a.dataDir)
 			fmt.Println("Config Path:", a.configPath)
-			fmt.Println("Device ID:", deviceID)
+			fmt.Println("Default Collection:", config.DefaultCollection)
 			fmt.Println("Clipboard Passthrough:", config.ClipboardPassthrough)
 			return nil
 		},

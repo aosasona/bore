@@ -3,23 +3,17 @@ package bore
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database"
 	"go.trulyao.dev/bore/v2/database/repository"
-	"go.trulyao.dev/bore/v2/events"
 	"go.trulyao.dev/bore/v2/pkg/clipboard"
-	"go.trulyao.dev/bore/v2/pkg/device"
 )
 
 type (
 	Bore struct {
-		// deviceId is the unique identifier for this device
-		identity *device.Identity
-
 		// connection is the database connection used by this bore instance
 		db *bun.DB
 
@@ -30,7 +24,7 @@ type (
 		clipboard clipboard.NativeClipboard
 
 		// events is the event manager for this bore instance
-		events *events.Manager
+		// TODO: add new event sourcing manager here
 
 		// repository is the interface for accessing database operations
 		repository repository.Repository
@@ -52,7 +46,7 @@ func New(config *Config) (*Bore, error) {
 		return nil, ErrStoragePathRequired
 	}
 
-	if err := os.MkdirAll(config.DataDir, 0755); err != nil {
+	if err := os.MkdirAll(config.DataDir, 0o755); err != nil {
 		return nil, errors.New("failed to create data directory: " + err.Error())
 	}
 
@@ -62,28 +56,14 @@ func New(config *Config) (*Bore, error) {
 	}
 
 	clipboard, _ := clipboard.NewNativeClipboard()
-
-	identity := device.NewIdentity(config.DataDir)
 	repository := repository.NewRepository(conn)
 
 	return &Bore{
 		db:         conn,
 		config:     config,
 		clipboard:  clipboard,
-		identity:   identity,
-		events:     events.NewManager(repository, identity),
 		repository: repository,
 	}, nil
-}
-
-// Returns the unique device identifier for this device and instance.
-func (b *Bore) DeviceID() (string, error) {
-	id, err := b.identity.GetIdentifier()
-	if err != nil {
-		return "", fmt.Errorf("failed to get device identifier: %w", err)
-	}
-
-	return id, nil
 }
 
 // Repository returns the current repository implementation for the current Bore instance.
