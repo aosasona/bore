@@ -9,12 +9,12 @@ import (
 	"github.com/uptrace/bun"
 )
 
-type clipRepository struct {
+type itemsRepository struct {
 	db *bun.DB
 }
 
 // Create implements ClipRepository.
-func (c *clipRepository) Create(ctx context.Context, clip *Clip) error {
+func (c *itemsRepository) Create(ctx context.Context, clip *Item) error {
 	ctx, cancel := withContext(ctx)
 	defer cancel()
 
@@ -23,12 +23,12 @@ func (c *clipRepository) Create(ctx context.Context, clip *Clip) error {
 }
 
 // DeleteById implements ClipRepository.
-func (c *clipRepository) DeleteById(ctx context.Context, identifier string) error {
+func (c *itemsRepository) DeleteById(ctx context.Context, identifier string) error {
 	ctx, cancel := withContext(ctx)
 	defer cancel()
 
 	identifier = strings.TrimSpace(identifier)
-	_, err := c.db.NewDelete().Model((*Clip)(nil)).Where("id = ?", identifier).Exec(ctx)
+	_, err := c.db.NewDelete().Model((*Item)(nil)).Where("id = ?", identifier).Exec(ctx)
 	if err != nil {
 		return err
 	}
@@ -37,13 +37,13 @@ func (c *clipRepository) DeleteById(ctx context.Context, identifier string) erro
 }
 
 // FindById implements ClipRepository.
-func (c *clipRepository) FindById(ctx context.Context, identifier string) (*Clip, error) {
+func (c *itemsRepository) FindById(ctx context.Context, identifier string) (*Item, error) {
 	ctx, cancel := withContext(ctx)
 	defer cancel()
 
 	identifier = strings.TrimSpace(identifier)
 
-	clip := new(Clip)
+	clip := new(Item)
 	query := c.db.NewSelect().Model(clip).
 		Where("id = ?", identifier).
 		Limit(1)
@@ -59,13 +59,13 @@ func (c *clipRepository) FindById(ctx context.Context, identifier string) (*Clip
 }
 
 // GetLastClip implements ClipRepository.
-func (c *clipRepository) FindLatest(ctx context.Context, collectionID string) (*Clip, error) {
+func (c *itemsRepository) FindLatest(ctx context.Context, collectionID string) (*Item, error) {
 	ctx, cancel := withContext(ctx)
 	defer cancel()
 
 	collectionID = strings.TrimSpace(collectionID)
 
-	clip := new(Clip)
+	clip := new(Item)
 	query := c.db.NewSelect().Model(clip).
 		Where("collection_id = ?", collectionID).
 		Order("created_at DESC").
@@ -81,4 +81,4 @@ func (c *clipRepository) FindLatest(ctx context.Context, collectionID string) (*
 	return clip, nil
 }
 
-var _ ClipRepository = (*clipRepository)(nil)
+var _ ItemRepository = (*itemsRepository)(nil)

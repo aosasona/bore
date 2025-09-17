@@ -120,23 +120,23 @@ func (h *Handler) pasteFromDatabase(ctx *cli.Context, options *PasteOptions) err
 		return err
 	}
 
-	var clip *repository.Clip
+	var item *repository.Item
 
 	if strings.TrimSpace(options.Identifier) != "" {
-		if clip, err = repo.Clips().FindById(ctx.Context, options.Identifier); err != nil {
+		if item, err = repo.Items().FindById(ctx.Context, options.Identifier); err != nil {
 			return err
 		}
 	} else {
-		if clip, err = repo.Clips().FindLatest(ctx.Context, options.Collection); err != nil {
+		if item, err = repo.Items().FindLatest(ctx.Context, options.Collection); err != nil {
 			return err
 		}
 	}
 
-	if clip == nil {
-		return cli.Exit("no clip found", 1)
+	if item == nil {
+		return cli.Exit("no item found", 1)
 	}
 
-	content, err := h.contentToFormat(clip.Content, options.Format)
+	content, err := h.contentToFormat(item.Content, options.Format)
 	if err != nil {
 		return err
 	}

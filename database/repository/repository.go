@@ -10,35 +10,35 @@ import (
 
 var timeout = time.Second * 5
 
-type ClipRepository interface {
-	Create(ctx context.Context, clip *Clip) error
-	FindLatest(ctx context.Context, collectionID string) (*Clip, error)
-	FindById(ctx context.Context, identifier string) (*Clip, error)
+type ItemRepository interface {
+	Create(ctx context.Context, clip *Item) error
+	FindLatest(ctx context.Context, collectionID string) (*Item, error)
+	FindById(ctx context.Context, identifier string) (*Item, error)
 	DeleteById(ctx context.Context, identifier string) error
 }
 
 type Repository interface {
-	Clips() ClipRepository
+	Items() ItemRepository
 }
 
 type repo struct {
 	mu sync.Mutex
 	db *bun.DB
 
-	clips ClipRepository
+	items ItemRepository
 }
 
 func NewRepository(db *bun.DB) Repository {
 	return &repo{db: db}
 }
 
-// Clips implements Repository.
-func (r *repo) Clips() ClipRepository {
-	return withLock(r, func(r *repo) ClipRepository {
-		if r.clips == nil {
-			r.clips = &clipRepository{db: r.db}
+// Items implements Repository.
+func (r *repo) Items() ItemRepository {
+	return withLock(r, func(r *repo) ItemRepository {
+		if r.items == nil {
+			r.items = &itemsRepository{db: r.db}
 		}
-		return r.clips
+		return r.items
 	})
 }
 
