@@ -22,7 +22,7 @@ func DefaultConfig() Config {
 	return Config{
 		DataDir:              ".",
 		ClipboardPassthrough: true,
-		DefaultCollection:    "default",
+		DefaultCollection:    "",
 	}
 }
 
