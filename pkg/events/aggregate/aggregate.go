@@ -15,9 +15,9 @@ var (
 	ErrInvalidAggregateID     = errors.New("invalid aggregate ID")
 )
 
-// An aggregate represents a target entity for events, identified by a type and a ULID.
+// An Aggregate represents a target entity for events, identified by a type and a ULID.
 // This is ideally another table in the database, and are represented as strings in the format "type:id".
-type aggregate struct {
+type Aggregate struct {
 	id ulid.ULID     // valid ULID
 	t  AggregateType // valid AggregateType
 }
@@ -26,7 +26,7 @@ type aggregate struct {
 type AggregateType string
 
 // Creates a new aggregate with the given type and ULID.
-func New(aggregateType AggregateType, id ulid.ULID) (*aggregate, error) {
+func New(aggregateType AggregateType, id ulid.ULID) (*Aggregate, error) {
 	if !aggregateType.IsValid() {
 		return nil, ErrInvalidAggregateString
 	}
@@ -35,38 +35,38 @@ func New(aggregateType AggregateType, id ulid.ULID) (*aggregate, error) {
 		return nil, ErrInvalidAggregateID
 	}
 
-	return &aggregate{id: id, t: aggregateType}, nil
+	return &Aggregate{id: id, t: aggregateType}, nil
 }
 
 // Parses an aggregate from its string representation in the format "type:id".
-func Parse(s string) (aggregate, error) {
+func Parse(s string) (Aggregate, error) {
 	parts := strings.SplitN(s, ":", 2)
 	if len(parts) != 2 {
-		return aggregate{}, ErrInvalidAggregateString
+		return Aggregate{}, ErrInvalidAggregateString
 	}
 
 	aggregateType := AggregateType(strings.TrimSpace(parts[0]))
 	if !aggregateType.IsValid() {
-		return aggregate{}, ErrInvalidAggregateString
+		return Aggregate{}, ErrInvalidAggregateString
 	}
 
 	id, err := ulid.Parse(strings.TrimSpace(parts[1]))
 	if err != nil {
-		return aggregate{}, ErrInvalidAggregateID
+		return Aggregate{}, ErrInvalidAggregateID
 	}
 
-	return aggregate{id: id, t: aggregateType}, nil
+	return Aggregate{id: id, t: aggregateType}, nil
 }
 
-func (a *aggregate) ID() string {
+func (a *Aggregate) ID() string {
 	return a.id.String()
 }
 
-func (a *aggregate) Type() AggregateType {
+func (a *Aggregate) Type() AggregateType {
 	return a.t
 }
 
 // String returns the string representation of the aggregate in the format "type:id".
-func (a *aggregate) String() string {
+func (a *Aggregate) String() string {
 	return fmt.Sprintf("%s:%s", a.t, a.id)
 }
