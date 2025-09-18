@@ -8,53 +8,53 @@ import (
 )
 
 const (
-	// ActionCreateItem is a Action of type create_item.
-	ActionCreateItem Action = "create_item"
-	// ActionDeleteItem is a Action of type delete_item.
-	ActionDeleteItem Action = "delete_item"
-	// ActionCreateCollection is a Action of type create_collection.
-	ActionCreateCollection Action = "create_collection"
-	// ActionDeleteCollection is a Action of type delete_collection.
-	ActionDeleteCollection Action = "delete_collection"
+	// TypeCreateItem is a Type of type create_item.
+	TypeCreateItem Type = "create_item"
+	// TypeDeleteItem is a Type of type delete_item.
+	TypeDeleteItem Type = "delete_item"
+	// TypeCreateCollection is a Type of type create_collection.
+	TypeCreateCollection Type = "create_collection"
+	// TypeDeleteCollection is a Type of type delete_collection.
+	TypeDeleteCollection Type = "delete_collection"
 )
 
-var ErrInvalidAction = errors.New("not a valid Action")
+var ErrInvalidType = errors.New("not a valid Type")
 
 // String implements the Stringer interface.
-func (x Action) String() string {
+func (x Type) String() string {
 	return string(x)
 }
 
 // IsValid provides a quick way to determine if the typed value is
 // part of the allowed enumerated values
-func (x Action) IsValid() bool {
-	_, err := ParseAction(string(x))
+func (x Type) IsValid() bool {
+	_, err := ParseType(string(x))
 	return err == nil
 }
 
-var _ActionValue = map[string]Action{
-	"create_item":       ActionCreateItem,
-	"delete_item":       ActionDeleteItem,
-	"create_collection": ActionCreateCollection,
-	"delete_collection": ActionDeleteCollection,
+var _TypeValue = map[string]Type{
+	"create_item":       TypeCreateItem,
+	"delete_item":       TypeDeleteItem,
+	"create_collection": TypeCreateCollection,
+	"delete_collection": TypeDeleteCollection,
 }
 
-// ParseAction attempts to convert a string to a Action.
-func ParseAction(name string) (Action, error) {
-	if x, ok := _ActionValue[name]; ok {
+// ParseType attempts to convert a string to a Type.
+func ParseType(name string) (Type, error) {
+	if x, ok := _TypeValue[name]; ok {
 		return x, nil
 	}
-	return Action(""), fmt.Errorf("%s is %w", name, ErrInvalidAction)
+	return Type(""), fmt.Errorf("%s is %w", name, ErrInvalidType)
 }
 
 // MarshalText implements the text marshaller method.
-func (x Action) MarshalText() ([]byte, error) {
+func (x Type) MarshalText() ([]byte, error) {
 	return []byte(string(x)), nil
 }
 
 // UnmarshalText implements the text unmarshaller method.
-func (x *Action) UnmarshalText(text []byte) error {
-	tmp, err := ParseAction(string(text))
+func (x *Type) UnmarshalText(text []byte) error {
+	tmp, err := ParseType(string(text))
 	if err != nil {
 		return err
 	}
@@ -66,6 +66,6 @@ func (x *Action) UnmarshalText(text []byte) error {
 // (allocating a larger slice if necessary) and returns the updated slice.
 //
 // Implementations must not retain b, nor mutate any bytes within b[:len(b)].
-func (x *Action) AppendText(b []byte) ([]byte, error) {
+func (x *Type) AppendText(b []byte) ([]byte, error) {
 	return append(b, x.String()...), nil
 }
