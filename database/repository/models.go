@@ -8,16 +8,6 @@ import (
 	"go.trulyao.dev/bore/v2/pkg/validation"
 )
 
-// TODO: move to event sourcing package
-type Action string
-
-const (
-	ActionCopyV1           Action = "copy_v1"
-	ActionCreateCollection Action = "create_collection"
-	ActionDeleteClip       Action = "delete_clip"
-	ActionDeleteCollection Action = "delete_collection"
-)
-
 type Collection struct {
 	validation.ValidateStructMixin
 	bun.BaseModel `bun:"table:collections,alias:co"`
