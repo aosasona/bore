@@ -1,0 +1,41 @@
+version: "2"
+linters:
+  enable:
+    - dupl
+    - errchkjson
+    - exhaustruct
+    - exhaustive
+    - gochecksumtype
+    - goconst
+    - gocritic
+    - godox
+    - gocheckcompilerdirectives
+    - misspell
+    - musttag
+    - nestif
+    - nilerr
+    - nosprintfhostport
+    - perfsprint
+    - predeclared
+    - prealloc
+    - usestdlibvars
+    - unparam
+    - unconvert
+  settings:
+    exhaustruct:
+      include: []
+      exclude: []
+    exhaustive:
+      explicit-exhaustive-switch: false
+      explicit-exhaustive-map: false
+      default-case-required: true
+      default-signifies-exhaustive: true
+    gocritic:
+      enabled-tags:
+        - performance
+        - diagnostic
+    gochecksumtype:
+      default-signifies-exhaustive: true
+      include-shared-interfaces: true
+    dupl:
+      threshold: 150
