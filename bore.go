@@ -10,6 +10,7 @@ import (
 	"go.trulyao.dev/bore/v2/database"
 	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/clipboard"
+	"go.trulyao.dev/bore/v2/pkg/events"
 )
 
 type (
@@ -24,7 +25,7 @@ type (
 		clipboard clipboard.NativeClipboard
 
 		// events is the event manager for this bore instance
-		// TODO: add new event sourcing manager here
+		manager *events.Manager
 
 		// repository is the interface for accessing database operations
 		repository repository.Repository
@@ -63,6 +64,7 @@ func New(config *Config) (*Bore, error) {
 		config:     config,
 		clipboard:  clipboard,
 		repository: repository,
+		manager:    events.NewManager(conn, repository),
 	}, nil
 }
 
