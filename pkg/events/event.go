@@ -8,14 +8,10 @@ import (
 
 	"github.com/oklog/ulid/v2"
 	"github.com/uptrace/bun"
+	"go.trulyao.dev/bore/v2/pkg/events/action"
 	"go.trulyao.dev/bore/v2/pkg/events/aggregate"
 	"go.trulyao.dev/bore/v2/pkg/events/payload"
 )
-
-//go:generate go tool github.com/abice/go-enum --marshal
-
-// ENUM(create_item,delete_item,create_collection,delete_collection)
-type Type string
 
 var (
 	ErrInvalidEventType = errors.New("invalid event type")
@@ -31,7 +27,7 @@ type Event struct {
 	Sequence         int64               `bun:"sequence_id,autoincrement,notnull" json:"sequence"`          // The (auto-generated) sequential number of the event.
 	Aggregate        aggregate.Aggregate `bun:"-"                                 json:"aggregate"`         // The target entity of the event.
 	AggregateVersion int64               `bun:"aggregate_version"                 json:"aggregate_version"` // The version of the aggregate after the event.
-	Type             Type                `bun:",type:text"                        json:"type"`              // The type of event.
+	Type             action.Action       `bun:",type:text"                        json:"type"`              // The type of event.
 	Payload          json.RawMessage     `bun:",type:JSON"                        json:"payload"`           // The event payload, stored as JSON.
 	OccurredAt       time.Time           `bun:"occurred_at,nullzero,notnull"      json:"occured_at"`        // The timestamp when the event occurred.
 
@@ -40,7 +36,11 @@ type Event struct {
 }
 
 // New creates a new event with the given aggregate, type, and payload.
-func New(agg aggregate.Aggregate, eventType Type, payload payload.Payload) (*Event, error) {
+func New(
+	agg aggregate.Aggregate,
+	eventType action.Action,
+	payload payload.Payload,
+) (*Event, error) {
 	if !agg.IsValid() {
 		return nil, ErrInvalidAggregate
 	}
