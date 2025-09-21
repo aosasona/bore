@@ -7,28 +7,23 @@ import (
 	"strings"
 
 	"github.com/uptrace/bun"
+	"go.trulyao.dev/bore/v2/database/models"
 )
 
-type itemsRepository struct {
+type itemRepository struct {
 	db *bun.DB
 }
 
-// Create implements ClipRepository.
-func (c *itemsRepository) Create(ctx context.Context, clip *Item) error {
-	ctx, cancel := withContext(ctx)
-	defer cancel()
-
-	_, err := c.db.NewInsert().Model(clip).Exec(ctx)
+// Create implements ItemRepository.
+func (c *itemRepository) Create(ctx context.Context, item *models.Item) error {
+	_, err := c.db.NewInsert().Model(item).Exec(ctx)
 	return err
 }
 
-// DeleteById implements ClipRepository.
-func (c *itemsRepository) DeleteById(ctx context.Context, identifier string) error {
-	ctx, cancel := withContext(ctx)
-	defer cancel()
-
+// DeleteById implements ItemRepository.
+func (c *itemRepository) DeleteById(ctx context.Context, identifier string) error {
 	identifier = strings.TrimSpace(identifier)
-	_, err := c.db.NewDelete().Model((*Item)(nil)).Where("id = ?", identifier).Exec(ctx)
+	_, err := c.db.NewDelete().Model((*models.Item)(nil)).Where("id = ?", identifier).Exec(ctx)
 	if err != nil {
 		return err
 	}
@@ -36,49 +31,46 @@ func (c *itemsRepository) DeleteById(ctx context.Context, identifier string) err
 	return nil
 }
 
-// FindById implements ClipRepository.
-func (c *itemsRepository) FindById(ctx context.Context, identifier string) (*Item, error) {
-	ctx, cancel := withContext(ctx)
-	defer cancel()
-
+// FindById implements ItemRepository.
+func (c *itemRepository) FindById(ctx context.Context, identifier string) (*models.Item, error) {
 	identifier = strings.TrimSpace(identifier)
 
-	clip := new(Item)
-	query := c.db.NewSelect().Model(clip).
+	item := new(models.Item)
+	query := c.db.NewSelect().Model(item).
 		Where("id = ?", identifier).
 		Limit(1)
 
-	if err := query.Scan(ctx, clip); err != nil {
+	if err := query.Scan(ctx, item); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
 	}
 
-	return clip, nil
+	return item, nil
 }
 
-// GetLastClip implements ClipRepository.
-func (c *itemsRepository) FindLatest(ctx context.Context, collectionID string) (*Item, error) {
-	ctx, cancel := withContext(ctx)
-	defer cancel()
-
+// GetLastItem implements ItemRepository.
+func (c *itemRepository) FindLatest(
+	ctx context.Context,
+	collectionID string,
+) (*models.Item, error) {
 	collectionID = strings.TrimSpace(collectionID)
 
-	clip := new(Item)
-	query := c.db.NewSelect().Model(clip).
+	item := new(models.Item)
+	query := c.db.NewSelect().Model(item).
 		Where("collection_id = ?", collectionID).
 		Order("created_at DESC").
 		Limit(1)
 
-	if err := query.Scan(ctx, clip); err != nil {
+	if err := query.Scan(ctx, item); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
 	}
 
-	return clip, nil
+	return item, nil
 }
 
-var _ ItemRepository = (*itemsRepository)(nil)
+var _ ItemRepository = (*itemRepository)(nil)

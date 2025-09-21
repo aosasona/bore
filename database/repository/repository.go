@@ -6,14 +6,15 @@ import (
 	"time"
 
 	"github.com/uptrace/bun"
+	"go.trulyao.dev/bore/v2/database/models"
 )
 
 var timeout = time.Second * 5
 
 type ItemRepository interface {
-	Create(ctx context.Context, clip *Item) error
-	FindLatest(ctx context.Context, collectionID string) (*Item, error)
-	FindById(ctx context.Context, identifier string) (*Item, error)
+	Create(ctx context.Context, item *models.Item) error
+	FindLatest(ctx context.Context, collectionID string) (*models.Item, error)
+	FindById(ctx context.Context, identifier string) (*models.Item, error)
 	DeleteById(ctx context.Context, identifier string) error
 }
 
@@ -36,14 +37,10 @@ func NewRepository(db *bun.DB) Repository {
 func (r *repo) Items() ItemRepository {
 	return withLock(r, func(r *repo) ItemRepository {
 		if r.items == nil {
-			r.items = &itemsRepository{db: r.db}
+			r.items = &itemRepository{db: r.db}
 		}
 		return r.items
 	})
-}
-
-func withContext(ctx context.Context) (context.Context, func()) {
-	return context.WithTimeout(ctx, timeout)
 }
 
 func withLock[T any](r *repo, fn func(*repo) T) T {

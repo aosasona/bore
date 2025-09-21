@@ -8,7 +8,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
-	"go.trulyao.dev/bore/v2/database/repository"
+	"go.trulyao.dev/bore/v2/database/models"
 	"go.trulyao.dev/bore/v2/pkg/mimetype"
 )
 
@@ -120,7 +120,7 @@ func (h *Handler) pasteFromDatabase(ctx *cli.Context, options *PasteOptions) err
 		return err
 	}
 
-	var item *repository.Item
+	var item *models.Item
 
 	if strings.TrimSpace(options.Identifier) != "" {
 		if item, err = repo.Items().FindById(ctx.Context, options.Identifier); err != nil {
