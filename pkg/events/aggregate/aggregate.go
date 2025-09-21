@@ -25,8 +25,17 @@ type Aggregate struct {
 // ENUM(item,collection)
 type AggregateType string
 
-// Creates a new aggregate with the given type and ULID.
-func New(aggregateType AggregateType, id ulid.ULID) (*Aggregate, error) {
+// New creates a new aggregate with the given type and a newly generated ULID.
+func New(aggregateType AggregateType) (*Aggregate, error) {
+	if !aggregateType.IsValid() {
+		return nil, ErrInvalidAggregateString
+	}
+
+	return &Aggregate{id: ulid.Make(), t: aggregateType}, nil
+}
+
+// NewWithID creates a new aggregate with the given type and ULID.
+func NewWithID(aggregateType AggregateType, id ulid.ULID) (*Aggregate, error) {
 	if !aggregateType.IsValid() {
 		return nil, ErrInvalidAggregateString
 	}
