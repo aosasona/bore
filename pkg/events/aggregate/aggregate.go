@@ -58,13 +58,15 @@ func Parse(s string) (Aggregate, error) {
 	return Aggregate{id: id, t: aggregateType}, nil
 }
 
-func (a *Aggregate) ID() string {
-	return a.id.String()
+func (a *Aggregate) IsValid() bool {
+	return a.t.IsValid() && a.id.Compare(ulid.ULID{}) != 0
 }
 
-func (a *Aggregate) Type() AggregateType {
-	return a.t
-}
+func (a *Aggregate) RawID() ulid.ULID       { return a.id }
+func (a *Aggregate) RawType() AggregateType { return a.t }
+
+func (a *Aggregate) ID() string   { return a.id.String() }
+func (a *Aggregate) Type() string { return a.t.String() }
 
 // String returns the string representation of the aggregate in the format "type:id".
 func (a *Aggregate) String() string {
