@@ -12,12 +12,14 @@ import (
 var timeout = time.Second * 5
 
 type ItemRepository interface {
-	Create(ctx context.Context, item *models.Item) error
+	Create(ctx context.Context, tx bun.Tx, item *models.Item) error
+	DeleteById(ctx context.Context, tx bun.Tx, identifier string) error
 	FindLatest(ctx context.Context, collectionID string) (*models.Item, error)
 	FindById(ctx context.Context, identifier string) (*models.Item, error)
-	DeleteById(ctx context.Context, identifier string) error
 }
 
+// Repository is the main interface for accessing all repositories.
+// Some methods might require a transaction (bun.Tx) to be passed in if they modify data.
 type Repository interface {
 	Items() ItemRepository
 }

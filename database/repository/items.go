@@ -15,15 +15,15 @@ type itemRepository struct {
 }
 
 // Create implements ItemRepository.
-func (c *itemRepository) Create(ctx context.Context, item *models.Item) error {
-	_, err := c.db.NewInsert().Model(item).Exec(ctx)
+func (c *itemRepository) Create(ctx context.Context, tx bun.Tx, item *models.Item) error {
+	_, err := tx.NewInsert().Model(item).Exec(ctx)
 	return err
 }
 
 // DeleteById implements ItemRepository.
-func (c *itemRepository) DeleteById(ctx context.Context, identifier string) error {
+func (c *itemRepository) DeleteById(ctx context.Context, tx bun.Tx, identifier string) error {
 	identifier = strings.TrimSpace(identifier)
-	_, err := c.db.NewDelete().Model((*models.Item)(nil)).Where("id = ?", identifier).Exec(ctx)
+	_, err := tx.NewDelete().Model((*models.Item)(nil)).Where("id = ?", identifier).Exec(ctx)
 	if err != nil {
 		return err
 	}
