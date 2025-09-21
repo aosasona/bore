@@ -6,11 +6,14 @@ import (
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/pkg/events/action"
+	"go.trulyao.dev/bore/v2/pkg/mimetype"
 )
 
 // TODO: implement fields
 type CreateItem struct {
-	Content string `json:"content"`
+	Content      string            `json:"content"`
+	Mimetype     mimetype.MimeType `json:"mimetype"`
+	CollectionID string            `json:"collection_id"`
 }
 
 // ApplyProjection implements Payload.
