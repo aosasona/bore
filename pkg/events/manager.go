@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/uptrace/bun"
+	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/events/action"
 	"go.trulyao.dev/bore/v2/pkg/events/aggregate"
 	"go.trulyao.dev/bore/v2/pkg/events/payload"
@@ -20,7 +21,8 @@ var (
 
 // Manager handles event sourcing operations.
 type Manager struct {
-	db *bun.DB
+	db   *bun.DB
+	repo repository.Repository
 }
 
 type AppendOptions struct {
@@ -31,8 +33,8 @@ func DefaultAppendOptions() AppendOptions {
 	return AppendOptions{ExpectedVersion: -1}
 }
 
-func NewManager(db *bun.DB) *Manager {
-	return &Manager{db: db}
+func NewManager(db *bun.DB, repo repository.Repository) *Manager {
+	return &Manager{db: db, repo: repo}
 }
 
 // ApplyN appends the given batch of events to the SAME aggregate, figures out the appropriate versioning, and applies the projections in a shared transaction.
@@ -152,5 +154,5 @@ func (m *Manager) applyProjection(ctx context.Context, tx bun.Tx, event *Event) 
 		Aggregate: event.Aggregate,
 		Sequence:  event.Sequence,
 	}
-	return p.ApplyProjection(ctx, tx, &options)
+	return p.ApplyProjection(ctx, tx, m.repo, &options)
 }
