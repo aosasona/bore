@@ -106,11 +106,14 @@ func (b *Bore) Config() (*Config, error) {
 // Copy copies the provided data to the Bore instance.
 // TODO: implement database op and optionally use system clipbpard
 func (b *Bore) Copy(ctx context.Context, data []byte) error {
-	if !b.clipboard.Available() {
-		return errors.New("clipboard is not available on this platform")
+	// TODO: respect flags
+	if b.clipboard.Available() && b.config.ClipboardPassthrough {
+		if err := b.clipboard.Write(ctx, data); err != nil {
+			return err
+		}
 	}
 
-	return b.clipboard.Write(ctx, data)
+	panic("not implemented")
 }
 
 // Paste retrieves the last copied data from the Bore instance.
