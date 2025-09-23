@@ -96,8 +96,10 @@ func (e *Event) BeforeInsert(ctx context.Context, query *bun.InsertQuery) error 
 	return nil
 }
 
-func (e *Event) SetAggregate(agg aggregate.Aggregate) error {
-	if !agg.IsValid() {
+func (e *Event) SetAggregate(agg *aggregate.Aggregate) error {
+	if agg == nil {
+		return ErrInvalidAggregate
+	} else if !agg.IsValid() {
 		return ErrInvalidAggregate
 	}
 
