@@ -15,7 +15,7 @@ import (
 )
 
 type CreateItem struct {
-	Content      string            `json:"content"`
+	Content      []byte            `json:"content"`
 	Mimetype     mimetype.MimeType `json:"mimetype"`
 	CollectionID string            `json:"collection_id"`
 }
@@ -37,7 +37,7 @@ func (c *CreateItem) ApplyProjection(
 
 	row := models.Item{
 		ID:                    options.Aggregate.ID(),
-		Content:               []byte(c.Content),
+		Content:               c.Content,
 		Hash:                  hash,
 		Mimetype:              c.Mimetype.String(),
 		LastAppliedSequenceID: options.Sequence,
