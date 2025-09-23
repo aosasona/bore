@@ -11,6 +11,9 @@ import (
 	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/clipboard"
 	"go.trulyao.dev/bore/v2/pkg/events"
+	"go.trulyao.dev/bore/v2/pkg/events/aggregate"
+	"go.trulyao.dev/bore/v2/pkg/events/payload"
+	"go.trulyao.dev/bore/v2/pkg/mimetype"
 )
 
 type (
@@ -103,16 +106,36 @@ func (b *Bore) Config() (*Config, error) {
 	return b.config, nil
 }
 
+type CopyOptions struct {
+	CollectionID string // Optional collection ID to associate with the copied item.
+	Mimetype     mimetype.MimeType
+}
+
 // Copy copies the provided data to the Bore instance.
 // TODO: implement database op and optionally use system clipbpard
-func (b *Bore) Copy(ctx context.Context, data []byte) error {
-	// TODO: respect flags
+func (b *Bore) Copy(ctx context.Context, data []byte, opts *CopyOptions) error {
 	if b.clipboard.Available() && b.config.ClipboardPassthrough {
 		if err := b.clipboard.Write(ctx, data); err != nil {
 			return err
 		}
 	}
 
+	// TODO: fill this properly
+	e, err := events.NewWithGeneratedID(
+		aggregate.AggregateTypeItem,
+		&payload.CreateItem{
+			Content:      data,
+			Mimetype:     opts.Mimetype,
+			CollectionID: opts.CollectionID,
+		},
+	)
+	if err != nil {
+		return errors.New("failed to create copy event: " + err.Error())
+	}
+
+	_ = e
+
+	// b.manager.Apply(ctx, )
 	panic("not implemented")
 }
 
