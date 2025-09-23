@@ -23,29 +23,25 @@ type Event struct {
 	bun.BaseModel `bun:"table:events,alias:ev"`
 
 	// ID is the unique identifier for the event.
-	ID               string              `bun:"event_id,pk"                       json:"event_id"`          // ULID
-	Sequence         int64               `bun:"sequence_id,autoincrement,notnull" json:"sequence"`          // The (auto-generated) sequential number of the event.
-	Aggregate        aggregate.Aggregate `bun:"-"                                 json:"aggregate"`         // The target entity of the event.
-	AggregateVersion int64               `bun:"aggregate_version"                 json:"aggregate_version"` // The version of the aggregate after the event.
-	Type             action.Action       `bun:",type:text"                        json:"type"`              // The type of event.
-	Payload          json.RawMessage     `bun:",type:JSON"                        json:"payload"`           // The event payload, stored as JSON.
-	OccurredAt       time.Time           `bun:"occurred_at,nullzero,notnull"      json:"occured_at"`        // The timestamp when the event occurred.
+	ID               string               `bun:"event_id,pk"                       json:"event_id"`          // ULID
+	Sequence         int64                `bun:"sequence_id,autoincrement,notnull" json:"sequence"`          // The (auto-generated) sequential number of the event.
+	Aggregate        *aggregate.Aggregate `bun:"-"                                 json:"aggregate"`         // The target entity of the event.
+	AggregateVersion int64                `bun:"aggregate_version"                 json:"aggregate_version"` // The version of the aggregate after the event.
+	Type             action.Action        `bun:",type:text"                        json:"type"`              // The type of event.
+	Payload          json.RawMessage      `bun:",type:JSON"                        json:"payload"`           // The event payload, stored as JSON.
+	OccurredAt       time.Time            `bun:"occurred_at,nullzero,notnull"      json:"occured_at"`        // The timestamp when the event occurred.
 
 	AggregateType string `bun:"aggregate_type,notnull" json:"aggregate_type"` // The type of the aggregate, stored for easier querying.
 	AggregateID   string `bun:"aggregate_id,notnull"   json:"aggregate_id"`   // The ID of the aggregate, stored for easier querying.
 }
 
 // New creates a new event with the given aggregate, type, and payload.
-func New(
-	agg aggregate.Aggregate,
-	eventType action.Action,
-	payload payload.Payload,
-) (*Event, error) {
+func New(agg *aggregate.Aggregate, payload payload.Payload) (*Event, error) {
 	if !agg.IsValid() {
 		return nil, ErrInvalidAggregate
 	}
 
-	if !eventType.IsValid() {
+	if !payload.Type().IsValid() {
 		return nil, ErrInvalidEventType
 	}
 
@@ -58,9 +54,18 @@ func New(
 		ID:         ulid.Make().String(),
 		OccurredAt: time.Now(),
 		Aggregate:  agg,
-		Type:       eventType,
+		Type:       payload.Type(),
 		Payload:    data,
 	}, nil
+}
+
+func NewWithGeneratedID(aggType aggregate.AggregateType, payload payload.Payload) (*Event, error) {
+	agg, err := aggregate.New(aggType)
+	if err != nil {
+		return nil, err
+	}
+
+	return New(agg, payload)
 }
 
 func (e *Event) BeforeInsert(ctx context.Context, query *bun.InsertQuery) error {
