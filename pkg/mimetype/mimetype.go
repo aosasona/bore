@@ -1,10 +1,14 @@
 package mimetype
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type MimeType interface {
+	fmt.Stringer
+
 	mimeType() string
-	String() string
 }
 
 func MimeTypeFromString(s string) (MimeType, error) {
