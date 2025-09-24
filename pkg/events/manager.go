@@ -26,7 +26,7 @@ type Manager struct {
 }
 
 type AppendOptions struct {
-	ExpectedVersion int64 // If equel or greater than zero, the current aggregate version must match this value.
+	ExpectedVersion int64 // If equal or greater than zero, the current aggregate version must match this value.
 }
 
 func DefaultAppendOptions() AppendOptions {
