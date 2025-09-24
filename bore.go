@@ -107,20 +107,20 @@ func (b *Bore) Config() (*Config, error) {
 }
 
 type CopyOptions struct {
+	Passthrough  bool   // Whether to also copy to the system clipboard if available.
 	CollectionID string // Optional collection ID to associate with the copied item.
 	Mimetype     mimetype.MimeType
 }
 
 // Copy copies the provided data to the Bore instance.
-// TODO: implement database op and optionally use system clipbpard
-func (b *Bore) Copy(ctx context.Context, data []byte, opts *CopyOptions) error {
-	if b.clipboard.Available() && b.config.ClipboardPassthrough {
+func (b *Bore) Copy(ctx context.Context, data []byte, opts CopyOptions) error {
+	forwardToSystemClipboard := b.config.ClipboardPassthrough || opts.Passthrough
+	if b.clipboard.Available() && forwardToSystemClipboard {
 		if err := b.clipboard.Write(ctx, data); err != nil {
 			return err
 		}
 	}
 
-	// TODO: fill this properly
 	e, err := events.NewWithGeneratedID(
 		aggregate.AggregateTypeItem,
 		&payload.CreateItem{
@@ -133,20 +133,62 @@ func (b *Bore) Copy(ctx context.Context, data []byte, opts *CopyOptions) error {
 		return errors.New("failed to create copy event: " + err.Error())
 	}
 
-	_ = e
+	if _, _, err = b.manager.Apply(ctx, e, events.AppendOptions{ExpectedVersion: 1}); err != nil {
+		return errors.New("failed to apply copy event: " + err.Error())
+	}
 
-	// b.manager.Apply(ctx, )
-	panic("not implemented")
+	return nil
+}
+
+type PasteOptions struct {
+	CollectionID        string // Optional collection ID to filter pasted items.
+	FromSystemClipboard bool   // Whether to paste from the system clipboard if available.
+	DeleteAfterPaste    bool   // Whether to delete the pasted item after pasting.
+	SkipCollectionCheck bool   // Whether to skip checking if the collection exists.
 }
 
 // Paste retrieves the last copied data from the Bore instance.
-// TODO: implement database op and optionally use system clipbpard
-func (b *Bore) Paste(ctx context.Context) ([]byte, error) {
-	if !b.clipboard.Available() {
-		return nil, errors.New("clipboard is not available on this platform")
+func (b *Bore) Paste(ctx context.Context, options PasteOptions) ([]byte, error) {
+	if b.clipboard.Available() && options.FromSystemClipboard {
+		return b.clipboard.Read(ctx)
 	}
 
-	return b.clipboard.Read(ctx)
+	options.CollectionID = strings.TrimSpace(options.CollectionID)
+	if options.CollectionID != "" && !options.SkipCollectionCheck {
+		exists, err := b.repository.Collections().Exists(ctx, options.CollectionID)
+		if err != nil {
+			return nil, errors.New("failed to check collection existence: " + err.Error())
+		} else if !exists {
+			return nil, errors.New("collection does not exist")
+		}
+	}
+
+	item, err := b.repository.Items().FindLatest(ctx, options.CollectionID)
+	if err != nil {
+		return nil, errors.New("failed to find latest item: " + err.Error())
+	}
+
+	if item == nil {
+		return nil, nil
+	}
+
+	if options.DeleteAfterPaste {
+		agg, err := aggregate.NewWithID(aggregate.AggregateTypeItem, item.ID)
+		if err != nil {
+			return nil, errors.New("failed to create aggregate for deletion: " + err.Error())
+		}
+
+		e, err := events.New(agg, &payload.DeleteItem{})
+		if err != nil {
+			return nil, errors.New("failed to create delete event: " + err.Error())
+		}
+
+		if _, _, err = b.manager.Apply(ctx, e); err != nil {
+			return nil, errors.New("failed to apply delete event: " + err.Error())
+		}
+	}
+
+	return item.Content, nil
 }
 
 func (b *Bore) Close() error {

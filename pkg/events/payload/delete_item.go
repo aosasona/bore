@@ -9,9 +9,7 @@ import (
 	"go.trulyao.dev/bore/v2/pkg/events/action"
 )
 
-type DeleteItem struct {
-	ID string `json:"item_id"`
-}
+type DeleteItem struct{}
 
 // ApplyProjection implements Payload.
 func (d *DeleteItem) ApplyProjection(
@@ -24,7 +22,7 @@ func (d *DeleteItem) ApplyProjection(
 		return errors.New("invalid aggregate")
 	}
 
-	panic("unimplemented")
+	return repo.Items().DeleteById(ctx, tx, options.Aggregate.ID())
 }
 
 // Type implements Payload.
