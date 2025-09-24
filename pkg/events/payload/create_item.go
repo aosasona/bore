@@ -3,7 +3,6 @@ package payload
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 
 	"github.com/uptrace/bun"
@@ -50,11 +49,6 @@ func (c *CreateItem) ApplyProjection(
 // Type implements Payload.
 func (c *CreateItem) Type() action.Action {
 	return action.ActionCreateItem
-}
-
-// MarshalJSON implements Payload.
-func (c *CreateItem) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]string{})
 }
 
 var _ Payload = (*CreateItem)(nil)

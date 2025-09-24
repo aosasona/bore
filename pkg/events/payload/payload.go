@@ -16,8 +16,6 @@ type ProjectionOptions struct {
 }
 
 type Payload interface {
-	json.Marshaler
-
 	Type() action.Action
 	ApplyProjection(
 		ctx context.Context,
