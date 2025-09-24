@@ -21,7 +21,7 @@ type Payload interface {
 		ctx context.Context,
 		tx bun.Tx,
 		repo repository.Repository,
-		options *ProjectionOptions,
+		options ProjectionOptions,
 	) error
 }
 

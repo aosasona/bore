@@ -26,25 +26,30 @@ type Aggregate struct {
 type AggregateType string
 
 // New creates a new aggregate with the given type and a newly generated ULID.
-func New(aggregateType AggregateType) (*Aggregate, error) {
+func New(aggregateType AggregateType) (Aggregate, error) {
 	if !aggregateType.IsValid() {
-		return nil, ErrInvalidAggregateString
+		return Aggregate{}, ErrInvalidAggregateString
 	}
 
-	return &Aggregate{id: ulid.Make(), t: aggregateType}, nil
+	return Aggregate{id: ulid.Make(), t: aggregateType}, nil
 }
 
 // NewWithID creates a new aggregate with the given type and ULID.
-func NewWithID(aggregateType AggregateType, id ulid.ULID) (*Aggregate, error) {
+func NewWithID(aggregateType AggregateType, aggregateId string) (Aggregate, error) {
 	if !aggregateType.IsValid() {
-		return nil, ErrInvalidAggregateString
+		return Aggregate{}, ErrInvalidAggregateString
+	}
+
+	id, err := ulid.Parse(strings.TrimSpace(aggregateId))
+	if err != nil {
+		return Aggregate{}, ErrInvalidAggregateID
 	}
 
 	if id.Compare(ulid.ULID{}) == 0 {
-		return nil, ErrInvalidAggregateID
+		return Aggregate{}, ErrInvalidAggregateID
 	}
 
-	return &Aggregate{id: id, t: aggregateType}, nil
+	return Aggregate{id: id, t: aggregateType}, nil
 }
 
 // Parses an aggregate from its string representation in the format "type:id".

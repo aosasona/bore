@@ -2,6 +2,7 @@ package payload
 
 import (
 	"context"
+	"errors"
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/repository"
@@ -17,14 +18,18 @@ func (d *DeleteItem) ApplyProjection(
 	ctx context.Context,
 	tx bun.Tx,
 	repo repository.Repository,
-	options *ProjectionOptions,
+	options ProjectionOptions,
 ) error {
+	if !options.Aggregate.IsValid() {
+		return errors.New("invalid aggregate")
+	}
+
 	panic("unimplemented")
 }
 
 // Type implements Payload.
 func (d *DeleteItem) Type() action.Action {
-	panic("unimplemented")
+	return action.ActionDeleteItem
 }
 
 var _ Payload = (*DeleteItem)(nil)

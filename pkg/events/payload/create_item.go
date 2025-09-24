@@ -24,11 +24,9 @@ func (c *CreateItem) ApplyProjection(
 	ctx context.Context,
 	tx bun.Tx,
 	repo repository.Repository,
-	options *ProjectionOptions,
+	options ProjectionOptions,
 ) error {
-	if options == nil {
-		return errors.New("options cannot be nil")
-	} else if !options.Aggregate.IsValid() {
+	if !options.Aggregate.IsValid() {
 		return errors.New("invalid aggregate")
 	}
 

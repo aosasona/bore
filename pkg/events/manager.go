@@ -40,13 +40,13 @@ func NewManager(db *bun.DB, repo repository.Repository) *Manager {
 // ApplyN appends the given batch of events to the SAME aggregate, figures out the appropriate versioning, and applies the projections in a shared transaction.
 func (m *Manager) ApplyN(
 	ctx context.Context,
-	agg *aggregate.Aggregate,
+	agg aggregate.Aggregate,
 	events []Event,
 	options AppendOptions,
 ) (persisted []Event, newVersion int64, err error) {
 	if len(events) == 0 {
 		return nil, 0, ErrNoEventsToAppend
-	} else if agg == nil || !agg.IsValid() {
+	} else if !agg.IsValid() {
 		return nil, 0, ErrInvalidAggregate
 	}
 
@@ -139,8 +139,6 @@ func (m *Manager) Apply(
 func (m *Manager) applyProjection(ctx context.Context, tx bun.Tx, event *Event) error {
 	if event == nil {
 		return errors.New("event cannot be nil")
-	} else if event.Aggregate == nil {
-		return errors.New("event aggregate cannot be nil")
 	}
 
 	var (
@@ -159,8 +157,8 @@ func (m *Manager) applyProjection(ctx context.Context, tx bun.Tx, event *Event) 
 	}
 
 	options := payload.ProjectionOptions{
-		Aggregate: *event.Aggregate,
+		Aggregate: event.Aggregate,
 		Sequence:  event.Sequence,
 	}
-	return p.ApplyProjection(ctx, tx, m.repo, &options)
+	return p.ApplyProjection(ctx, tx, m.repo, options)
 }
