@@ -32,15 +32,22 @@ func (c *itemRepository) DeleteById(ctx context.Context, tx bun.Tx, identifier s
 }
 
 // FindById implements ItemRepository.
-func (c *itemRepository) FindById(ctx context.Context, identifier string) (*models.Item, error) {
+func (c *itemRepository) FindById(
+	ctx context.Context,
+	identifier string,
+	collectionId string,
+) (*models.Item, error) {
 	identifier = strings.TrimSpace(identifier)
 
 	item := new(models.Item)
 	query := c.db.NewSelect().Model(item).
-		Where("id = ?", identifier).
-		Limit(1)
+		Where("id = ?", identifier)
 
-	if err := query.Scan(ctx, item); err != nil {
+	if collectionId != "" {
+		query.Where("collection_id = ?", collectionId)
+	}
+
+	if err := query.Limit(1).Scan(ctx, item); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
