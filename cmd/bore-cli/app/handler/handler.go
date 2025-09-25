@@ -4,11 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"os"
-	"strings"
 
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
-	"go.trulyao.dev/bore/v2/database/models"
 	"go.trulyao.dev/bore/v2/pkg/mimetype"
 )
 
@@ -66,86 +64,26 @@ func (h *Handler) Copy(ctx *cli.Context) error {
 }
 
 func (h *Handler) Paste(ctx *cli.Context) error {
-	options := &PasteOptions{
-		Collection: ctx.String(FlagCollection),
-		Identifier: ctx.String(FlagIdentifier),
+	format := PasteFormat(ctx.String(FlagFormat))
+	outputFile := ctx.String(FlagOutputFile)
 
-		Format:        PasteFormat(ctx.String(FlagFormat)),
-		DeleteOnPaste: ctx.Bool(FlagDelete),
-		OutputFile:    ctx.String(FlagOutputFile),
-	}
+	content, err := h.bore.Paste(ctx.Context, bore.PasteOptions{
+		ItemID:              ctx.String(FlagIdentifier),
+		CollectionID:        ctx.String(FlagCollection),
+		FromSystemClipboard: ctx.Bool(FlagSystem),
+		DeleteAfterPaste:    ctx.Bool(FlagDelete),
+		SkipCollectionCheck: false,
+	})
 
-	if ctx.Bool(FlagSystem) {
-		return h.pasteFromSystem(ctx, options)
-	}
-
-	return h.pasteFromDatabase(ctx, options)
-}
-
-func (h *Handler) pasteFromSystem(ctx *cli.Context, options *PasteOptions) error {
-	clipboard, err := h.bore.SystemClipboard()
-	if err != nil {
+	if content, err = h.contentToFormat(content, format); err != nil {
 		return err
 	}
 
-	if !clipboard.Available() {
-		return ErrClipboardNotAvailable
-	}
-
-	content, err := clipboard.Read(ctx.Context)
-	if err != nil {
-		return err
-	}
-
-	if options.DeleteOnPaste {
-		if err := clipboard.Clear(ctx.Context); err != nil {
-			return err
-		}
-	}
-
-	if content, err = h.contentToFormat(content, options.Format); err != nil {
-		return err
-	}
-
-	if options.OutputFile != "" {
-		return h.writeToFile(ctx, options.OutputFile, content)
+	if outputFile != "" {
+		return h.writeToFile(ctx, outputFile, content)
 	}
 
 	return h.writeToStdout(ctx, content)
-}
-
-func (h *Handler) pasteFromDatabase(ctx *cli.Context, options *PasteOptions) error {
-	repo, err := h.bore.Repository()
-	if err != nil {
-		return err
-	}
-
-	var item *models.Item
-
-	if strings.TrimSpace(options.Identifier) != "" {
-		if item, err = repo.Items().FindById(ctx.Context, options.Identifier); err != nil {
-			return err
-		}
-	} else {
-		if item, err = repo.Items().FindLatest(ctx.Context, options.Collection); err != nil {
-			return err
-		}
-	}
-
-	if item == nil {
-		return cli.Exit("no item found", 1)
-	}
-
-	content, err := h.contentToFormat(item.Content, options.Format)
-	if err != nil {
-		return err
-	}
-	_ = content
-
-	// TODO: handle delete on paste
-	// TODO: handle output to file
-
-	panic("not implemented")
 }
 
 func (h *Handler) writeToFile(ctx *cli.Context, filename string, content []byte) error {

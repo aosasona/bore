@@ -8,6 +8,7 @@ import (
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database"
+	"go.trulyao.dev/bore/v2/database/models"
 	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/clipboard"
 	"go.trulyao.dev/bore/v2/pkg/events"
@@ -141,6 +142,7 @@ func (b *Bore) Copy(ctx context.Context, data []byte, opts CopyOptions) error {
 }
 
 type PasteOptions struct {
+	ItemID              string // Optional item identifier to filter pasted items.
 	CollectionID        string // Optional collection ID to filter pasted items.
 	FromSystemClipboard bool   // Whether to paste from the system clipboard if available.
 	DeleteAfterPaste    bool   // Whether to delete the pasted item after pasting.
@@ -163,7 +165,18 @@ func (b *Bore) Paste(ctx context.Context, options PasteOptions) ([]byte, error) 
 		}
 	}
 
-	item, err := b.repository.Items().FindLatest(ctx, options.CollectionID)
+	var (
+		item *models.Item
+		err  error
+	)
+
+	identifier := strings.TrimSpace(options.ItemID)
+	if identifier == "" {
+		item, err = b.repository.Items().FindLatest(ctx, options.CollectionID)
+	} else {
+		item, err = b.repository.Items().FindById(ctx, identifier, options.CollectionID)
+	}
+
 	if err != nil {
 		return nil, errors.New("failed to find latest item: " + err.Error())
 	}
