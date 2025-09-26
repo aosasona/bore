@@ -142,7 +142,7 @@ func (a *App) copyCommand() *cli.Command {
 		Args:      true,
 		ArgsUsage: "[content]",
 		Action: func(ctx *cli.Context) error {
-			panic("not implemented")
+			return a.handler.Copy(ctx)
 		},
 	}
 }
@@ -190,7 +190,7 @@ func (a *App) pasteCommand() *cli.Command {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-			panic("not implemented")
+			return a.handler.Paste(ctx)
 		},
 	}
 }
