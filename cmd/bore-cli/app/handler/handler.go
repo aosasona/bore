@@ -49,7 +49,36 @@ func New(bore *bore.Bore) *Handler {
 }
 
 func (h *Handler) Copy(ctx *cli.Context) error {
-	panic("implement me")
+	inputFile := ctx.String(FlagInputFile)
+	mimeType, err := mimetype.MimeTypeFromString(ctx.String(FlagMimeType))
+	if err != nil {
+		return cli.Exit("invalid mime type: "+err.Error(), 1)
+	}
+
+	var content []byte
+
+	switch {
+	case inputFile != "":
+		content, err = os.ReadFile(inputFile)
+		if err != nil {
+			return cli.Exit("failed to read input file: "+err.Error(), 1)
+		}
+	case ctx.NArg() == 0:
+		return cli.Exit(
+			"no input provided. Please provide input via argument or --input-file flag",
+			1,
+		)
+	case ctx.NArg() > 1:
+		return cli.Exit("too many arguments provided. Only one argument is allowed", 1)
+	default:
+		content = []byte(ctx.Args().First())
+	}
+
+	return h.bore.Copy(ctx.Context, content, bore.CopyOptions{
+		Passthrough:  ctx.Bool(FlagSystem),
+		CollectionID: ctx.String(FlagCollection),
+		Mimetype:     mimeType,
+	})
 }
 
 func (h *Handler) Paste(ctx *cli.Context) error {
@@ -63,6 +92,9 @@ func (h *Handler) Paste(ctx *cli.Context) error {
 		DeleteAfterPaste:    ctx.Bool(FlagDelete),
 		SkipCollectionCheck: false,
 	})
+	if err != nil {
+		return cli.Exit("failed to paste content: "+err.Error(), 1)
+	}
 
 	if content, err = h.contentToFormat(content, format); err != nil {
 		return err
@@ -75,7 +107,7 @@ func (h *Handler) Paste(ctx *cli.Context) error {
 	return h.writeToStdout(ctx, content)
 }
 
-func (h *Handler) writeToFile(ctx *cli.Context, filename string, content []byte) error {
+func (h *Handler) writeToFile(_ *cli.Context, filename string, content []byte) error {
 	return os.WriteFile(filename, content, 0o644)
 }
 

@@ -135,6 +135,8 @@ func (a *App) copyCommand() *cli.Command {
 				Value:   false,
 			},
 		},
+		Args:      true,
+		ArgsUsage: "[content]",
 		Action: func(ctx *cli.Context) error {
 			panic("not implemented")
 		},
