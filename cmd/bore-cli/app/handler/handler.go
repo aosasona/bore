@@ -33,23 +33,12 @@ const (
 	FlagOutputFile = "output-file"
 )
 
-type (
-	PasteOptions struct {
-		Identifier string
-		Collection string
-
-		DeleteOnPaste bool
-		Format        PasteFormat
-		OutputFile    string
-	}
-
-	CopyOptions struct {
-		Collection string
-		InputFile  string
-		MimeType   mimetype.MimeType
-		System     bool
-	}
-)
+type CopyOptions struct {
+	Collection string
+	InputFile  string
+	MimeType   mimetype.MimeType
+	System     bool
+}
 
 type Handler struct {
 	bore *bore.Bore
