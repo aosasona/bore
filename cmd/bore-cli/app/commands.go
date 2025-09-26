@@ -9,6 +9,7 @@ import (
 )
 
 func (a *App) createRootCmd() *cli.App {
+	// nolint:exhaustruct
 	return &cli.App{
 		Name:    "bore",
 		Usage:   "A clipboard manager for the terminal",
@@ -68,6 +69,7 @@ func (a *App) createRootCmd() *cli.App {
 }
 
 func (a *App) infoCommand() *cli.Command {
+	// nolint:exhaustruct
 	return &cli.Command{
 		Name:  "info",
 		Usage: "Display information about the current bore instance",
@@ -88,6 +90,7 @@ func (a *App) infoCommand() *cli.Command {
 }
 
 func (a *App) resetCommand() *cli.Command {
+	// nolint:exhaustruct
 	return &cli.Command{
 		Name:  "reset",
 		Usage: "Reset the bore instance, clearing all data",
@@ -107,6 +110,7 @@ func (a *App) resetCommand() *cli.Command {
 }
 
 func (a *App) copyCommand() *cli.Command {
+	// nolint:exhaustruct
 	return &cli.Command{
 		Name:  "copy",
 		Usage: "Copy content to the clipboard",
@@ -144,6 +148,7 @@ func (a *App) copyCommand() *cli.Command {
 }
 
 func (a *App) pasteCommand() *cli.Command {
+	// nolint:exhaustruct
 	return &cli.Command{
 		Name:  "paste",
 		Usage: "Paste content from the clipboard",
