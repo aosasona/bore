@@ -50,7 +50,7 @@ func New(bore *bore.Bore) *Handler {
 
 func (h *Handler) Copy(ctx *cli.Context) error {
 	inputFile := ctx.String(FlagInputFile)
-	mimeType, err := mimetype.MimeTypeFromString(ctx.String(FlagMimeType))
+	mimeType, err := mimetype.ParseMimeType(ctx.String(FlagMimeType))
 	if err != nil {
 		return cli.Exit("invalid mime type: "+err.Error(), 1)
 	}

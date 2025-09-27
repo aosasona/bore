@@ -49,6 +49,6 @@ func registerCustomValidators(
 }
 
 func mimetypeValidator(fl validator.FieldLevel) bool {
-	_, err := mimetype.MimeTypeFromString(fl.Field().String())
+	_, err := mimetype.ParseMimeType(fl.Field().String())
 	return err == nil
 }
