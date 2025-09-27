@@ -134,7 +134,7 @@ func (b *Bore) Copy(ctx context.Context, data []byte, opts CopyOptions) error {
 		return errors.New("failed to create copy event: " + err.Error())
 	}
 
-	if _, _, err = b.manager.Apply(ctx, e, events.AppendOptions{ExpectedVersion: 1}); err != nil {
+	if _, _, err = b.manager.Apply(ctx, e, events.AppendOptions{ExpectedVersion: 0}); err != nil {
 		return errors.New("failed to apply copy event: " + err.Error())
 	}
 
