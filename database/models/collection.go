@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/schema"
 	"go.trulyao.dev/bore/v2/pkg/validation"
 )
 
@@ -19,8 +20,8 @@ type Collection struct {
 	UpdatedAt time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp"`
 }
 
-// BeforeInsert implements bun.BeforeInsertHook.
-func (collection *Collection) BeforeInsert(ctx context.Context, query *bun.InsertQuery) error {
+// BeforeAppendModel implements schema.BeforeAppendModelHook.
+func (collection *Collection) BeforeAppendModel(ctx context.Context, query schema.Query) error {
 	if collection.ID == "" {
 		return errors.New("ID is required")
 	}
@@ -31,3 +32,5 @@ func (collection *Collection) BeforeInsert(ctx context.Context, query *bun.Inser
 
 	return nil
 }
+
+var _ bun.BeforeAppendModelHook = (*Collection)(nil)

@@ -8,6 +8,7 @@ import (
 
 	"github.com/oklog/ulid/v2"
 	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/schema"
 	"go.trulyao.dev/bore/v2/pkg/events/action"
 	"go.trulyao.dev/bore/v2/pkg/events/aggregate"
 	"go.trulyao.dev/bore/v2/pkg/events/payload"
@@ -29,7 +30,7 @@ type Event struct {
 	AggregateVersion int64               `bun:"aggregate_version"                 json:"aggregate_version"` // The version of the aggregate after the event.
 	Type             action.Action       `bun:",type:text"                        json:"type"`              // The type of event.
 	Payload          json.RawMessage     `bun:",type:JSON"                        json:"payload"`           // The event payload, stored as JSON.
-	OccurredAt       time.Time           `bun:"occurred_at,nullzero,notnull"      json:"occured_at"`        // The timestamp when the event occurred.
+	OccurredAt       time.Time           `bun:"occurred_at,nullzero,notnull"      json:"occurred_at"`       // The timestamp when the event occurred.
 
 	AggregateType string `bun:"aggregate_type,notnull" json:"aggregate_type"` // The type of the aggregate, stored for easier querying.
 	AggregateID   string `bun:"aggregate_id,notnull"   json:"aggregate_id"`   // The ID of the aggregate, stored for easier querying.
@@ -50,13 +51,18 @@ func New(agg aggregate.Aggregate, payload payload.Payload) (*Event, error) {
 		return nil, err
 	}
 
-	return &Event{
+	e := &Event{
 		ID:         ulid.Make().String(),
 		OccurredAt: time.Now(),
 		Aggregate:  agg,
 		Type:       payload.Type(),
 		Payload:    data,
-	}, nil
+	}
+	if err := e.SetAggregate(agg); err != nil {
+		return nil, err
+	}
+
+	return e, nil
 }
 
 func NewWithGeneratedID(aggType aggregate.AggregateType, payload payload.Payload) (*Event, error) {
@@ -68,7 +74,8 @@ func NewWithGeneratedID(aggType aggregate.AggregateType, payload payload.Payload
 	return New(agg, payload)
 }
 
-func (e *Event) BeforeInsert(ctx context.Context, query *bun.InsertQuery) error {
+// BeforeAppendModel implements schema.BeforeAppendModelHook.
+func (e *Event) BeforeAppendModel(ctx context.Context, query schema.Query) error {
 	if !e.Aggregate.IsValid() {
 		return ErrInvalidAggregate
 	}
@@ -83,14 +90,6 @@ func (e *Event) BeforeInsert(ctx context.Context, query *bun.InsertQuery) error 
 
 	if e.OccurredAt.IsZero() {
 		e.OccurredAt = time.Now()
-	}
-
-	if err := e.SetAggregate(e.Aggregate); err != nil {
-		return err
-	}
-
-	if e.Sequence != 0 {
-		return errors.New("sequence must not be set manually")
 	}
 
 	return nil
@@ -112,3 +111,5 @@ func (e *Event) Save(ctx context.Context, tx bun.Tx) error {
 	_, err := tx.NewInsert().Model(e).Exec(ctx)
 	return err
 }
+
+var _ bun.BeforeAppendModelHook = (*Event)(nil)

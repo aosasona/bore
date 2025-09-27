@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/schema"
 	"go.trulyao.dev/bore/v2/pkg/validation"
 )
 
@@ -26,8 +27,8 @@ type Item struct {
 	Collection   *Collection    `bun:"rel:belongs-to,join:collection_id=id"`
 }
 
-// BeforeInsert implements bun.BeforeInsertHook.
-func (item *Item) BeforeInsert(ctx context.Context, query *bun.InsertQuery) error {
+// BeforeAppendModel implements schema.BeforeAppendModelHook.
+func (item *Item) BeforeAppendModel(ctx context.Context, query schema.Query) error {
 	if item.ID == "" {
 		return errors.New("ID is required")
 	}
@@ -38,3 +39,5 @@ func (item *Item) BeforeInsert(ctx context.Context, query *bun.InsertQuery) erro
 
 	return nil
 }
+
+var _ bun.BeforeAppendModelHook = (*Item)(nil)
