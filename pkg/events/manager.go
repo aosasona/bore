@@ -66,8 +66,8 @@ func (m *Manager) ApplyN(
 		}
 
 		timestamp := time.Now().UTC()
-		rows := make([]*Event, len(events))
 
+		rows := make([]*Event, 0, len(events))
 		for i := range events {
 			event := &events[i]
 			event.AggregateVersion = currentVersion + int64(i) + 1
