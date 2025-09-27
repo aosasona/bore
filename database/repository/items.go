@@ -31,6 +31,31 @@ func (c *itemRepository) DeleteById(ctx context.Context, tx bun.Tx, identifier s
 	return nil
 }
 
+// FindByHash implements ItemRepository.
+func (c *itemRepository) FindByHash(
+	ctx context.Context,
+	hash string,
+	collectionId string,
+) (*models.Item, error) {
+	hash = strings.TrimSpace(hash)
+
+	item := new(models.Item)
+	query := c.db.NewSelect().Model(item).
+		Where("hash = ?", hash)
+	if collectionId != "" {
+		query.Where("collection_id = ?", collectionId)
+	}
+
+	if err := query.Limit(1).Scan(ctx, item); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return item, nil
+}
+
 // FindById implements ItemRepository.
 func (c *itemRepository) FindById(
 	ctx context.Context,

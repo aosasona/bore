@@ -13,6 +13,7 @@ type ItemRepository interface {
 	DeleteById(ctx context.Context, tx bun.Tx, identifier string) error
 	FindLatest(ctx context.Context, collectionID string) (*models.Item, error)
 	FindById(ctx context.Context, identifier string, collectionId string) (*models.Item, error)
+	FindByHash(ctx context.Context, hash string, collectionId string) (*models.Item, error)
 }
 
 type CollectionRepository interface {
