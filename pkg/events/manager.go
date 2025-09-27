@@ -50,65 +50,71 @@ func (m *Manager) ApplyN(
 		return nil, 0, ErrInvalidAggregate
 	}
 
-	err = m.db.RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
-		var currentVersion int64
-		err := tx.NewSelect().
-			Table("events").
-			ColumnExpr("IFNULL(MAX(aggregate_version), 0)").
-			Where("aggregate_type = ? AND aggregate_id = ?", agg.Type(), agg.ID()).
-			Scan(ctx, &currentVersion)
-		if err != nil {
-			return err
-		}
-
-		if options.ExpectedVersion >= 0 && currentVersion != options.ExpectedVersion {
-			return errors.New("aggregate version mismatch")
-		}
-
-		timestamp := time.Now().UTC()
-
-		rows := make([]*Event, 0, len(events))
-		for i := range events {
-			event := &events[i]
-			event.AggregateVersion = currentVersion + int64(i) + 1
-
-			if err := event.SetAggregate(agg); err != nil {
+	err = m.db.RunInTx(
+		ctx,
+		&sql.TxOptions{Isolation: 0, ReadOnly: false},
+		func(ctx context.Context, tx bun.Tx) error {
+			var currentVersion int64
+			err := tx.NewSelect().
+				Table("events").
+				ColumnExpr("IFNULL(MAX(aggregate_version), 0)").
+				Where("aggregate_type = ? AND aggregate_id = ?", agg.Type(), agg.ID()).
+				Scan(ctx, &currentVersion)
+			if err != nil {
 				return err
 			}
 
-			if event.OccurredAt.IsZero() {
-				event.OccurredAt = timestamp
+			if options.ExpectedVersion >= 0 && currentVersion != options.ExpectedVersion {
+				return errors.New("aggregate version mismatch")
 			}
 
-			rows = append(rows, event)
-		}
+			timestamp := time.Now().UTC()
 
-		if _, err := tx.NewInsert().Model(&rows).Ignore().Exec(ctx); err != nil {
-			return err
-		}
+			rows := make([]*Event, 0, len(events))
+			for i := range events {
+				event := &events[i]
+				event.AggregateVersion = currentVersion + int64(i) + 1
 
-		// We need to re-fetch the events to get the auto-generated fields (like Sequence).
-		var savedEvents []Event
-		if err = tx.NewSelect().
-			Model(&savedEvents).
-			Where("aggregate_type = ? AND aggregate_id = ?", agg.Type(), agg.ID()).
-			Where("aggregate_version > ?", currentVersion).
-			Order("aggregate_version ASC").
-			Scan(ctx); err != nil {
-			return err
-		}
+				if err := event.SetAggregate(agg); err != nil {
+					return err
+				}
 
-		for i := range savedEvents {
-			if err := m.applyProjection(ctx, tx, &savedEvents[i]); err != nil {
+				if event.OccurredAt.IsZero() {
+					event.OccurredAt = timestamp
+				}
+
+				rows = append(rows, event)
+			}
+
+			if _, err := tx.NewInsert().Model(&rows).Ignore().Exec(ctx); err != nil {
 				return err
 			}
-		}
 
-		persisted = savedEvents
-		newVersion = currentVersion + int64(len(savedEvents))
+			// We need to re-fetch the events to get the auto-generated fields (like Sequence).
+			var savedEvents []Event
+			err = tx.NewSelect().
+				Model(&savedEvents).
+				Where("aggregate_type = ? AND aggregate_id = ?", agg.Type(), agg.ID()).
+				Where("aggregate_version > ?", currentVersion).
+				Order("aggregate_version ASC").
+				Scan(ctx)
+			if err != nil {
+				return err
+			}
 
-		return nil
-	})
+			for i := range savedEvents {
+				event := &savedEvents[i]
+				if err := m.applyProjection(ctx, tx, event); err != nil {
+					return err
+				}
+			}
+
+			persisted = savedEvents
+			newVersion = currentVersion + int64(len(savedEvents))
+
+			return nil
+		},
+	)
 
 	return persisted, newVersion, err
 }

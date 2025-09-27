@@ -52,6 +52,11 @@ func NewWithID(aggregateType AggregateType, aggregateId string) (Aggregate, erro
 	return Aggregate{id: id, t: aggregateType}, nil
 }
 
+// FromRaw creates a new aggregate from raw string inputs for type and ID.
+func FromRaw(aggregateType string, aggregateId string) (Aggregate, error) {
+	return NewWithID(AggregateType(strings.TrimSpace(aggregateType)), aggregateId)
+}
+
 // Parses an aggregate from its string representation in the format "type:id".
 func Parse(s string) (Aggregate, error) {
 	parts := strings.SplitN(s, ":", 2)

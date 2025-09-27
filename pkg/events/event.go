@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/oklog/ulid/v2"
@@ -95,6 +96,20 @@ func (e *Event) BeforeAppendModel(ctx context.Context, query schema.Query) error
 	return nil
 }
 
+// AfterScanRow implements schema.AfterScanRowHook.
+func (e *Event) AfterScanRow(context.Context) error {
+	if e.AggregateType == "" || e.AggregateID == "" {
+		return errors.New("missing aggregate type or ID in event record")
+	}
+
+	agg, err := aggregate.FromRaw(e.AggregateType, e.AggregateID)
+	if err != nil {
+		return fmt.Errorf("failed to parse aggregate: %w", err)
+	}
+
+	return e.SetAggregate(agg)
+}
+
 func (e *Event) SetAggregate(agg aggregate.Aggregate) error {
 	if !agg.IsValid() {
 		return ErrInvalidAggregate
@@ -112,4 +127,7 @@ func (e *Event) Save(ctx context.Context, tx bun.Tx) error {
 	return err
 }
 
-var _ bun.BeforeAppendModelHook = (*Event)(nil)
+var (
+	_ bun.BeforeAppendModelHook = (*Event)(nil)
+	_ bun.AfterScanRowHook      = (*Event)(nil)
+)
