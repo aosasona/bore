@@ -116,9 +116,15 @@ func (i *itemRepository) FindLatest(
 
 	item := new(models.Item)
 	query := i.db.NewSelect().Model(item).
-		Where("collection_id = ?", collectionID).
-		Order("created_at DESC").
+		Order("last_applied_sequence_id DESC").
+		Order("updated_at DESC").
 		Limit(1)
+
+	if collectionID != "" {
+		query.Where("collection_id = ?", collectionID)
+	} else {
+		query.Where("collection_id IS NULL")
+	}
 
 	if err := query.Scan(ctx, item); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

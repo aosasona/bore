@@ -179,7 +179,7 @@ func (b *Bore) Paste(ctx context.Context, options PasteOptions) ([]byte, error) 
 		if err != nil {
 			return nil, errors.New("failed to check collection existence: " + err.Error())
 		} else if !exists {
-			return nil, errors.New("collection does not exist")
+			return nil, errors.New("requested collection does not exist")
 		}
 	}
 
