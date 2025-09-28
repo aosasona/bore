@@ -52,6 +52,12 @@ func (a *App) createRootCmd() *cli.App {
 				Aliases: []string{"f"},
 				Usage:   "Output format for the current command (e.g., json, base64, text)",
 			},
+			&cli.StringFlag{
+				Name:    handler.FlagOutputFile,
+				Aliases: []string{"o"},
+				Usage:   "Path to a file where the pasted content will be saved. If not provided, content will be printed to stdout.",
+				Value:   "",
+			},
 		},
 		Before: func(ctx *cli.Context) error {
 			a.SetConfigPath(ctx.String("config"))
