@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"bufio"
 	"encoding/base64"
 	"encoding/json"
+	"io"
 	"os"
 
 	"github.com/urfave/cli/v2"
@@ -48,9 +50,18 @@ func New(bore *bore.Bore) *Handler {
 	return &Handler{bore: bore}
 }
 
-func (h *Handler) Copy(ctx *cli.Context) error {
+type CliCopyOptions struct {
+	Stdin bool
+}
+
+func (h *Handler) Copy(ctx *cli.Context, options CliCopyOptions) error {
 	inputFile := ctx.String(FlagInputFile)
-	mimeType, err := mimetype.ParseMimeType(ctx.String(FlagMimeType))
+
+	rawMimeType := ctx.String(FlagMimeType)
+	if rawMimeType == "" {
+		rawMimeType = "text/plain"
+	}
+	mimeType, err := mimetype.ParseMimeType(rawMimeType)
 	if err != nil {
 		return cli.Exit("invalid mime type: "+err.Error(), 1)
 	}
@@ -63,6 +74,14 @@ func (h *Handler) Copy(ctx *cli.Context) error {
 		if err != nil {
 			return cli.Exit("failed to read input file: "+err.Error(), 1)
 		}
+
+	case options.Stdin:
+		reader := bufio.NewReader(ctx.App.Reader)
+		content, err = io.ReadAll(reader)
+		if err != nil {
+			return cli.Exit("failed to read from stdin: "+err.Error(), 1)
+		}
+
 	case ctx.NArg() == 0:
 		return cli.Exit(
 			"no input provided. Please provide input via argument or --input-file flag",
@@ -83,6 +102,10 @@ func (h *Handler) Copy(ctx *cli.Context) error {
 
 func (h *Handler) Paste(ctx *cli.Context) error {
 	format := PasteFormat(ctx.String(FlagFormat))
+	if format == "" {
+		format = PasteFormatText
+	}
+
 	outputFile := ctx.String(FlagOutputFile)
 
 	content, err := h.bore.Paste(ctx.Context, bore.PasteOptions{

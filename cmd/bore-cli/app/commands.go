@@ -29,10 +29,10 @@ func (a *App) createRootCmd() *cli.App {
 			}
 
 			if (fileinfo.Mode() & os.ModeCharDevice) == 0 {
-				panic("copy not implemented yet")
+				return a.handler.Copy(ctx, handler.CliCopyOptions{Stdin: true})
 			}
 
-			panic("paste not implemented yet")
+			return a.handler.Paste(ctx)
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -142,7 +142,7 @@ func (a *App) copyCommand() *cli.Command {
 		Args:      true,
 		ArgsUsage: "[content]",
 		Action: func(ctx *cli.Context) error {
-			return a.handler.Copy(ctx)
+			return a.handler.Copy(ctx, handler.CliCopyOptions{Stdin: false})
 		},
 	}
 }
@@ -159,10 +159,11 @@ func (a *App) pasteCommand() *cli.Command {
 				Usage:   "Collection ID to paste content from",
 			},
 			&cli.StringFlag{
-				Name:    handler.FlagFormat,
-				Aliases: []string{"f"},
-				Usage:   "Format to output the pasted content (text, json, base64)",
-				Value:   string(handler.PasteFormatText),
+				Name:        handler.FlagFormat,
+				Aliases:     []string{"f"},
+				Usage:       "Format to output the pasted content (text, json, base64)",
+				Value:       string(handler.PasteFormatText),
+				DefaultText: string(handler.PasteFormatText),
 			},
 			&cli.BoolFlag{
 				Name:    handler.FlagSystem,
