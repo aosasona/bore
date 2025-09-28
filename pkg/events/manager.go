@@ -156,6 +156,8 @@ func (m *Manager) applyProjection(ctx context.Context, tx bun.Tx, event *Event) 
 		p, err = payload.Decode(event.Payload, new(payload.CreateItem))
 	case action.ActionBumpItem:
 		p, err = payload.Decode(event.Payload, new(payload.BumpItem))
+	case action.ActionDeleteItem:
+		p, err = payload.Decode(event.Payload, new(payload.DeleteItem))
 	default:
 		return ErrUnknownEventType
 	}

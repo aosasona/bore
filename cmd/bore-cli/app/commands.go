@@ -49,7 +49,7 @@ func (a *App) createRootCmd() *cli.App {
 			},
 			&cli.StringFlag{
 				Name:    handler.FlagFormat,
-				Aliases: []string{"o"},
+				Aliases: []string{"f"},
 				Usage:   "Output format for the current command (e.g., json, base64, text)",
 			},
 		},
