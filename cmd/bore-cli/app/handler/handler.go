@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 
@@ -83,10 +84,28 @@ func (h *Handler) Copy(ctx *cli.Context, options CliCopyOptions) error {
 		}
 
 	case ctx.NArg() == 0:
-		return cli.Exit(
-			"no input provided. Please provide input via argument or --input-file flag",
-			1,
+		reader := bufio.NewReader(ctx.App.Reader)
+		fmt.Println(
+			"No input argument provided. Please enter the content to copy (end with Ctrl+D):",
 		)
+
+		for {
+			line, err := reader.ReadBytes('\n')
+			if err != nil && err != io.EOF {
+				return cli.Exit("failed to read from stdin: "+err.Error(), 1)
+			}
+
+			content = append(content, line...)
+			if err == io.EOF {
+				break
+			}
+		}
+
+		if len(content) == 0 {
+			return cli.Exit("no content provided to copy", 1)
+		}
+		content = content[:len(content)-1] // Remove the last newline character
+
 	case ctx.NArg() > 1:
 		return cli.Exit("too many arguments provided. Only one argument is allowed", 1)
 	default:
