@@ -10,6 +10,8 @@ import (
 const (
 	// ActionCreateItem is a Action of type create_item.
 	ActionCreateItem Action = "create_item"
+	// ActionBumpItem is a Action of type bump_item.
+	ActionBumpItem Action = "bump_item"
 	// ActionDeleteItem is a Action of type delete_item.
 	ActionDeleteItem Action = "delete_item"
 	// ActionCreateCollection is a Action of type create_collection.
@@ -34,6 +36,7 @@ func (x Action) IsValid() bool {
 
 var _ActionValue = map[string]Action{
 	"create_item":       ActionCreateItem,
+	"bump_item":         ActionBumpItem,
 	"delete_item":       ActionDeleteItem,
 	"create_collection": ActionCreateCollection,
 	"delete_collection": ActionDeleteCollection,

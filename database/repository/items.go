@@ -14,14 +14,39 @@ type itemRepository struct {
 	db *bun.DB
 }
 
+// Bump implements ItemRepository.
+func (i *itemRepository) Bump(
+	ctx context.Context,
+	tx bun.Tx,
+	identifier string,
+	sequenceId int64,
+) error {
+	item, err := i.FindById(ctx, identifier, "")
+	if err != nil {
+		return err
+	}
+
+	if item == nil {
+		return errors.New("item not found")
+	}
+
+	item.LastAppliedSequenceID = sequenceId
+
+	_, err = tx.NewUpdate().Model(item).
+		Column("last_applied_sequence_id").
+		WherePK().
+		Exec(ctx)
+	return err
+}
+
 // Create implements ItemRepository.
-func (c *itemRepository) Create(ctx context.Context, tx bun.Tx, item *models.Item) error {
+func (i *itemRepository) Create(ctx context.Context, tx bun.Tx, item *models.Item) error {
 	_, err := tx.NewInsert().Model(item).Exec(ctx)
 	return err
 }
 
 // DeleteById implements ItemRepository.
-func (c *itemRepository) DeleteById(ctx context.Context, tx bun.Tx, identifier string) error {
+func (i *itemRepository) DeleteById(ctx context.Context, tx bun.Tx, identifier string) error {
 	identifier = strings.TrimSpace(identifier)
 	_, err := tx.NewDelete().Model((*models.Item)(nil)).Where("id = ?", identifier).Exec(ctx)
 	if err != nil {
@@ -32,7 +57,7 @@ func (c *itemRepository) DeleteById(ctx context.Context, tx bun.Tx, identifier s
 }
 
 // FindByHash implements ItemRepository.
-func (c *itemRepository) FindByHash(
+func (i *itemRepository) FindByHash(
 	ctx context.Context,
 	hash string,
 	collectionId string,
@@ -40,7 +65,7 @@ func (c *itemRepository) FindByHash(
 	hash = strings.TrimSpace(hash)
 
 	item := new(models.Item)
-	query := c.db.NewSelect().Model(item).
+	query := i.db.NewSelect().Model(item).
 		Where("hash = ?", hash)
 	if collectionId != "" {
 		query.Where("collection_id = ?", collectionId)
@@ -57,7 +82,7 @@ func (c *itemRepository) FindByHash(
 }
 
 // FindById implements ItemRepository.
-func (c *itemRepository) FindById(
+func (i *itemRepository) FindById(
 	ctx context.Context,
 	identifier string,
 	collectionId string,
@@ -65,7 +90,7 @@ func (c *itemRepository) FindById(
 	identifier = strings.TrimSpace(identifier)
 
 	item := new(models.Item)
-	query := c.db.NewSelect().Model(item).
+	query := i.db.NewSelect().Model(item).
 		Where("id = ?", identifier)
 
 	if collectionId != "" {
@@ -83,14 +108,14 @@ func (c *itemRepository) FindById(
 }
 
 // GetLastItem implements ItemRepository.
-func (c *itemRepository) FindLatest(
+func (i *itemRepository) FindLatest(
 	ctx context.Context,
 	collectionID string,
 ) (*models.Item, error) {
 	collectionID = strings.TrimSpace(collectionID)
 
 	item := new(models.Item)
-	query := c.db.NewSelect().Model(item).
+	query := i.db.NewSelect().Model(item).
 		Where("collection_id = ?", collectionID).
 		Order("created_at DESC").
 		Limit(1)

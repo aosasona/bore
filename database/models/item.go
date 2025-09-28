@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -29,10 +28,6 @@ type Item struct {
 
 // BeforeAppendModel implements schema.BeforeAppendModelHook.
 func (item *Item) BeforeAppendModel(ctx context.Context, query schema.Query) error {
-	if item.ID == "" {
-		return errors.New("ID is required")
-	}
-
 	if err := item.Validate(); err != nil {
 		return err
 	}

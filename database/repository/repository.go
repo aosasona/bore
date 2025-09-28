@@ -10,7 +10,14 @@ import (
 
 type ItemRepository interface {
 	Create(ctx context.Context, tx bun.Tx, item *models.Item) error
+	Bump(
+		ctx context.Context,
+		tx bun.Tx,
+		identifier string,
+		sequenceId int64,
+	) error // Bump updates the sequence ID and updated_at timestamp of an item to move it to the top of the list.
 	DeleteById(ctx context.Context, tx bun.Tx, identifier string) error
+
 	FindLatest(ctx context.Context, collectionID string) (*models.Item, error)
 	FindById(ctx context.Context, identifier string, collectionId string) (*models.Item, error)
 	FindByHash(ctx context.Context, hash string, collectionId string) (*models.Item, error)

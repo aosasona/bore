@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/uptrace/bun"
@@ -22,10 +21,6 @@ type Collection struct {
 
 // BeforeAppendModel implements schema.BeforeAppendModelHook.
 func (collection *Collection) BeforeAppendModel(ctx context.Context, query schema.Query) error {
-	if collection.ID == "" {
-		return errors.New("ID is required")
-	}
-
 	if err := collection.Validate(); err != nil {
 		return err
 	}

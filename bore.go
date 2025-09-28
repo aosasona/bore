@@ -14,6 +14,7 @@ import (
 	"go.trulyao.dev/bore/v2/pkg/events"
 	"go.trulyao.dev/bore/v2/pkg/events/aggregate"
 	"go.trulyao.dev/bore/v2/pkg/events/payload"
+	"go.trulyao.dev/bore/v2/pkg/lib"
 	"go.trulyao.dev/bore/v2/pkg/mimetype"
 )
 
@@ -122,19 +123,36 @@ func (b *Bore) Copy(ctx context.Context, data []byte, opts CopyOptions) error {
 		}
 	}
 
-	e, err := events.NewWithGeneratedID(
-		aggregate.AggregateTypeItem,
-		&payload.CreateItem{
-			Content:      data,
-			Mimetype:     opts.Mimetype,
-			CollectionID: opts.CollectionID,
-		},
-	)
+	hash := lib.ComputeChecksum(data)
+	existingItem, err := b.repository.Items().FindByHash(ctx, hash, opts.CollectionID)
+	if err != nil {
+		return errors.New("failed to check for existing item: " + err.Error())
+	}
+
+	var e *events.Event
+	if existingItem != nil {
+		var existingAgg aggregate.Aggregate
+		existingAgg, err = aggregate.NewWithID(aggregate.AggregateTypeItem, existingItem.ID)
+		if err != nil {
+			return errors.New("failed to create aggregate for existing item: " + err.Error())
+		}
+
+		e, err = events.New(existingAgg, &payload.BumpItem{})
+	} else {
+		e, err = events.NewWithGeneratedID(
+			aggregate.AggregateTypeItem,
+			&payload.CreateItem{
+				Content:      data,
+				Mimetype:     opts.Mimetype,
+				CollectionID: opts.CollectionID,
+			},
+		)
+	}
 	if err != nil {
 		return errors.New("failed to create copy event: " + err.Error())
 	}
 
-	if _, _, err = b.manager.Apply(ctx, e, events.AppendOptions{ExpectedVersion: 0}); err != nil {
+	if _, _, err = b.manager.Apply(ctx, e, events.AppendOptions{ExpectedVersion: -1}); err != nil {
 		return errors.New("failed to apply copy event: " + err.Error())
 	}
 

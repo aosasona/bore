@@ -154,6 +154,8 @@ func (m *Manager) applyProjection(ctx context.Context, tx bun.Tx, event *Event) 
 	switch event.Type {
 	case action.ActionCreateItem:
 		p, err = payload.Decode(event.Payload, new(payload.CreateItem))
+	case action.ActionBumpItem:
+		p, err = payload.Decode(event.Payload, new(payload.BumpItem))
 	default:
 		return ErrUnknownEventType
 	}
