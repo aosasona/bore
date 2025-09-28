@@ -127,7 +127,7 @@ func (h *Handler) Paste(ctx *cli.Context) error {
 
 	outputFile := ctx.String(FlagOutputFile)
 
-	content, err := h.bore.Paste(ctx.Context, bore.PasteOptions{
+	item, err := h.bore.Paste(ctx.Context, bore.PasteOptions{
 		ItemID:              ctx.String(FlagIdentifier),
 		CollectionID:        ctx.String(FlagCollection),
 		FromSystemClipboard: ctx.Bool(FlagSystem),
@@ -138,7 +138,8 @@ func (h *Handler) Paste(ctx *cli.Context) error {
 		return cli.Exit("failed to paste content: "+err.Error(), 1)
 	}
 
-	if content, err = h.contentToFormat(content, format); err != nil {
+	var content []byte
+	if content, err = h.contentToFormat(item, format); err != nil {
 		return err
 	}
 
@@ -158,18 +159,24 @@ func (h *Handler) writeToStdout(ctx *cli.Context, content []byte) error {
 	return err
 }
 
-func (h *Handler) contentToFormat(content []byte, format PasteFormat) ([]byte, error) {
+func (h *Handler) contentToFormat(result bore.PasteResult, format PasteFormat) ([]byte, error) {
 	switch format {
 	case PasteFormatText:
-		return content, nil
+		return result.Content, nil
 
 	case PasteFormatBase64:
-		base64Content := make([]byte, base64.StdEncoding.EncodedLen(len(content)))
-		base64.StdEncoding.Encode(base64Content, content)
+		base64Content := make([]byte, base64.StdEncoding.EncodedLen(len(result.Content)))
+		base64.StdEncoding.Encode(base64Content, result.Content)
 		return base64Content, nil
 
 	case PasteFormatJSON:
-		jsonContent, err := json.Marshal(map[string]string{"content": string(content)})
+		jsonContent, err := json.Marshal(map[string]string{
+			"id":            result.Item.ID,
+			"mimetype":      result.Item.Mimetype,
+			"content":       string(result.Content),
+			"collection_id": result.Item.CollectionID.String,
+			"created_at":    result.Item.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		})
 		if err != nil {
 			return nil, err
 		}

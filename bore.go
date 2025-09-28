@@ -167,19 +167,29 @@ type PasteOptions struct {
 	SkipCollectionCheck bool   // Whether to skip checking if the collection exists.
 }
 
+type PasteResult struct {
+	Content []byte
+	Item    *models.Item
+}
+
 // Paste retrieves the last copied data from the Bore instance.
-func (b *Bore) Paste(ctx context.Context, options PasteOptions) ([]byte, error) {
+func (b *Bore) Paste(ctx context.Context, options PasteOptions) (PasteResult, error) {
 	if b.clipboard.Available() && options.FromSystemClipboard {
-		return b.clipboard.Read(ctx)
+		rawContent, err := b.clipboard.Read(ctx)
+		if err != nil {
+			return PasteResult{}, errors.New("failed to read from system clipboard: " + err.Error())
+		}
+
+		return PasteResult{Content: rawContent, Item: nil}, nil
 	}
 
 	options.CollectionID = strings.TrimSpace(options.CollectionID)
 	if options.CollectionID != "" && !options.SkipCollectionCheck {
 		exists, err := b.repository.Collections().Exists(ctx, options.CollectionID)
 		if err != nil {
-			return nil, errors.New("failed to check collection existence: " + err.Error())
+			return PasteResult{}, errors.New("failed to check collection existence: " + err.Error())
 		} else if !exists {
-			return nil, errors.New("requested collection does not exist")
+			return PasteResult{}, errors.New("requested collection does not exist")
 		}
 	}
 
@@ -196,30 +206,32 @@ func (b *Bore) Paste(ctx context.Context, options PasteOptions) ([]byte, error) 
 	}
 
 	if err != nil {
-		return nil, errors.New("failed to find latest item: " + err.Error())
+		return PasteResult{}, errors.New("failed to find latest item: " + err.Error())
 	}
 
 	if item == nil {
-		return nil, nil
+		return PasteResult{}, nil
 	}
 
 	if options.DeleteAfterPaste {
 		agg, err := aggregate.NewWithID(aggregate.AggregateTypeItem, item.ID)
 		if err != nil {
-			return nil, errors.New("failed to create aggregate for deletion: " + err.Error())
+			return PasteResult{}, errors.New(
+				"failed to create aggregate for deletion: " + err.Error(),
+			)
 		}
 
 		e, err := events.New(agg, &payload.DeleteItem{})
 		if err != nil {
-			return nil, errors.New("failed to create delete event: " + err.Error())
+			return PasteResult{}, errors.New("failed to create delete event: " + err.Error())
 		}
 
 		if _, _, err = b.manager.Apply(ctx, e); err != nil {
-			return nil, errors.New("failed to apply delete event: " + err.Error())
+			return PasteResult{}, errors.New("failed to apply delete event: " + err.Error())
 		}
 	}
 
-	return item.Content, nil
+	return PasteResult{Content: item.Content, Item: item}, nil
 }
 
 func (b *Bore) Close() error {
