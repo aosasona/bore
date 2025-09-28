@@ -10,7 +10,7 @@ A clipboard implementation for headless (and non-headless) environments
 You can download binaries for your platform from the [releases page](https://github.com/aosasona/bore/releases/latest) or install directly with the Go toolchain:
 
 ```sh
-go install go.trulyao.dev/bore/cmd/bore@latest
+go install go.trulyao.dev/bore/v2/cmd/bore-cli@latest
 ```
 
 # Usage
@@ -21,7 +21,9 @@ You can use `bore` the same way you would use `pbcopy` on Mac or `xclip` on Linu
 cat path/to/file | bore copy
 ```
 
-- Piping directly into bore via echo:
+Alternative method: `bore copy -i /path/to/file`
+
+- Piping directly into bore:
 
 ```sh
 echo 'Hello world' | bore copy
@@ -35,6 +37,8 @@ echo 'Hello world' | bore copy
 ```sh
 bore paste > /path/to/file
 ```
+
+Alternative method: `bore paste -o /path/to/file`
 
 # Why...
 
