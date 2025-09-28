@@ -27,7 +27,7 @@ jobs:
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
           goversion: "1.25.1"
-          project_path: "./cmd/bore"
+          project_path: "./cmd/bore-cli"
           binary_name: "bore"
           upload: true
-          ldflags: -s -w -X go.trulyao.dev/bore/v2/cmd/bore/app.Version=${{ github.ref_name }}
+          ldflags: -s -w -X go.trulyao.dev/bore/v2/cmd/bore-cli/app.Version=${{ github.ref_name }}
