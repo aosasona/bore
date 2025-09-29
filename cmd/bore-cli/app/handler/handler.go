@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
@@ -57,6 +59,14 @@ type CliCopyOptions struct {
 
 func (h *Handler) Copy(ctx *cli.Context, options CliCopyOptions) error {
 	inputFile := ctx.String(FlagInputFile)
+
+	format := PasteFormat(strings.TrimSpace(ctx.String(FlagFormat)))
+	if format == "" {
+		format = PasteFormatText
+	}
+	if !slices.Contains([]PasteFormat{PasteFormatText, PasteFormatBase64}, format) {
+		return cli.Exit("invalid format for copy command: "+string(format), 1)
+	}
 
 	rawMimeType := ctx.String(FlagMimeType)
 	if rawMimeType == "" {
@@ -110,6 +120,12 @@ func (h *Handler) Copy(ctx *cli.Context, options CliCopyOptions) error {
 		return cli.Exit("too many arguments provided. Only one argument is allowed", 1)
 	default:
 		content = []byte(ctx.Args().First())
+	}
+
+	if format == PasteFormatBase64 {
+		if content, err = h.decodebase64Content(content); err != nil {
+			return err
+		}
 	}
 
 	return h.bore.Copy(ctx.Context, content, bore.CopyOptions{
@@ -185,4 +201,13 @@ func (h *Handler) contentToFormat(result bore.PasteResult, format PasteFormat) (
 	default:
 		return nil, cli.Exit("unsupported format: "+string(format), 1)
 	}
+}
+
+func (h *Handler) decodebase64Content(content []byte) ([]byte, error) {
+	decodedContent := make([]byte, base64.StdEncoding.DecodedLen(len(content)))
+	n, err := base64.StdEncoding.Decode(decodedContent, content)
+	if err != nil {
+		return nil, cli.Exit("failed to decode base64 content: "+err.Error(), 1)
+	}
+	return decodedContent[:n], nil
 }
