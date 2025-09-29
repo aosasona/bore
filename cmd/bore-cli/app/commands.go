@@ -8,6 +8,17 @@ import (
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/handler"
 )
 
+func pipedIn() bool {
+	// If the program was piped into, we need to read from stdin and copy that
+	fileinfo, err := os.Stdin.Stat()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "failed to read from stdin:", err)
+		return false
+	}
+
+	return (fileinfo.Mode() & os.ModeCharDevice) == 0
+}
+
 func (a *App) createRootCmd() *cli.App {
 	// nolint:exhaustruct
 	return &cli.App{
@@ -23,12 +34,7 @@ func (a *App) createRootCmd() *cli.App {
 			}
 
 			// If the program was piped into, we need to read from stdin and copy that
-			fileinfo, err := os.Stdin.Stat()
-			if err != nil {
-				return cli.Exit("failed to read from stdin: "+err.Error(), 1)
-			}
-
-			if (fileinfo.Mode() & os.ModeCharDevice) == 0 {
+			if pipedIn() {
 				return a.handler.Copy(ctx, handler.CliCopyOptions{Stdin: true})
 			}
 
@@ -144,11 +150,16 @@ func (a *App) copyCommand() *cli.Command {
 				Usage:   "Copy content to the system clipboard ONLY",
 				Value:   false,
 			},
+			&cli.StringFlag{
+				Name:    handler.FlagFormat,
+				Aliases: []string{"f"},
+				Usage:   "Input format of the content being copied (text, base64)",
+			},
 		},
 		Args:      true,
 		ArgsUsage: "[content]",
 		Action: func(ctx *cli.Context) error {
-			return a.handler.Copy(ctx, handler.CliCopyOptions{Stdin: false})
+			return a.handler.Copy(ctx, handler.CliCopyOptions{Stdin: pipedIn()})
 		},
 	}
 }
