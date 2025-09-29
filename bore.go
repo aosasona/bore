@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database"
@@ -20,6 +21,8 @@ import (
 
 type (
 	Bore struct {
+		namespaceMutex sync.Mutex
+
 		// connection is the database connection used by this bore instance
 		db *bun.DB
 
