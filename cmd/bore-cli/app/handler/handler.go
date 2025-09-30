@@ -128,7 +128,7 @@ func (h *Handler) Copy(ctx *cli.Context, options CliCopyOptions) error {
 		}
 	}
 
-	return h.bore.Copy(ctx.Context, content, bore.CopyOptions{
+	return h.bore.Items().Copy(ctx.Context, content, bore.CopyOptions{
 		Passthrough:  ctx.Bool(FlagSystem),
 		CollectionID: ctx.String(FlagCollection),
 		Mimetype:     mimeType,
