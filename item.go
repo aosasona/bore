@@ -13,11 +13,10 @@ import (
 	"go.trulyao.dev/bore/v2/pkg/mimetype"
 )
 
-type itemsNamespace struct {
+type clipboardNamespace struct {
 	*Bore
 }
 
-// TODO: rename Copy and Paste to Set and Get respectively?
 type (
 	CopyOptions struct {
 		Passthrough  bool   // Whether to also copy to the system clipboard if available.
@@ -39,8 +38,8 @@ type (
 	}
 )
 
-// Copy copies the provided data to the Bore instance.
-func (i *itemsNamespace) Copy(ctx context.Context, data []byte, opts CopyOptions) error {
+// Set copies the provided data to the Bore instance.
+func (i *clipboardNamespace) Set(ctx context.Context, data []byte, opts CopyOptions) error {
 	forwardToSystemClipboard := i.config.ClipboardPassthrough || opts.Passthrough
 	if i.clipboard.Available() && forwardToSystemClipboard {
 		if err := i.clipboard.Write(ctx, data); err != nil {
@@ -84,8 +83,8 @@ func (i *itemsNamespace) Copy(ctx context.Context, data []byte, opts CopyOptions
 	return nil
 }
 
-// Paste retrieves the last copied data from the Bore instance.
-func (b *Bore) Paste(ctx context.Context, options PasteOptions) (PasteResult, error) {
+// Get retrieves the last copied data from the Bore instance.
+func (b *Bore) Get(ctx context.Context, options PasteOptions) (PasteResult, error) {
 	if b.clipboard.Available() && options.FromSystemClipboard {
 		rawContent, err := b.clipboard.Read(ctx)
 		if err != nil {

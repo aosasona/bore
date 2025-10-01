@@ -32,7 +32,7 @@ type Bore struct {
 	repository repository.Repository
 
 	// MARK: Namespaces
-	items *itemsNamespace
+	items *clipboardNamespace
 }
 
 var (
@@ -106,13 +106,13 @@ func (b *Bore) Config() (*Config, error) {
 	return b.config, nil
 }
 
-// Items returns the items namespace for managing clipboard items.
-func (b *Bore) Items() *itemsNamespace {
+// Clipboard returns the items namespace for managing clipboard items.
+func (b *Bore) Clipboard() *clipboardNamespace {
 	b.namespaceMutex.Lock()
 	defer b.namespaceMutex.Unlock()
 
 	if b.items == nil {
-		b.items = &itemsNamespace{b}
+		b.items = &clipboardNamespace{b}
 	}
 
 	return b.items
