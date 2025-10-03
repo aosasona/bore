@@ -2,10 +2,10 @@ package bore
 
 import (
 	"context"
-	"errors"
 	"strings"
 
 	"go.trulyao.dev/bore/v2/database/models"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 	"go.trulyao.dev/bore/v2/pkg/events"
 	"go.trulyao.dev/bore/v2/pkg/events/aggregate"
 	"go.trulyao.dev/bore/v2/pkg/events/payload"
@@ -50,7 +50,7 @@ func (i *clipboardNamespace) Set(ctx context.Context, data []byte, opts CopyOpti
 	hash := lib.ComputeChecksum(data)
 	existingItem, err := i.repository.Items().FindByHash(ctx, hash, opts.CollectionID)
 	if err != nil {
-		return errors.New("failed to check for existing item: " + err.Error())
+		return errs.New("failed to check for existing item").WithError(err)
 	}
 
 	var e *events.Event
@@ -58,7 +58,7 @@ func (i *clipboardNamespace) Set(ctx context.Context, data []byte, opts CopyOpti
 		var existingAgg aggregate.Aggregate
 		existingAgg, err = aggregate.NewWithID(aggregate.AggregateTypeItem, existingItem.ID)
 		if err != nil {
-			return errors.New("failed to create aggregate for existing item: " + err.Error())
+			return errs.New("failed to create aggregate for existing item").WithError(err)
 		}
 
 		e, err = events.New(existingAgg, &payload.BumpItem{})
@@ -73,11 +73,11 @@ func (i *clipboardNamespace) Set(ctx context.Context, data []byte, opts CopyOpti
 		)
 	}
 	if err != nil {
-		return errors.New("failed to create copy event: " + err.Error())
+		return errs.New("failed to create copy event: ").WithError(err)
 	}
 
 	if _, _, err = i.manager.Apply(ctx, e, events.AppendOptions{ExpectedVersion: -1}); err != nil {
-		return errors.New("failed to apply copy event: " + err.Error())
+		return errs.New("failed to apply copy event").WithError(err)
 	}
 
 	return nil
@@ -88,7 +88,7 @@ func (b *Bore) Get(ctx context.Context, options PasteOptions) (PasteResult, erro
 	if b.clipboard.Available() && options.FromSystemClipboard {
 		rawContent, err := b.clipboard.Read(ctx)
 		if err != nil {
-			return PasteResult{}, errors.New("failed to read from system clipboard: " + err.Error())
+			return PasteResult{}, errs.New("failed to read from system clipboard").WithError(err)
 		}
 
 		return PasteResult{Content: rawContent, Item: nil}, nil
@@ -98,9 +98,9 @@ func (b *Bore) Get(ctx context.Context, options PasteOptions) (PasteResult, erro
 	if options.CollectionID != "" && !options.SkipCollectionCheck {
 		exists, err := b.repository.Collections().Exists(ctx, options.CollectionID)
 		if err != nil {
-			return PasteResult{}, errors.New("failed to check collection existence: " + err.Error())
+			return PasteResult{}, errs.New("failed to check if collection exists").WithError(err)
 		} else if !exists {
-			return PasteResult{}, errors.New("requested collection does not exist")
+			return PasteResult{}, errs.ErrCollectionNotFound
 		}
 	}
 
@@ -117,7 +117,7 @@ func (b *Bore) Get(ctx context.Context, options PasteOptions) (PasteResult, erro
 	}
 
 	if err != nil {
-		return PasteResult{}, errors.New("failed to find latest item: " + err.Error())
+		return PasteResult{}, errs.New("failed to find latest item").WithError(err)
 	}
 
 	if item == nil {
@@ -128,18 +128,18 @@ func (b *Bore) Get(ctx context.Context, options PasteOptions) (PasteResult, erro
 	if options.DeleteAfterPaste {
 		agg, err := aggregate.NewWithID(aggregate.AggregateTypeItem, item.ID)
 		if err != nil {
-			return PasteResult{}, errors.New(
-				"failed to create aggregate for deletion: " + err.Error(),
-			)
+			return PasteResult{}, errs.New(
+				"failed to create aggregate for deletion event",
+			).WithError(err)
 		}
 
 		e, err := events.New(agg, &payload.DeleteItem{})
 		if err != nil {
-			return PasteResult{}, errors.New("failed to create delete event: " + err.Error())
+			return PasteResult{}, errs.New("failed to create delete event").WithError(err)
 		}
 
 		if _, _, err = b.manager.Apply(ctx, e); err != nil {
-			return PasteResult{}, errors.New("failed to apply delete event: " + err.Error())
+			return PasteResult{}, errs.New("failed to apply delete event").WithError(err)
 		}
 	}
 

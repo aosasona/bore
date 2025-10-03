@@ -1,7 +1,6 @@
 package bore
 
 import (
-	"errors"
 	"os"
 	"strings"
 	"sync"
@@ -10,6 +9,7 @@ import (
 	"go.trulyao.dev/bore/v2/database"
 	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/clipboard"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 	"go.trulyao.dev/bore/v2/pkg/events"
 )
 
@@ -35,28 +35,23 @@ type Bore struct {
 	items *clipboardNamespace
 }
 
-var (
-	ErrInvalidArgs         = errors.New("invalid arguments provided to New function")
-	ErrStoragePathRequired = errors.New("storage path is required")
-)
-
 // New creates a new Bore instance with the provided configuration.
 func New(config *Config) (*Bore, error) {
 	if config == nil {
-		return nil, ErrInvalidArgs
+		return nil, errs.ErrInvalidConstructorArg
 	}
 
 	if strings.TrimSpace(config.DataDir) == "" {
-		return nil, ErrStoragePathRequired
+		return nil, errs.ErrStoragePathRequired
 	}
 
 	if err := os.MkdirAll(config.DataDir, 0o755); err != nil {
-		return nil, errors.New("failed to create data directory: " + err.Error())
+		return nil, errs.Wrap(err, "failed to create data directory")
 	}
 
 	conn, err := database.Connect(config.DataDir)
 	if err != nil {
-		return nil, errors.New("failed to connect to database: " + err.Error())
+		return nil, errs.ErrFailedToConnectToDB.WithError(err)
 	}
 
 	clipboard, _ := clipboard.NewNativeClipboard()
@@ -74,7 +69,7 @@ func New(config *Config) (*Bore, error) {
 // Repository returns the current repository implementation for the current Bore instance.
 func (b *Bore) Repository() (repository.Repository, error) {
 	if b.repository == nil {
-		return nil, errors.New("repository is not initialized")
+		return nil, errs.New("repository is not initialized")
 	}
 
 	return b.repository, nil
@@ -83,7 +78,7 @@ func (b *Bore) Repository() (repository.Repository, error) {
 // SystemClipboard returns the native clipboard interface for the current platform.
 func (b *Bore) SystemClipboard() (clipboard.NativeClipboard, error) {
 	if b.clipboard == nil {
-		return nil, errors.New("clipboard is not initialized")
+		return nil, errs.New("clipboard is not initialized")
 	}
 
 	return b.clipboard, nil
@@ -91,7 +86,7 @@ func (b *Bore) SystemClipboard() (clipboard.NativeClipboard, error) {
 
 func (b *Bore) DB() (*bun.DB, error) {
 	if b.db == nil {
-		return nil, errors.New("database connection is not initialized")
+		return nil, errs.New("database connection is not initialized")
 	}
 
 	return b.db, nil
@@ -100,7 +95,7 @@ func (b *Bore) DB() (*bun.DB, error) {
 // Config returns the configuration of the Bore instance.
 func (b *Bore) Config() (*Config, error) {
 	if b.config == nil {
-		return nil, errors.New("configuration is not initialized")
+		return nil, errs.New("configuration is not initialized")
 	}
 
 	return b.config, nil
@@ -120,7 +115,7 @@ func (b *Bore) Clipboard() *clipboardNamespace {
 
 func (b *Bore) Close() error {
 	if err := b.db.Close(); err != nil {
-		return errors.New("failed to close database connection: " + err.Error())
+		return errs.ErrFailedToCloseDB.WithError(err)
 	}
 
 	return nil
@@ -128,7 +123,7 @@ func (b *Bore) Close() error {
 
 func (b *Bore) Reset() error {
 	if err := os.RemoveAll(b.config.DataDir); err != nil {
-		return errors.New("failed to remove data directory: " + err.Error())
+		return errs.ErrFailedToRemoveDataDir.WithError(err)
 	}
 
 	return nil

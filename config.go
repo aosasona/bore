@@ -4,6 +4,7 @@ import (
 	"bytes"
 
 	"github.com/BurntSushi/toml"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 )
 
 type Config struct {
@@ -30,7 +31,7 @@ func DefaultConfig() Config {
 func (c *Config) FromBytes(data []byte) (*Config, error) {
 	decoder := toml.NewDecoder(bytes.NewReader(data))
 	if _, err := decoder.Decode(c); err != nil {
-		return nil, err
+		return nil, errs.Wrap(err, "failed to decode configuration")
 	}
 
 	return c, nil
@@ -41,7 +42,7 @@ func (c *Config) TOML() ([]byte, error) {
 	var buf bytes.Buffer
 	encoder := toml.NewEncoder(&buf)
 	if err := encoder.Encode(c); err != nil {
-		return nil, err
+		return nil, errs.Wrap(err, "failed to encode configuration")
 	}
 	return buf.Bytes(), nil
 }
