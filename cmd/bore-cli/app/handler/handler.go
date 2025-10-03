@@ -128,7 +128,7 @@ func (h *Handler) Copy(ctx *cli.Context, options CliCopyOptions) error {
 		}
 	}
 
-	return h.bore.Clipboard().Set(ctx.Context, content, bore.CopyOptions{
+	return h.bore.Clipboard().Set(ctx.Context, content, bore.SetClipboardOptions{
 		Passthrough:  ctx.Bool(FlagSystem),
 		CollectionID: ctx.String(FlagCollection),
 		Mimetype:     mimeType,
@@ -143,7 +143,7 @@ func (h *Handler) Paste(ctx *cli.Context) error {
 
 	outputFile := ctx.String(FlagOutputFile)
 
-	item, err := h.bore.Get(ctx.Context, bore.PasteOptions{
+	item, err := h.bore.Get(ctx.Context, bore.GetClipboardOptions{
 		ItemID:              ctx.String(FlagIdentifier),
 		CollectionID:        ctx.String(FlagCollection),
 		FromSystemClipboard: ctx.Bool(FlagSystem),

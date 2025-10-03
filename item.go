@@ -18,13 +18,13 @@ type clipboardNamespace struct {
 }
 
 type (
-	CopyOptions struct {
+	SetClipboardOptions struct {
 		Passthrough  bool   // Whether to also copy to the system clipboard if available.
 		CollectionID string // Optional collection ID to associate with the copied item.
 		Mimetype     mimetype.MimeType
 	}
 
-	PasteOptions struct {
+	GetClipboardOptions struct {
 		ItemID              string // Optional item identifier to filter pasted items.
 		CollectionID        string // Optional collection ID to filter pasted items.
 		FromSystemClipboard bool   // Whether to paste from the system clipboard if available.
@@ -39,7 +39,7 @@ type (
 )
 
 // Set copies the provided data to the Bore instance.
-func (i *clipboardNamespace) Set(ctx context.Context, data []byte, opts CopyOptions) error {
+func (i *clipboardNamespace) Set(ctx context.Context, data []byte, opts SetClipboardOptions) error {
 	forwardToSystemClipboard := i.config.ClipboardPassthrough || opts.Passthrough
 	if i.clipboard.Available() && forwardToSystemClipboard {
 		if err := i.clipboard.Write(ctx, data); err != nil {
@@ -84,7 +84,7 @@ func (i *clipboardNamespace) Set(ctx context.Context, data []byte, opts CopyOpti
 }
 
 // Get retrieves the last copied data from the Bore instance.
-func (b *Bore) Get(ctx context.Context, options PasteOptions) (PasteResult, error) {
+func (b *Bore) Get(ctx context.Context, options GetClipboardOptions) (PasteResult, error) {
 	if b.clipboard.Available() && options.FromSystemClipboard {
 		rawContent, err := b.clipboard.Read(ctx)
 		if err != nil {
