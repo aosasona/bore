@@ -111,12 +111,11 @@ func (b *Bore) Config() (*Config, error) {
 
 // Clipboard returns the items namespace for managing clipboard items.
 func (b *Bore) Clipboard() *clipboardNamespace {
-	b.namespaceMutex.Lock()
-	defer b.namespaceMutex.Unlock()
-
-	if b.items == nil {
-		b.items = &clipboardNamespace{b}
-	}
+	b.withNamespaceLock(func() {
+		if b.items == nil {
+			b.items = &clipboardNamespace{b}
+		}
+	})
 
 	return b.items
 }
@@ -135,4 +134,12 @@ func (b *Bore) Reset() error {
 	}
 
 	return nil
+}
+
+// withNamespaceLock executes the provided function while holding the namespace mutex lock.
+func (b *Bore) withNamespaceLock(fn func()) {
+	b.namespaceMutex.Lock()
+	defer b.namespaceMutex.Unlock()
+
+	fn()
 }
