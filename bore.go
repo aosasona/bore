@@ -75,6 +75,14 @@ func (b *Bore) Repository() (repository.Repository, error) {
 	return b.repository, nil
 }
 
+func (b *Bore) Events() (*events.Manager, error) {
+	if b.manager == nil {
+		return nil, errs.New("event manager is not initialized")
+	}
+
+	return b.manager, nil
+}
+
 // SystemClipboard returns the native clipboard interface for the current platform.
 func (b *Bore) SystemClipboard() (clipboard.NativeClipboard, error) {
 	if b.clipboard == nil {
