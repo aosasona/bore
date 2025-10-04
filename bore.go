@@ -32,7 +32,8 @@ type Bore struct {
 	repository repository.Repository
 
 	// MARK: Namespaces
-	items *clipboardNamespace
+	items       *clipboardNamespace
+	collections *collectionNamespace
 }
 
 // New creates a new Bore instance with the provided configuration.
@@ -118,6 +119,15 @@ func (b *Bore) Clipboard() *clipboardNamespace {
 	})
 
 	return b.items
+}
+
+func (b *Bore) Collections() *collectionNamespace {
+	b.withNamespaceLock(func() {
+		if b.collections == nil {
+			b.collections = &collectionNamespace{b}
+		}
+	})
+	return b.collections
 }
 
 func (b *Bore) Close() error {
