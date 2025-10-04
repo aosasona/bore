@@ -24,6 +24,9 @@ type ItemRepository interface {
 }
 
 type CollectionRepository interface {
+	Create(ctx context.Context, tx bun.Tx, collection *models.Collection) error
+	FindById(ctx context.Context, identifier string) (*models.Collection, error)
+
 	Exists(ctx context.Context, identifier string) (bool, error)
 }
 

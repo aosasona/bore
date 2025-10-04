@@ -4,10 +4,40 @@ import (
 	"context"
 
 	"github.com/uptrace/bun"
+	"go.trulyao.dev/bore/v2/database/models"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 )
 
 type collectionRepository struct {
 	db *bun.DB
+}
+
+// Create implements CollectionRepository.
+func (c *collectionRepository) Create(
+	ctx context.Context,
+	tx bun.Tx,
+	collection *models.Collection,
+) error {
+	_, err := tx.NewInsert().Model(collection).Exec(ctx)
+	return err
+}
+
+// FindById implements CollectionRepository.
+func (c *collectionRepository) FindById(
+	ctx context.Context,
+	identifier string,
+) (*models.Collection, error) {
+	if identifier == "" {
+		return nil, errs.New("identifier cannot be empty")
+	}
+
+	var collection models.Collection
+	err := c.db.NewSelect().Model(&collection).WherePK(identifier).Limit(1).Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &collection, nil
 }
 
 // Exists implements CollectionRepository.
