@@ -14,7 +14,7 @@ type Collection struct {
 	bun.BaseModel `bun:"table:collections,alias:co"`
 
 	ID        string    `bun:"id,pk"`
-	Name      string    `bun:"name,notnull"                                          validate:"required,alphanumunicode"`
+	Name      string    `bun:"name,notnull"                                          validate:"required,collection_name"`
 	CreatedAt time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp"`
 	UpdatedAt time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp"`
 }

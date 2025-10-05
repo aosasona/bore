@@ -59,7 +59,7 @@ func ValidateStruct(s any) error {
 	case *validator.InvalidValidationError:
 		return errs.New("invalid validation error: " + err.Error())
 	case validator.ValidationErrors:
-		validationErrors := NewValidationError()
+		validationErrors := NewValidationErrors()
 		for _, v := range err {
 			validationErrors.Add(v.Field(), v.Translate(translator))
 		}
