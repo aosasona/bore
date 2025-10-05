@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"strings"
 
 	"github.com/uptrace/bun"
@@ -28,10 +30,13 @@ func (c *collectionRepository) FindOne(
 	var collection *models.Collection
 	err := c.db.NewSelect().Model(&collection).
 		WherePK(opts.Identifier).
-		WhereOr("name = ?", opts.Name).
+		WhereOr("LOWER(name) = LOWER(?)", opts.Name).
 		Limit(1).
 		Scan(ctx)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -49,8 +54,15 @@ func (c *collectionRepository) FindByName(
 	}
 
 	var collection models.Collection
-	err := c.db.NewSelect().Model(&collection).Where("name = ?", name).Limit(1).Scan(ctx)
+	err := c.db.NewSelect().
+		Model(&collection).
+		Where("LOWER(name) = LOWER(?)", name).
+		Limit(1).
+		Scan(ctx)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -79,6 +91,9 @@ func (c *collectionRepository) FindById(
 	var collection models.Collection
 	err := c.db.NewSelect().Model(&collection).WherePK(identifier).Limit(1).Scan(ctx)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
