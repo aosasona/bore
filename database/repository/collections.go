@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/models"
@@ -10,6 +11,25 @@ import (
 
 type collectionRepository struct {
 	db *bun.DB
+}
+
+// FindByName implements CollectionRepository.
+func (c *collectionRepository) FindByName(
+	ctx context.Context,
+	name string,
+) (*models.Collection, error) {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return nil, errs.New("name cannot be empty")
+	}
+
+	var collection models.Collection
+	err := c.db.NewSelect().Model(&collection).Where("name = ?", name).Limit(1).Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &collection, nil
 }
 
 // Create implements CollectionRepository.
@@ -41,9 +61,9 @@ func (c *collectionRepository) FindById(
 }
 
 // Exists implements CollectionRepository.
-func (c *collectionRepository) Exists(ctx context.Context, identifier string) (bool, error) {
-	if identifier == "" {
-		return false, nil
+func (c *collectionRepository) Exists(ctx context.Context, identifier, name string) (bool, error) {
+	if identifier == "" && name == "" {
+		return false, errs.New("either identifier or name must be provided")
 	}
 
 	var flag int
@@ -51,6 +71,7 @@ func (c *collectionRepository) Exists(ctx context.Context, identifier string) (b
 		TableExpr("collections").
 		ColumnExpr("1").
 		Where("id = ?", identifier).
+		WhereOr("name = ?", name).
 		Limit(1).
 		Scan(ctx, &flag)
 	if err != nil {
