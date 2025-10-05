@@ -5,14 +5,17 @@ package clipboard
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"os/exec"
 	"sync"
 	"time"
+
+	"go.trulyao.dev/bore/v2/pkg/errs"
 )
 
 type Program int
+
+var ErrClipboardBinariesNotFound = errs.New("clipboard binaries not available")
 
 const (
 	ProgramXsel Program = iota
@@ -62,7 +65,7 @@ func NewNativeClipboard() (NativeClipboard, error) {
 		}
 	}
 
-	return &linuxClipboard{}, errors.New(
+	return &linuxClipboard{}, errs.New(
 		"no supported clipboard found for linux platform, the following are currently supported: `xclip`, `xsel` and `wl-clipboard`",
 	)
 }
@@ -85,7 +88,7 @@ func (l *linuxClipboard) Clear(ctx context.Context) error {
 // Read implements NativeClipboard.
 func (l *linuxClipboard) Read(ctx context.Context) ([]byte, error) {
 	if !l.Available() {
-		return nil, errors.New("clipboard binaries not available")
+		return nil, ErrClipboardBinariesNotFound
 	}
 
 	l.mu.Lock()
@@ -114,7 +117,7 @@ func (l *linuxClipboard) Read(ctx context.Context) ([]byte, error) {
 // Write implements NativeClipboard.
 func (l *linuxClipboard) Write(ctx context.Context, data []byte) error {
 	if !l.Available() {
-		return errors.New("clipboard binaries not available")
+		return ErrClipboardBinariesNotFound
 	}
 
 	l.mu.Lock()

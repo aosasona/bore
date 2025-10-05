@@ -3,11 +3,11 @@ package payload
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/models"
 	"go.trulyao.dev/bore/v2/database/repository"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 	"go.trulyao.dev/bore/v2/pkg/events/action"
 	"go.trulyao.dev/bore/v2/pkg/lib"
 	"go.trulyao.dev/bore/v2/pkg/mimetype"
@@ -27,7 +27,7 @@ func (c *CreateItem) ApplyProjection(
 	options ProjectionOptions,
 ) error {
 	if !options.Aggregate.IsValid() {
-		return errors.New("invalid aggregate")
+		return errs.New("invalid aggregate")
 	}
 
 	hash := lib.ComputeChecksum(c.Content)

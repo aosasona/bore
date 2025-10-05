@@ -2,10 +2,10 @@ package payload
 
 import (
 	"context"
-	"errors"
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/repository"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 	"go.trulyao.dev/bore/v2/pkg/events/action"
 )
 
@@ -19,7 +19,7 @@ func (c *CreateCollection) ApplyProjection(
 	options ProjectionOptions,
 ) error {
 	if !options.Aggregate.IsValid() {
-		return errors.New("invalid aggregate")
+		return errs.New("invalid aggregate")
 	}
 
 	// TODO: implement

@@ -1,18 +1,18 @@
 package aggregate
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/oklog/ulid/v2"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 )
 
 //go:generate go tool github.com/abice/go-enum --marshal
 
 var (
-	ErrInvalidAggregateString = errors.New("invalid aggregate string")
-	ErrInvalidAggregateID     = errors.New("invalid aggregate ID")
+	ErrInvalidAggregateString = errs.New("invalid aggregate string")
+	ErrInvalidAggregateID     = errs.New("invalid aggregate ID")
 )
 
 // An Aggregate represents a target entity for events, identified by a type and a ULID.

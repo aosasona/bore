@@ -8,6 +8,7 @@ import (
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/models"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 )
 
 type itemRepository struct {
@@ -27,7 +28,7 @@ func (i *itemRepository) Bump(
 	}
 
 	if item == nil {
-		return errors.New("item not found")
+		return errs.New("item not found")
 	}
 
 	item.LastAppliedSequenceID = sequenceId
