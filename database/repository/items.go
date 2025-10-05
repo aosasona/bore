@@ -42,7 +42,7 @@ func (i *itemRepository) Bump(
 
 // Create implements ItemRepository.
 func (i *itemRepository) Create(ctx context.Context, tx bun.Tx, item *models.Item) error {
-	_, err := tx.NewInsert().Model(item).Exec(ctx)
+	_, err := tx.NewInsert().Model(item).Ignore().Exec(ctx)
 	return err
 }
 
