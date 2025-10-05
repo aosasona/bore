@@ -13,6 +13,31 @@ type collectionRepository struct {
 	db *bun.DB
 }
 
+// FindOne implements CollectionRepository.
+func (c *collectionRepository) FindOne(
+	ctx context.Context,
+	opts CollectionLookupOptions,
+) (*models.Collection, error) {
+	opts.Identifier = strings.TrimSpace(opts.Identifier)
+	opts.Name = strings.TrimSpace(opts.Name)
+
+	if opts.Identifier == "" && opts.Name == "" {
+		return nil, errs.New("either identifier or name must be provided")
+	}
+
+	var collection *models.Collection
+	err := c.db.NewSelect().Model(&collection).
+		WherePK(opts.Identifier).
+		WhereOr("name = ?", opts.Name).
+		Limit(1).
+		Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return collection, nil
+}
+
 // FindByName implements CollectionRepository.
 func (c *collectionRepository) FindByName(
 	ctx context.Context,
@@ -58,30 +83,6 @@ func (c *collectionRepository) FindById(
 	}
 
 	return &collection, nil
-}
-
-// Exists implements CollectionRepository.
-func (c *collectionRepository) Exists(
-	ctx context.Context,
-	opts CollectionExistsOptions,
-) (bool, error) {
-	if opts.Identifier == "" && opts.Name == "" {
-		return false, errs.New("either identifier or name must be provided")
-	}
-
-	var flag int
-	err := c.db.NewSelect().
-		TableExpr("collections").
-		ColumnExpr("1").
-		Where("id = ?", opts.Identifier).
-		WhereOr("name = ?", opts.Name).
-		Limit(1).
-		Scan(ctx, &flag)
-	if err != nil {
-		return false, err
-	}
-
-	return flag == 1, nil
 }
 
 var _ CollectionRepository = (*collectionRepository)(nil)

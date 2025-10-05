@@ -23,7 +23,7 @@ type ItemRepository interface {
 	FindByHash(ctx context.Context, hash string, collectionId string) (*models.Item, error)
 }
 
-type CollectionExistsOptions struct {
+type CollectionLookupOptions struct {
 	Identifier string
 	Name       string
 }
@@ -33,7 +33,8 @@ type CollectionRepository interface {
 
 	FindById(ctx context.Context, identifier string) (*models.Collection, error)
 	FindByName(ctx context.Context, name string) (*models.Collection, error)
-	Exists(ctx context.Context, opts CollectionExistsOptions) (bool, error)
+	// FindOne looks up a collection by either ID or name.
+	FindOne(ctx context.Context, opts CollectionLookupOptions) (*models.Collection, error)
 }
 
 // Repository is the main interface for accessing all repositories.
