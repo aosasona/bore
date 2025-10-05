@@ -17,6 +17,8 @@ type Collection struct {
 	Name      string    `bun:"name,notnull"                                          validate:"required,collection_name"`
 	CreatedAt time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp"`
 	UpdatedAt time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp"`
+
+	Items []*Item `bun:"rel:has-many,join:id=collection_id"`
 }
 
 // BeforeAppendModel implements schema.BeforeAppendModelHook.

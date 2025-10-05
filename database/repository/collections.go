@@ -15,6 +15,11 @@ type collectionRepository struct {
 	db *bun.DB
 }
 
+type CollectionWithItemsCount struct {
+	models.Collection
+	ItemsCount int64 `bun:"items_count"`
+}
+
 // FindOne implements CollectionRepository.
 func (c *collectionRepository) FindOne(
 	ctx context.Context,
