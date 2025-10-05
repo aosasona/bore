@@ -25,7 +25,7 @@ type Bore struct {
 	// clipboard is the native clipboard interface for the current platform
 	clipboard clipboard.NativeClipboard
 
-	// events is the event manager for this bore instance
+	// manager is the event manager for this bore instance
 	manager *events.Manager
 
 	// repository is the interface for accessing database operations
