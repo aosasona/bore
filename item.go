@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"go.trulyao.dev/bore/v2/database/models"
+	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/errs"
 	"go.trulyao.dev/bore/v2/pkg/events"
 	"go.trulyao.dev/bore/v2/pkg/events/aggregate"
@@ -96,7 +97,10 @@ func (b *Bore) Get(ctx context.Context, options GetClipboardOptions) (PasteResul
 
 	options.CollectionID = strings.TrimSpace(options.CollectionID)
 	if options.CollectionID != "" && !options.SkipCollectionCheck {
-		exists, err := b.repository.Collections().Exists(ctx, options.CollectionID)
+		exists, err := b.repository.Collections().Exists(ctx, repository.CollectionExistsOptions{
+			Identifier: options.CollectionID,
+			Name:       "",
+		})
 		if err != nil {
 			return PasteResult{}, errs.New("failed to check if collection exists").WithError(err)
 		} else if !exists {

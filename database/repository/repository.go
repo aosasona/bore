@@ -23,12 +23,17 @@ type ItemRepository interface {
 	FindByHash(ctx context.Context, hash string, collectionId string) (*models.Item, error)
 }
 
+type CollectionExistsOptions struct {
+	Identifier string
+	Name       string
+}
+
 type CollectionRepository interface {
 	Create(ctx context.Context, tx bun.Tx, collection *models.Collection) error
 
 	FindById(ctx context.Context, identifier string) (*models.Collection, error)
 	FindByName(ctx context.Context, name string) (*models.Collection, error)
-	Exists(ctx context.Context, identifier, name string) (bool, error)
+	Exists(ctx context.Context, opts CollectionExistsOptions) (bool, error)
 }
 
 // Repository is the main interface for accessing all repositories.

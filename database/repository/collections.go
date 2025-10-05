@@ -61,8 +61,11 @@ func (c *collectionRepository) FindById(
 }
 
 // Exists implements CollectionRepository.
-func (c *collectionRepository) Exists(ctx context.Context, identifier, name string) (bool, error) {
-	if identifier == "" && name == "" {
+func (c *collectionRepository) Exists(
+	ctx context.Context,
+	opts CollectionExistsOptions,
+) (bool, error) {
+	if opts.Identifier == "" && opts.Name == "" {
 		return false, errs.New("either identifier or name must be provided")
 	}
 
@@ -70,8 +73,8 @@ func (c *collectionRepository) Exists(ctx context.Context, identifier, name stri
 	err := c.db.NewSelect().
 		TableExpr("collections").
 		ColumnExpr("1").
-		Where("id = ?", identifier).
-		WhereOr("name = ?", name).
+		Where("id = ?", opts.Identifier).
+		WhereOr("name = ?", opts.Name).
 		Limit(1).
 		Scan(ctx, &flag)
 	if err != nil {
