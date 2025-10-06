@@ -6,7 +6,10 @@ import (
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/models"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 )
+
+var ErrEmptyIdentifier = errs.New("identifier cannot be empty")
 
 type ItemRepository interface {
 	Create(ctx context.Context, tx bun.Tx, item *models.Item) error
@@ -30,6 +33,7 @@ type CollectionLookupOptions struct {
 
 type CollectionRepository interface {
 	Create(ctx context.Context, tx bun.Tx, collection *models.Collection) error
+	DeleteById(ctx context.Context, tx bun.Tx, identifier string) error
 
 	FindById(ctx context.Context, identifier string) (*models.Collection, error)
 	FindByName(ctx context.Context, name string) (*models.Collection, error)

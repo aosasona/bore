@@ -15,6 +15,17 @@ type collectionRepository struct {
 	db *bun.DB
 }
 
+// DeleteById implements CollectionRepository.
+func (c *collectionRepository) DeleteById(ctx context.Context, tx bun.Tx, identifier string) error {
+	identifier = strings.TrimSpace(identifier)
+	if identifier == "" {
+		return ErrEmptyIdentifier
+	}
+
+	_, err := tx.NewDelete().Model((*models.Collection)(nil)).WherePK(identifier).Exec(ctx)
+	return err
+}
+
 type CollectionWithItemsCount struct {
 	models.Collection
 	ItemsCount int64 `bun:"items_count"`
@@ -89,8 +100,9 @@ func (c *collectionRepository) FindById(
 	ctx context.Context,
 	identifier string,
 ) (*models.Collection, error) {
+	identifier = strings.TrimSpace(identifier)
 	if identifier == "" {
-		return nil, errs.New("identifier cannot be empty")
+		return nil, ErrEmptyIdentifier
 	}
 
 	var collection models.Collection

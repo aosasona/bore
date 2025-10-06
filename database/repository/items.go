@@ -49,6 +49,10 @@ func (i *itemRepository) Create(ctx context.Context, tx bun.Tx, item *models.Ite
 // DeleteById implements ItemRepository.
 func (i *itemRepository) DeleteById(ctx context.Context, tx bun.Tx, identifier string) error {
 	identifier = strings.TrimSpace(identifier)
+	if identifier == "" {
+		return ErrEmptyIdentifier
+	}
+
 	_, err := tx.NewDelete().Model((*models.Item)(nil)).Where("id = ?", identifier).Exec(ctx)
 	if err != nil {
 		return err
