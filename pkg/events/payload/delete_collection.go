@@ -5,6 +5,7 @@ import (
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/repository"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 	"go.trulyao.dev/bore/v2/pkg/events/action"
 )
 
@@ -17,12 +18,16 @@ func (d *DeleteCollection) ApplyProjection(
 	repo repository.Repository,
 	options ProjectionOptions,
 ) error {
-	panic("unimplemented")
+	if !options.Aggregate.IsValid() {
+		return errs.New("invalid aggregate")
+	}
+
+	return repo.Collections().DeleteById(ctx, tx, options.Aggregate.ID())
 }
 
 // Type implements Payload.
 func (d *DeleteCollection) Type() action.Action {
-	panic("unimplemented")
+	return action.ActionDeleteCollection
 }
 
 var _ Payload = (*DeleteCollection)(nil)
