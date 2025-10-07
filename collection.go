@@ -50,7 +50,21 @@ func (c *collectionNamespace) Create(ctx context.Context, name string) error {
 
 // Delete deletes a collection and all its associated items.
 func (c *collectionNamespace) Delete(ctx context.Context, identifier string) error {
-	panic("not implemented")
+	agg, err := aggregate.WithID(aggregate.AggregateTypeCollection, identifier)
+	if err != nil {
+		return errs.New("failed to create aggregate for deletion event").WithError(err)
+	}
+
+	event, err := events.New(agg, &payload.DeleteCollection{})
+	if err != nil {
+		return errs.New("failed to create collection deletion event").WithError(err)
+	}
+
+	if _, _, err = c.manager.Apply(ctx, event); err != nil {
+		return errs.New("failed to apply collection deletion event").WithError(err)
+	}
+
+	return nil
 }
 
 // Rename renames a collection. This does not change the collection ID.
