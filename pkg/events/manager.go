@@ -8,7 +8,6 @@ import (
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/errs"
-	"go.trulyao.dev/bore/v2/pkg/events/action"
 	"go.trulyao.dev/bore/v2/pkg/events/aggregate"
 	"go.trulyao.dev/bore/v2/pkg/events/payload"
 )
@@ -147,21 +146,7 @@ func (m *Manager) applyProjection(ctx context.Context, tx bun.Tx, event *Event) 
 		return errs.New("event cannot be nil")
 	}
 
-	var (
-		p   payload.Payload
-		err error
-	)
-	switch event.Type {
-	case action.ActionCreateItem:
-		p, err = payload.Decode(event.Payload, new(payload.CreateItem))
-	case action.ActionBumpItem:
-		p, err = payload.Decode(event.Payload, new(payload.BumpItem))
-	case action.ActionDeleteItem:
-		p, err = payload.Decode(event.Payload, new(payload.DeleteItem))
-	default:
-		return ErrUnknownEventType
-	}
-
+	p, err := payload.Decode(event.Payload, event.Type)
 	if err != nil {
 		return err
 	}
@@ -170,5 +155,6 @@ func (m *Manager) applyProjection(ctx context.Context, tx bun.Tx, event *Event) 
 		Aggregate: event.Aggregate,
 		Sequence:  event.Sequence,
 	}
+
 	return p.ApplyProjection(ctx, tx, m.repo, options)
 }
