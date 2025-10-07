@@ -34,8 +34,8 @@ func New(aggregateType AggregateType) (Aggregate, error) {
 	return Aggregate{id: ulid.Make(), t: aggregateType}, nil
 }
 
-// NewWithID creates a new aggregate with the given type and ULID.
-func NewWithID(aggregateType AggregateType, aggregateId string) (Aggregate, error) {
+// WithID creates a new aggregate with the given type and ULID.
+func WithID(aggregateType AggregateType, aggregateId string) (Aggregate, error) {
 	if !aggregateType.IsValid() {
 		return Aggregate{}, ErrInvalidAggregateString
 	}
@@ -54,7 +54,7 @@ func NewWithID(aggregateType AggregateType, aggregateId string) (Aggregate, erro
 
 // FromRaw creates a new aggregate from raw string inputs for type and ID.
 func FromRaw(aggregateType string, aggregateId string) (Aggregate, error) {
-	return NewWithID(AggregateType(strings.TrimSpace(aggregateType)), aggregateId)
+	return WithID(AggregateType(strings.TrimSpace(aggregateType)), aggregateId)
 }
 
 // Parses an aggregate from its string representation in the format "type:id".

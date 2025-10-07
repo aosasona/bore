@@ -57,7 +57,7 @@ func (i *clipboardNamespace) Set(ctx context.Context, data []byte, opts SetClipb
 	var e *events.Event
 	if existingItem != nil {
 		var existingAgg aggregate.Aggregate
-		existingAgg, err = aggregate.NewWithID(aggregate.AggregateTypeItem, existingItem.ID)
+		existingAgg, err = aggregate.WithID(aggregate.AggregateTypeItem, existingItem.ID)
 		if err != nil {
 			return errs.New("failed to create aggregate for existing item").WithError(err)
 		}
@@ -131,7 +131,7 @@ func (b *Bore) Get(ctx context.Context, options GetClipboardOptions) (PasteResul
 	}
 
 	if options.DeleteAfterPaste {
-		agg, err := aggregate.NewWithID(aggregate.AggregateTypeItem, item.ID)
+		agg, err := aggregate.WithID(aggregate.AggregateTypeItem, item.ID)
 		if err != nil {
 			return PasteResult{}, errs.New(
 				"failed to create aggregate for deletion event",
