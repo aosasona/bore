@@ -51,6 +51,9 @@ func Decode[P RawPayload](data P, a action.Action) (Payload, error) {
 	case action.ActionBumpItem:
 		target = new(BumpItem)
 
+	case action.ActionRenameCollection:
+		target = new(RenameCollection)
+
 	default:
 		return nil, errs.New(fmt.Sprintf("unknown event action: %s", a))
 	}

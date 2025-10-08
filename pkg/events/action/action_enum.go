@@ -18,6 +18,8 @@ const (
 	ActionCreateCollection Action = "create_collection"
 	// ActionDeleteCollection is a Action of type delete_collection.
 	ActionDeleteCollection Action = "delete_collection"
+	// ActionRenameCollection is a Action of type rename_collection.
+	ActionRenameCollection Action = "rename_collection"
 )
 
 var ErrInvalidAction = errors.New("not a valid Action")
@@ -40,6 +42,7 @@ var _ActionValue = map[string]Action{
 	"delete_item":       ActionDeleteItem,
 	"create_collection": ActionCreateCollection,
 	"delete_collection": ActionDeleteCollection,
+	"rename_collection": ActionRenameCollection,
 }
 
 // ParseAction attempts to convert a string to a Action.
