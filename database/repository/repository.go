@@ -33,6 +33,7 @@ type CollectionLookupOptions struct {
 
 type CollectionRepository interface {
 	Create(ctx context.Context, tx bun.Tx, collection *models.Collection) error
+	Rename(ctx context.Context, tx bun.Tx, identifier string, newName string) error
 	DeleteById(ctx context.Context, tx bun.Tx, identifier string) error
 
 	FindById(ctx context.Context, identifier string) (*models.Collection, error)

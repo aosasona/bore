@@ -9,10 +9,48 @@ import (
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/models"
 	"go.trulyao.dev/bore/v2/pkg/errs"
+	"go.trulyao.dev/bore/v2/pkg/validation"
 )
 
 type collectionRepository struct {
 	db *bun.DB
+}
+
+// Rename implements CollectionRepository.
+func (c *collectionRepository) Rename(
+	ctx context.Context,
+	tx bun.Tx,
+	identifier string,
+	newName string,
+) error {
+	if strings.TrimSpace(identifier) == "" {
+		return ErrEmptyIdentifier
+	}
+
+	newName = strings.TrimSpace(newName)
+	if !validation.IsValidCollectionName(newName) {
+		return validation.ErrInvalidCollectionName
+	}
+
+	res, err := tx.NewUpdate().
+		Model((*models.Collection)(nil)).
+		Set("name = ?", newName).
+		WherePK(identifier).
+		Exec(ctx)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return errs.New("no collection found with the given identifier")
+	}
+
+	return nil
 }
 
 // DeleteById implements CollectionRepository.
