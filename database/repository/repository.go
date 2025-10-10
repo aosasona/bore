@@ -31,6 +31,21 @@ type CollectionLookupOptions struct {
 	Name       string
 }
 
+type OrderBy struct {
+	Field     string
+	Ascending bool
+}
+
+type Pagination struct {
+	Limit  int
+	Offset int
+}
+
+type FindAllOptions struct {
+	OrderBy    []OrderBy
+	Pagination *Pagination
+}
+
 type CollectionRepository interface {
 	Create(ctx context.Context, tx bun.Tx, collection *models.Collection) error
 	Rename(ctx context.Context, tx bun.Tx, identifier string, newName string) error
@@ -40,6 +55,7 @@ type CollectionRepository interface {
 	FindByName(ctx context.Context, name string) (*models.Collection, error)
 	// FindOne looks up a collection by either ID or name.
 	FindOne(ctx context.Context, opts CollectionLookupOptions) (*models.Collection, error)
+	FindAll(ctx context.Context, opts FindAllOptions) ([]*models.Collection, error)
 }
 
 // Repository is the main interface for accessing all repositories.

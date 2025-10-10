@@ -16,6 +16,41 @@ type collectionRepository struct {
 	db *bun.DB
 }
 
+// FindAll implements CollectionRepository.
+func (c *collectionRepository) FindAll(
+	ctx context.Context,
+	opts FindAllOptions,
+) ([]*models.Collection, error) {
+	var collections []*models.Collection
+	query := c.db.NewSelect().Model(&collections)
+
+	// MARK: ordering
+	for _, order := range opts.OrderBy {
+		direction := "DESC"
+		if order.Ascending {
+			direction = "ASC"
+		}
+		query = query.OrderExpr(order.Field + " " + direction)
+	}
+
+	// MARK: pagination
+	if opts.Pagination != nil {
+		if opts.Pagination.Limit > 0 {
+			query = query.Limit(opts.Pagination.Limit)
+		}
+		if opts.Pagination.Offset > 0 {
+			query = query.Offset(opts.Pagination.Offset)
+		}
+	}
+
+	err := query.Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return collections, nil
+}
+
 // Rename implements CollectionRepository.
 func (c *collectionRepository) Rename(
 	ctx context.Context,
