@@ -29,7 +29,8 @@ go.work.sum
 
 dist/
 
-bore-cli
+/bore-cli
+!/cmd/bore-cli
 bin
 
 *.db
