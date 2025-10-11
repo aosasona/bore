@@ -212,3 +212,65 @@ func (a *App) pasteCommand() *cli.Command {
 		},
 	}
 }
+
+func (a *App) collectionsSubcommand() *cli.Command {
+	// nolint:exhaustruct
+	return &cli.Command{
+		Name:  "collections",
+		Usage: "Manage clipboard collections",
+		Subcommands: []*cli.Command{
+			{
+				Name:  "list",
+				Usage: "List all collections",
+				Action: func(ctx *cli.Context) error {
+					panic("not implemented")
+				},
+			},
+			{
+				Name:      "create",
+				Usage:     "Create a new collection",
+				ArgsUsage: "[collection name]",
+				Args:      true,
+				Action: func(ctx *cli.Context) error {
+					panic("not implemented")
+				},
+			},
+			{
+				Name:  "delete",
+				Usage: "Delete a collection",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     handler.FlagCollection,
+						Aliases:  []string{"c"},
+						Usage:    "ID of the collection to delete",
+						Required: true,
+					},
+					&cli.BoolFlag{
+						Name:    handler.FlagForce,
+						Aliases: []string{"f"},
+						Usage:   "Force deletion without confirmation",
+						Value:   false,
+					},
+				},
+				Action: func(ctx *cli.Context) error {
+					panic("not implemented")
+				},
+			},
+			{
+				Name:  "set-default",
+				Usage: "Set the default collection",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     handler.FlagCollection,
+						Aliases:  []string{"c"},
+						Usage:    "ID of the collection to set as default",
+						Required: true,
+					},
+				},
+				Action: func(ctx *cli.Context) error {
+					panic("not implemented")
+				},
+			},
+		},
+	}
+}
