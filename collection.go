@@ -3,6 +3,7 @@ package bore
 import (
 	"context"
 
+	"go.trulyao.dev/bore/v2/database/models"
 	"go.trulyao.dev/bore/v2/database/repository"
 	"go.trulyao.dev/bore/v2/pkg/errs"
 	"go.trulyao.dev/bore/v2/pkg/events"
@@ -100,9 +101,25 @@ func (c *collectionNamespace) Rename(ctx context.Context, identifier, newName st
 	return nil
 }
 
+type ListCollectionsOptions struct {
+	OrderBy    []repository.OrderBy
+	Pagination *repository.Pagination
+}
+
 // List returns all collections with their associated items count.
 func (c *collectionNamespace) List(
 	ctx context.Context,
-) ([]*repository.CollectionWithItemsCount, error) {
-	panic("not implemented")
+	options ListCollectionsOptions,
+) (models.Collections, error) {
+	repoOptions := repository.FindAllOptions{
+		OrderBy:    options.OrderBy,
+		Pagination: options.Pagination,
+	}
+
+	collections, err := c.repository.Collections().FindAll(ctx, repoOptions)
+	if err != nil {
+		return nil, errs.New("failed to list collections").WithError(err)
+	}
+
+	return collections, nil
 }
