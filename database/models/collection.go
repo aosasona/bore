@@ -21,6 +21,13 @@ type Collection struct {
 	Items []*Item `bun:"rel:has-many,join:id=collection_id"`
 }
 
+type CollectionWithItemsCount struct {
+	Collection
+	ItemsCount int `bun:"items_count"`
+}
+
+type Collections []*CollectionWithItemsCount
+
 // BeforeAppendModel implements schema.BeforeAppendModelHook.
 func (collection *Collection) BeforeAppendModel(ctx context.Context, query schema.Query) error {
 	if err := collection.Validate(); err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/uptrace/bun"
@@ -20,11 +21,13 @@ type collectionRepository struct {
 func (c *collectionRepository) FindAll(
 	ctx context.Context,
 	opts FindAllOptions,
-) ([]*models.Collection, error) {
-	var collections []*models.Collection
-	query := c.db.NewSelect().Model(&collections)
+) (models.Collections, error) {
+	query := c.db.NewSelect().
+		Model((*models.Collection)(nil)).
+		ColumnExpr("collection.*").
+		ColumnExpr("(SELECT COUNT(*) FROM item WHERE item.collection_id = collection.id) AS items_count").
+		Table("collection")
 
-	// MARK: ordering
 	for _, order := range opts.OrderBy {
 		direction := "DESC"
 		if order.Ascending {
@@ -33,7 +36,6 @@ func (c *collectionRepository) FindAll(
 		query = query.OrderExpr(order.Field + " " + direction)
 	}
 
-	// MARK: pagination
 	if opts.Pagination != nil {
 		if opts.Pagination.Limit > 0 {
 			query = query.Limit(opts.Pagination.Limit)
@@ -43,10 +45,12 @@ func (c *collectionRepository) FindAll(
 		}
 	}
 
-	err := query.Scan(ctx)
-	if err != nil {
+	var collections models.Collections
+	if err := query.Scan(ctx, &collections); err != nil {
 		return nil, err
 	}
+
+	fmt.Println(query.String()) // TODO: remove
 
 	return collections, nil
 }
@@ -97,11 +101,6 @@ func (c *collectionRepository) DeleteById(ctx context.Context, tx bun.Tx, identi
 
 	_, err := tx.NewDelete().Model((*models.Collection)(nil)).WherePK(identifier).Exec(ctx)
 	return err
-}
-
-type CollectionWithItemsCount struct {
-	models.Collection
-	ItemsCount int64 `bun:"items_count"`
 }
 
 // FindOne implements CollectionRepository.

@@ -55,7 +55,7 @@ type CollectionRepository interface {
 	FindByName(ctx context.Context, name string) (*models.Collection, error)
 	// FindOne looks up a collection by either ID or name.
 	FindOne(ctx context.Context, opts CollectionLookupOptions) (*models.Collection, error)
-	FindAll(ctx context.Context, opts FindAllOptions) ([]*models.Collection, error)
+	FindAll(ctx context.Context, opts FindAllOptions) (models.Collections, error)
 }
 
 // Repository is the main interface for accessing all repositories.
