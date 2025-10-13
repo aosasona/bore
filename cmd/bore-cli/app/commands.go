@@ -76,6 +76,7 @@ func (a *App) createRootCmd() *cli.App {
 			a.resetCommand(),
 			a.copyCommand(),
 			a.pasteCommand(),
+			a.collectionsCommand(),
 		},
 	}
 }
@@ -213,7 +214,7 @@ func (a *App) pasteCommand() *cli.Command {
 	}
 }
 
-func (a *App) collectionsSubcommand() *cli.Command {
+func (a *App) collectionsCommand() *cli.Command {
 	// nolint:exhaustruct
 	return &cli.Command{
 		Name:  "collections",
@@ -222,8 +223,15 @@ func (a *App) collectionsSubcommand() *cli.Command {
 			{
 				Name:  "list",
 				Usage: "List all collections",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    handler.FlagFormat,
+						Aliases: []string{"f"},
+						Usage:   "Output format (text, json)",
+					},
+				},
 				Action: func(ctx *cli.Context) error {
-					panic("not implemented")
+					return a.handler.ListCollections(ctx)
 				},
 			},
 			{
@@ -232,7 +240,7 @@ func (a *App) collectionsSubcommand() *cli.Command {
 				ArgsUsage: "[collection name]",
 				Args:      true,
 				Action: func(ctx *cli.Context) error {
-					panic("not implemented")
+					return a.handler.CreateCollection(ctx)
 				},
 			},
 			{
@@ -253,7 +261,7 @@ func (a *App) collectionsSubcommand() *cli.Command {
 					},
 				},
 				Action: func(ctx *cli.Context) error {
-					panic("not implemented")
+					return a.handler.DeleteCollection(ctx)
 				},
 			},
 			{
@@ -268,7 +276,7 @@ func (a *App) collectionsSubcommand() *cli.Command {
 					},
 				},
 				Action: func(ctx *cli.Context) error {
-					panic("not implemented")
+					return a.handler.SetDefaultCollection(ctx)
 				},
 			},
 		},
