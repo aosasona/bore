@@ -22,9 +22,10 @@ func pipedIn() bool {
 func (a *App) createRootCmd() *cli.App {
 	// nolint:exhaustruct
 	return &cli.App{
-		Name:    "bore",
-		Usage:   "A clipboard manager for the terminal",
-		Version: Version,
+		Name:                 "bore",
+		Usage:                "A clipboard manager for the terminal",
+		Version:              Version,
+		EnableBashCompletion: true,
 		Authors: []*cli.Author{
 			{Name: "Ayodeji O.", Email: "ayodeji@trulyao.dev"},
 		},
