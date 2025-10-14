@@ -240,6 +240,14 @@ func (a *App) collectionsCommand() *cli.Command {
 				Usage:     "Create a new collection",
 				ArgsUsage: "[collection name]",
 				Args:      true,
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    handler.FlagForce,
+						Aliases: []string{"f"},
+						Usage:   "Force creation even if a collection with the same name exists (uses a random suffix)",
+						Value:   false,
+					},
+				},
 				Action: func(ctx *cli.Context) error {
 					return a.handler.CreateCollection(ctx)
 				},
