@@ -16,6 +16,12 @@ func (h *Handler) ListCollections(c *cli.Context) error {
 }
 
 func (h *Handler) CreateCollection(c *cli.Context) error {
+	if c.NArg() == 0 {
+		return cli.Exit("collection name is required", 1)
+	} else if c.NArg() > 1 {
+		return cli.Exit("too many arguments", 1)
+	}
+
 	name := c.Args().First()
 	force := c.Bool(FlagForce)
 
