@@ -163,6 +163,7 @@ func (c *collectionRepository) Create(
 	tx bun.Tx,
 	collection *models.Collection,
 ) error {
+	// TODO: debug
 	_, err := tx.NewInsert().Model(collection).Ignore().Exec(ctx)
 	return err
 }

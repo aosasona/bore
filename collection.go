@@ -19,7 +19,10 @@ type collectionNamespace struct {
 
 type (
 	CreateCollectionOptions struct {
-		Name                 string
+		Name string
+		// TODO: pass this on to the payload since we already have it implemented there
+		// it should be enabled by default in the payload ApplyProjection method
+		// but here, we need to explicitly set it based on the `force` flag
 		AppendSuffixIfExists bool
 	}
 
