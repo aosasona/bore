@@ -2,6 +2,7 @@ package bore
 
 import (
 	"context"
+	"fmt"
 
 	"go.trulyao.dev/bore/v2/database/models"
 	"go.trulyao.dev/bore/v2/database/repository"
@@ -16,9 +17,25 @@ type collectionNamespace struct {
 	*Bore
 }
 
-func (c *collectionNamespace) Create(ctx context.Context, name string) error {
+type (
+	CreateCollectionOptions struct {
+		Name                 string
+		AppendSuffixIfExists bool
+	}
+
+	CreateCollectionResult struct {
+		Name string
+		ID   string
+	}
+)
+
+func (c *collectionNamespace) Create(
+	ctx context.Context,
+	options CreateCollectionOptions,
+) (CreateCollectionResult, error) {
+	name := options.Name
 	if !validation.IsValidCollectionName(name) {
-		return validation.ErrInvalidCollectionName
+		return CreateCollectionResult{}, validation.ErrInvalidCollectionName
 	}
 
 	existingCollection, err := c.repository.Collections().
@@ -27,11 +44,19 @@ func (c *collectionNamespace) Create(ctx context.Context, name string) error {
 			Name:       name,
 		})
 	if err != nil {
-		return err
+		return CreateCollectionResult{}, err
 	}
 
 	if existingCollection != nil {
-		return errs.New("collection with the same name already exists")
+		if !options.AppendSuffixIfExists {
+			return CreateCollectionResult{}, errs.New(
+				"collection with the same name already exists",
+			)
+		}
+
+		if name, err = c.AddSuffix(ctx, name); err != nil {
+			return CreateCollectionResult{}, err
+		}
 	}
 
 	event, err := events.NewWithGeneratedID(
@@ -39,14 +64,47 @@ func (c *collectionNamespace) Create(ctx context.Context, name string) error {
 		&payload.CreateCollection{Name: name},
 	)
 	if err != nil {
-		return errs.New("failed to create collection creation event").WithError(err)
+		return CreateCollectionResult{}, errs.New("failed to create collection creation event").
+			WithError(err)
 	}
 
 	if _, _, err = c.manager.Apply(ctx, event); err != nil {
-		return errs.New("failed to apply collection creation event").WithError(err)
+		return CreateCollectionResult{}, errs.New("failed to apply collection creation event").
+			WithError(err)
 	}
 
-	return nil
+	return CreateCollectionResult{
+		Name: name,
+		ID:   event.Aggregate.ID(),
+	}, nil
+}
+
+func (c *collectionNamespace) AddSuffix(ctx context.Context, name string) (string, error) {
+	suffix := 1
+	originalName := name
+
+	for {
+		if suffix > 999 {
+			return "", errs.New("failed to generate a unique collection name")
+		}
+
+		name = originalName + " " + fmt.Sprintf("%03d", suffix)
+		existingCollection, err := c.repository.Collections().FindOne(
+			ctx,
+			repository.CollectionLookupOptions{Identifier: "", Name: name},
+		)
+		if err != nil {
+			return "", errs.New("failed to check existing collection name").WithError(err)
+		}
+
+		if existingCollection == nil {
+			break
+		}
+
+		suffix++
+	}
+
+	return name, nil
 }
 
 // Delete deletes a collection and all its associated items.
