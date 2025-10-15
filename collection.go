@@ -2,7 +2,6 @@ package bore
 
 import (
 	"context"
-	"fmt"
 
 	"go.trulyao.dev/bore/v2/database/models"
 	"go.trulyao.dev/bore/v2/database/repository"
@@ -19,10 +18,7 @@ type collectionNamespace struct {
 
 type (
 	CreateCollectionOptions struct {
-		Name string
-		// TODO: pass this on to the payload since we already have it implemented there
-		// it should be enabled by default in the payload ApplyProjection method
-		// but here, we need to explicitly set it based on the `force` flag
+		Name                 string
 		AppendSuffixIfExists bool
 	}
 
@@ -50,16 +46,10 @@ func (c *collectionNamespace) Create(
 		return CreateCollectionResult{}, err
 	}
 
-	if existingCollection != nil {
-		if !options.AppendSuffixIfExists {
-			return CreateCollectionResult{}, errs.New(
-				"collection with the same name already exists",
-			)
-		}
-
-		if name, err = c.AddSuffix(ctx, name); err != nil {
-			return CreateCollectionResult{}, err
-		}
+	if existingCollection != nil && !options.AppendSuffixIfExists {
+		return CreateCollectionResult{}, errs.New(
+			"collection with the same name already exists",
+		)
 	}
 
 	event, err := events.NewWithGeneratedID(
@@ -76,38 +66,18 @@ func (c *collectionNamespace) Create(
 			WithError(err)
 	}
 
-	return CreateCollectionResult{
-		Name: name,
-		ID:   event.Aggregate.ID(),
-	}, nil
-}
-
-func (c *collectionNamespace) AddSuffix(ctx context.Context, name string) (string, error) {
-	suffix := 1
-	originalName := name
-
-	for {
-		if suffix > 999 {
-			return "", errs.New("failed to generate a unique collection name")
-		}
-
-		name = originalName + " " + fmt.Sprintf("%03d", suffix)
-		existingCollection, err := c.repository.Collections().FindOne(
-			ctx,
-			repository.CollectionLookupOptions{Identifier: "", Name: name},
-		)
-		if err != nil {
-			return "", errs.New("failed to check existing collection name").WithError(err)
-		}
-
-		if existingCollection == nil {
-			break
-		}
-
-		suffix++
+	collection, err := c.repository.Collections().FindOne(ctx, repository.CollectionLookupOptions{
+		Name:       "",
+		Identifier: event.Aggregate.ID(),
+	})
+	if err != nil {
+		return CreateCollectionResult{}, errs.Wrap(err, "failed to fetch created collection")
 	}
 
-	return name, nil
+	return CreateCollectionResult{
+		Name: collection.Name,
+		ID:   event.Aggregate.ID(),
+	}, nil
 }
 
 // Delete deletes a collection and all its associated items.
