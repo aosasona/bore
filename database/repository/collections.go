@@ -74,7 +74,7 @@ func (c *collectionRepository) Rename(
 	res, err := tx.NewUpdate().
 		Model((*models.Collection)(nil)).
 		Set("name = ?", newName).
-		WherePK(identifier).
+		Where("id = ?", identifier).
 		Exec(ctx)
 	if err != nil {
 		return err
@@ -99,7 +99,7 @@ func (c *collectionRepository) DeleteById(ctx context.Context, tx bun.Tx, identi
 		return ErrEmptyIdentifier
 	}
 
-	_, err := tx.NewDelete().Model((*models.Collection)(nil)).WherePK(identifier).Exec(ctx)
+	_, err := tx.NewDelete().Model((*models.Collection)(nil)).Where("id = ?", identifier).Exec(ctx)
 	return err
 }
 
@@ -115,17 +115,17 @@ func (c *collectionRepository) FindOne(
 		return nil, errs.New("either identifier or name must be provided")
 	}
 
-	var collection *models.Collection
-	err := c.db.NewSelect().Model(&collection).
-		WherePK(opts.Identifier).
+	collection := new(models.Collection)
+	query := c.db.NewSelect().Model(collection).
+		Where("id = ?", opts.Identifier).
 		WhereOr("LOWER(name) = LOWER(?)", opts.Name).
-		Limit(1).
-		Scan(ctx)
+		Limit(1)
+	err := query.Scan(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		return nil, errs.Wrap(err, "failed to find collection")
 	}
 
 	return collection, nil
@@ -141,9 +141,9 @@ func (c *collectionRepository) FindByName(
 		return nil, errs.New("name cannot be empty")
 	}
 
-	var collection models.Collection
+	collection := new(models.Collection)
 	err := c.db.NewSelect().
-		Model(&collection).
+		Model(collection).
 		Where("LOWER(name) = LOWER(?)", name).
 		Limit(1).
 		Scan(ctx)
@@ -154,7 +154,7 @@ func (c *collectionRepository) FindByName(
 		return nil, err
 	}
 
-	return &collection, nil
+	return collection, nil
 }
 
 // Create implements CollectionRepository.
@@ -163,7 +163,6 @@ func (c *collectionRepository) Create(
 	tx bun.Tx,
 	collection *models.Collection,
 ) error {
-	// TODO: debug
 	_, err := tx.NewInsert().Model(collection).Ignore().Exec(ctx)
 	return err
 }
@@ -178,8 +177,8 @@ func (c *collectionRepository) FindById(
 		return nil, ErrEmptyIdentifier
 	}
 
-	var collection models.Collection
-	err := c.db.NewSelect().Model(&collection).WherePK(identifier).Limit(1).Scan(ctx)
+	collection := new(models.Collection)
+	err := c.db.NewSelect().Model(collection).Where("id = ?", identifier).Limit(1).Scan(ctx)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -187,7 +186,7 @@ func (c *collectionRepository) FindById(
 		return nil, err
 	}
 
-	return &collection, nil
+	return collection, nil
 }
 
 var _ CollectionRepository = (*collectionRepository)(nil)
