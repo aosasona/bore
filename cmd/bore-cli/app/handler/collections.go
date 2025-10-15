@@ -30,7 +30,7 @@ func (h *Handler) CreateCollection(c *cli.Context) error {
 		bore.CreateCollectionOptions{Name: name, AppendSuffixIfExists: force},
 	)
 	if err != nil {
-		return cli.Exit("failed to create collection: "+err.Error(), 1)
+		return err
 	}
 
 	_, _ = c.App.Writer.Write([]byte(result.Name + " (" + result.ID + ")\n"))

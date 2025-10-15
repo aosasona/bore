@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/uptrace/bun"
@@ -49,8 +48,6 @@ func (c *collectionRepository) FindAll(
 	if err := query.Scan(ctx, &collections); err != nil {
 		return nil, err
 	}
-
-	fmt.Println(query.String()) // TODO: remove
 
 	return collections, nil
 }
