@@ -7,6 +7,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/rivo/tview"
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/handler"
@@ -33,6 +34,8 @@ func init() {
 }
 
 type App struct {
+	*tview.Application
+
 	// configPath is the path to the configuration file.
 	configPath string
 
@@ -47,6 +50,7 @@ type App struct {
 func New() (*App, error) {
 	app := &App{}
 
+	app.Application = tview.NewApplication()
 	app.dataDir = defaultDataPath()
 	app.configPath = defaultConfigPath()
 
@@ -96,18 +100,18 @@ func (a *App) Load() error {
 	}
 
 	a.bore = bore
-	a.handler = handler.New(bore)
+	a.handler = handler.New(bore, a.Application)
 
 	return nil
 }
 
 func (a *App) createDirectories() error {
 	configDir := path.Dir(a.configPath)
-	if err := os.MkdirAll(configDir, 0755); err != nil {
+	if err := os.MkdirAll(configDir, 0o755); err != nil {
 		return errors.New("failed to create config directory: " + err.Error())
 	}
 
-	if err := os.MkdirAll(a.dataDir, 0755); err != nil {
+	if err := os.MkdirAll(a.dataDir, 0o755); err != nil {
 		return errors.New("failed to create data directory: " + err.Error())
 	}
 
@@ -131,7 +135,7 @@ func (a *App) createDefaultConfigFile() error {
 		return errors.New("failed to convert config to string: " + err.Error())
 	}
 
-	if err := os.WriteFile(a.configPath, configStr, 0644); err != nil {
+	if err := os.WriteFile(a.configPath, configStr, 0o644); err != nil {
 		return errors.New("failed to write config file: " + err.Error())
 	}
 

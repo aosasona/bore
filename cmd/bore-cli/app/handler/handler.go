@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/rivo/tview"
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
 )
@@ -31,9 +32,13 @@ const (
 )
 
 type Handler struct {
+	*tview.Application
 	bore *bore.Bore
 }
 
-func New(bore *bore.Bore) *Handler {
-	return &Handler{bore: bore}
+func New(bore *bore.Bore, application *tview.Application) *Handler {
+	return &Handler{
+		Application: application,
+		bore:        bore,
+	}
 }
