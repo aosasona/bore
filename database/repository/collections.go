@@ -23,9 +23,9 @@ func (c *collectionRepository) FindAll(
 ) (models.Collections, error) {
 	query := c.db.NewSelect().
 		Model((*models.Collection)(nil)).
-		ColumnExpr("collection.*").
-		ColumnExpr("(SELECT COUNT(*) FROM item WHERE item.collection_id = collection.id) AS items_count").
-		Table("collection")
+		ColumnExpr("collections.*").
+		ColumnExpr("(SELECT COUNT(*) FROM items WHERE items.collection_id = collections.id) AS items_count").
+		Table("collections")
 
 	for _, order := range opts.OrderBy {
 		direction := "DESC"

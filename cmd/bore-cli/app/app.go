@@ -7,10 +7,10 @@ import (
 	"path"
 	"strings"
 
-	"github.com/rivo/tview"
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/handler"
+	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/view"
 )
 
 var Version string
@@ -34,7 +34,7 @@ func init() {
 }
 
 type App struct {
-	*tview.Application
+	bore *bore.Bore
 
 	// configPath is the path to the configuration file.
 	configPath string
@@ -42,17 +42,17 @@ type App struct {
 	// dataDir is the path to the data directory where data is stored.
 	dataDir string
 
-	bore *bore.Bore
-
 	handler *handler.Handler
+
+	views *view.ViewManager
 }
 
 func New() (*App, error) {
-	app := &App{}
-
-	app.Application = tview.NewApplication()
-	app.dataDir = defaultDataPath()
-	app.configPath = defaultConfigPath()
+	app := &App{
+		configPath: defaultConfigPath(),
+		dataDir:    defaultDataPath(),
+		views:      view.NewViewManager(),
+	}
 
 	return app, nil
 }
@@ -100,7 +100,7 @@ func (a *App) Load() error {
 	}
 
 	a.bore = bore
-	a.handler = handler.New(bore, a.Application)
+	a.handler = handler.New(bore, a.views)
 
 	return nil
 }
