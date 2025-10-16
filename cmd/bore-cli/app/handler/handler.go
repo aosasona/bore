@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"github.com/rivo/tview"
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
+	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/view"
 )
 
 var ErrClipboardNotAvailable = cli.Exit("system clipboard is not available", 1)
@@ -32,13 +32,10 @@ const (
 )
 
 type Handler struct {
-	*tview.Application
-	bore *bore.Bore
+	viewManager *view.ViewManager
+	bore        *bore.Bore
 }
 
-func New(bore *bore.Bore, application *tview.Application) *Handler {
-	return &Handler{
-		Application: application,
-		bore:        bore,
-	}
+func New(bore *bore.Bore, view *view.ViewManager) *Handler {
+	return &Handler{viewManager: view, bore: bore}
 }

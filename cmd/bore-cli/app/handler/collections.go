@@ -11,8 +11,16 @@ func (h *Handler) ListCollections(c *cli.Context) error {
 		format = string(PasteFormatText)
 	}
 
-	_ = format
-	panic("not implemented")
+	collections, err := h.bore.Collections().List(c.Context, bore.ListCollectionsOptions{})
+	if err != nil {
+		return err
+	}
+
+	if format == string(PasteFormatJSON) {
+		return h.viewManager.RenderJSON(c.App.Writer, collections)
+	}
+
+	return h.viewManager.RenderCollections(c.App.Writer, collections)
 }
 
 func (h *Handler) CreateCollection(c *cli.Context) error {
