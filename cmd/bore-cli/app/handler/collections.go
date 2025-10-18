@@ -20,7 +20,7 @@ func (h *Handler) ListCollections(c *cli.Context) error {
 		return h.viewManager.RenderJSON(c.App.Writer, collections)
 	}
 
-	return h.viewManager.RenderCollections(c.App.Writer, collections)
+	return h.viewManager.RenderCollectionsList(c.App.Writer, collections)
 }
 
 func (h *Handler) CreateCollection(c *cli.Context) error {

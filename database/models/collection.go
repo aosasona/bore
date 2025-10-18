@@ -30,6 +30,10 @@ type CollectionWithItemsCount struct {
 
 type Collections []*CollectionWithItemsCount
 
+func (collection *Collection) Aggregate() (aggregate.Aggregate, error) {
+	return aggregate.WithID(aggregate.AggregateTypeCollection, collection.ID)
+}
+
 // BeforeAppendModel implements schema.BeforeAppendModelHook.
 func (collection *Collection) BeforeAppendModel(ctx context.Context, query schema.Query) error {
 	if err := collection.Validate(); err != nil {
