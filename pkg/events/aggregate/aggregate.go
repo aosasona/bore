@@ -91,3 +91,26 @@ func (a *Aggregate) Type() string { return a.t.String() }
 func (a *Aggregate) String() string {
 	return fmt.Sprintf("%s:%s", a.t, a.id)
 }
+
+// Equals checks if two aggregates are equal based on their type and ID.
+func (a *Aggregate) Equals(other *Aggregate) bool {
+	if other == nil {
+		return false
+	}
+	return a.t == other.t && a.id.Compare(other.id) == 0
+}
+
+// MarshalText implements the encoding.TextMarshaler interface.
+func (a Aggregate) MarshalText() ([]byte, error) {
+	return []byte(a.String()), nil
+}
+
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+func (a *Aggregate) UnmarshalText(data []byte) error {
+	parsed, err := Parse(string(data))
+	if err != nil {
+		return err
+	}
+	*a = parsed
+	return nil
+}
