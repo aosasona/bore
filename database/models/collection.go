@@ -13,7 +13,7 @@ import (
 
 type Collection struct {
 	validation.ValidateStructMixin
-	bun.BaseModel `bun:"table:collections,alias:co"`
+	bun.BaseModel `bun:"table:collections"`
 
 	ID        string    `bun:"id,pk"                                                 json:"id"`
 	Name      string    `bun:"name,notnull"                                          json:"name"       validate:"required,collection_name"`

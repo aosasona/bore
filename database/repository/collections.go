@@ -23,9 +23,10 @@ func (c *collectionRepository) FindAll(
 ) (models.Collections, error) {
 	query := c.db.NewSelect().
 		Model((*models.Collection)(nil)).
-		ColumnExpr("collections.*").
-		ColumnExpr("(SELECT COUNT(*) FROM items WHERE items.collection_id = collections.id) AS items_count").
-		Table("collections")
+		Column("collection.*").
+		Join("LEFT JOIN items AS i ON i.collection_id = collection.id").
+		ColumnExpr("COUNT(i.id) AS items_count").
+		Group("collection.id")
 
 	for _, order := range opts.OrderBy {
 		direction := "DESC"
@@ -35,12 +36,12 @@ func (c *collectionRepository) FindAll(
 		query = query.OrderExpr(order.Field + " " + direction)
 	}
 
-	if opts.Pagination != nil {
-		if opts.Pagination.Limit > 0 {
-			query = query.Limit(opts.Pagination.Limit)
+	if p := opts.Pagination; p != nil {
+		if p.Limit > 0 {
+			query = query.Limit(p.Limit)
 		}
-		if opts.Pagination.Offset > 0 {
-			query = query.Offset(opts.Pagination.Offset)
+		if p.Offset > 0 {
+			query = query.Offset(p.Offset)
 		}
 	}
 
