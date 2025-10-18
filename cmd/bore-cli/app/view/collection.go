@@ -15,19 +15,14 @@ func (v *ViewManager) RenderCollectionsList(
 ) error {
 	writer := tabwriter.NewWriter(output, 0, 8, 4, ' ', 0)
 
-	_, _ = fmt.Fprintln(writer, "AGGREGATE\tNAME\tCREATED AT\tITEMS")
+	_, _ = fmt.Fprintln(writer, "ID\tNAME\tCREATED AT\tITEMS")
 
 	for _, collection := range collections {
-		aggregate, err := collection.Aggregate()
-		if err != nil {
-			return err
-		}
-
 		createdAt := collection.CreatedAt.Format("Jan 02 2006 15:04")
-		fmt.Fprintf(
+		_, _ = fmt.Fprintf(
 			writer,
 			"%s\t%s\t%s\t%s\n",
-			aggregate.String(),
+			collection.ID,
 			collection.Name,
 			createdAt,
 			strconv.Itoa(collection.ItemsCount),
