@@ -7,7 +7,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/handler"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/view"
@@ -44,14 +43,14 @@ type App struct {
 
 	handler *handler.Handler
 
-	views *view.ViewManager
+	viewManager *view.ViewManager
 }
 
 func New() (*App, error) {
 	app := &App{
-		configPath: defaultConfigPath(),
-		dataDir:    defaultDataPath(),
-		views:      view.NewViewManager(),
+		configPath:  defaultConfigPath(),
+		dataDir:     defaultDataPath(),
+		viewManager: view.NewViewManager(),
 	}
 
 	return app, nil
@@ -59,10 +58,7 @@ func New() (*App, error) {
 
 func (a *App) Execute() error {
 	app := a.createRootCmd()
-	if err := app.Run(os.Args); err != nil {
-		return cli.Exit("error: "+err.Error(), 1)
-	}
-	return nil
+	return app.Run(os.Args)
 }
 
 func (a *App) SetConfigPath(path string) {
@@ -100,7 +96,7 @@ func (a *App) Load() error {
 	}
 
 	a.bore = bore
-	a.handler = handler.New(bore, a.views)
+	a.handler = handler.New(bore, a.viewManager)
 
 	return nil
 }

@@ -23,7 +23,7 @@ func (a *App) createRootCmd() *cli.App {
 	// nolint:exhaustruct
 	return &cli.App{
 		Name:                 "bore",
-		Usage:                "A clipboard manager for the terminal",
+		Usage:                "An SQLite-backed clipboard manager for headless environments",
 		Version:              Version,
 		EnableBashCompletion: true,
 		Authors: []*cli.Author{
