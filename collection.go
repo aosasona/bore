@@ -102,6 +102,19 @@ func (c *collectionNamespace) Create(
 
 // Delete deletes a collection and all its associated items.
 func (c *collectionNamespace) Delete(ctx context.Context, identifier string) error {
+	existingCollection, err := c.repository.Collections().
+		FindOne(ctx, repository.CollectionLookupOptions{
+			Identifier: identifier,
+			Name:       "",
+		})
+	if err != nil {
+		return errs.New("failed to check existing collection").WithError(err)
+	}
+
+	if existingCollection == nil {
+		return errs.New("collection not found")
+	}
+
 	agg, err := aggregate.WithID(aggregate.AggregateTypeCollection, identifier)
 	if err != nil {
 		return errs.New("failed to create aggregate for deletion event").WithError(err)
