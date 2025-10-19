@@ -253,15 +253,11 @@ func (a *App) collectionsCommand() *cli.Command {
 				},
 			},
 			{
-				Name:  "delete",
-				Usage: "Delete a collection",
+				Name:      "delete",
+				Usage:     "Delete a collection",
+				Args:      true,
+				ArgsUsage: "[collection id]",
 				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:     handler.FlagCollection,
-						Aliases:  []string{"c"},
-						Usage:    "ID of the collection to delete",
-						Required: true,
-					},
 					&cli.BoolFlag{
 						Name:    handler.FlagForce,
 						Aliases: []string{"f"},
