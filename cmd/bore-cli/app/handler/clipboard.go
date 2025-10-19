@@ -12,6 +12,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 	"go.trulyao.dev/bore/v2/pkg/mimetype"
 )
 
@@ -27,6 +28,11 @@ type CliCopyOptions struct {
 }
 
 func (h *Handler) Copy(ctx *cli.Context, options CliCopyOptions) error {
+	config, err := h.configManager.Read()
+	if err != nil {
+		return errs.Wrap(err, "failed to read config in copy command")
+	}
+
 	inputFile := ctx.String(FlagInputFile)
 
 	format := PasteFormat(strings.TrimSpace(ctx.String(FlagFormat)))
@@ -97,14 +103,24 @@ func (h *Handler) Copy(ctx *cli.Context, options CliCopyOptions) error {
 		}
 	}
 
+	collectionID := ctx.String(FlagCollection)
+	if collectionID == "" {
+		collectionID = config.DefaultCollection
+	}
+
 	return h.bore.Clipboard().Set(ctx.Context, content, bore.SetClipboardOptions{
 		Passthrough:  ctx.Bool(FlagSystem),
-		CollectionID: ctx.String(FlagCollection),
+		CollectionID: collectionID,
 		Mimetype:     mimeType,
 	})
 }
 
 func (h *Handler) Paste(ctx *cli.Context) error {
+	config, err := h.configManager.Read()
+	if err != nil {
+		return errs.Wrap(err, "failed to read config in copy command")
+	}
+
 	format := PasteFormat(ctx.String(FlagFormat))
 	if format == "" {
 		format = PasteFormatText
@@ -112,9 +128,14 @@ func (h *Handler) Paste(ctx *cli.Context) error {
 
 	outputFile := ctx.String(FlagOutputFile)
 
+	collectionID := ctx.String(FlagCollection)
+	if collectionID == "" {
+		collectionID = config.DefaultCollection
+	}
+
 	item, err := h.bore.Get(ctx.Context, bore.GetClipboardOptions{
 		ItemID:              ctx.String(FlagIdentifier),
-		CollectionID:        ctx.String(FlagCollection),
+		CollectionID:        collectionID,
 		FromSystemClipboard: ctx.Bool(FlagSystem),
 		DeleteAfterPaste:    ctx.Bool(FlagDelete),
 		SkipCollectionCheck: false,
