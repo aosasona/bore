@@ -4,7 +4,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/config"
-	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/view"
+	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/tui"
 )
 
 var ErrClipboardNotAvailable = cli.Exit("system clipboard is not available", 1)
@@ -33,15 +33,15 @@ const (
 )
 
 type Handler struct {
-	viewManager   *view.ViewManager
+	tuiManager    *tui.Manager
 	configManager *config.Manager
 	bore          *bore.Bore
 }
 
-func New(bore *bore.Bore, viewManager *view.ViewManager, configManager *config.Manager) *Handler {
+func New(bore *bore.Bore, tuiManager *tui.Manager, configManager *config.Manager) *Handler {
 	return &Handler{
 		bore:          bore,
-		viewManager:   viewManager,
+		tuiManager:    tuiManager,
 		configManager: configManager,
 	}
 }

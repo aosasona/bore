@@ -20,10 +20,10 @@ func (h *Handler) ListCollections(c *cli.Context) error {
 	}
 
 	if format == string(PasteFormatJSON) {
-		return h.viewManager.RenderJSON(c.App.Writer, collections)
+		return h.tuiManager.RenderJSON(c.App.Writer, collections)
 	}
 
-	return h.viewManager.RenderCollectionsList(c.App.Writer, collections)
+	return h.tuiManager.RenderCollectionsList(c.App.Writer, collections)
 }
 
 // CreateCollection creates a new collection with the given name.
