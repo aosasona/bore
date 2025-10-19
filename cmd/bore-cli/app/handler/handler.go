@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
+	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/config"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/view"
 )
 
@@ -32,10 +33,15 @@ const (
 )
 
 type Handler struct {
-	viewManager *view.ViewManager
-	bore        *bore.Bore
+	viewManager   *view.ViewManager
+	configManager *config.Manager
+	bore          *bore.Bore
 }
 
-func New(bore *bore.Bore, view *view.ViewManager) *Handler {
-	return &Handler{viewManager: view, bore: bore}
+func New(bore *bore.Bore, viewManager *view.ViewManager, configManager *config.Manager) *Handler {
+	return &Handler{
+		bore:          bore,
+		viewManager:   viewManager,
+		configManager: configManager,
+	}
 }

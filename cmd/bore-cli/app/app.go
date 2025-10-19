@@ -4,10 +4,10 @@ import (
 	"errors"
 	"os"
 	"os/exec"
-	"path"
 	"strings"
 
 	"go.trulyao.dev/bore/v2"
+	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/config"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/handler"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/view"
 )
@@ -44,6 +44,8 @@ type App struct {
 	handler *handler.Handler
 
 	viewManager *view.ViewManager
+
+	configManager *config.Manager
 }
 
 func New() (*App, error) {
@@ -70,22 +72,17 @@ func (a *App) SetDataDir(path string) {
 }
 
 func (a *App) Load() error {
-	if err := a.createDirectories(); err != nil {
-		return errors.New("failed to create directories: " + err.Error())
-	}
-
-	configExists, err := a.configFileExists()
+	configManager, err := config.NewManager(config.Options{
+		ConfigPath: a.configPath,
+		DataDir:    a.dataDir,
+	})
 	if err != nil {
 		return err
 	}
 
-	if !configExists {
-		if err := a.createDefaultConfigFile(); err != nil {
-			return err
-		}
-	}
+	a.configManager = configManager
 
-	config, err := a.readConfig()
+	config, err := a.configManager.Read()
 	if err != nil {
 		return err
 	}
@@ -96,59 +93,7 @@ func (a *App) Load() error {
 	}
 
 	a.bore = bore
-	a.handler = handler.New(bore, a.viewManager)
+	a.handler = handler.New(bore, a.viewManager, configManager)
 
 	return nil
-}
-
-func (a *App) createDirectories() error {
-	configDir := path.Dir(a.configPath)
-	if err := os.MkdirAll(configDir, 0o755); err != nil {
-		return errors.New("failed to create config directory: " + err.Error())
-	}
-
-	if err := os.MkdirAll(a.dataDir, 0o755); err != nil {
-		return errors.New("failed to create data directory: " + err.Error())
-	}
-
-	return nil
-}
-
-func (a *App) configFileExists() (bool, error) {
-	if _, err := os.Stat(a.configPath); err != nil {
-		if os.IsNotExist(err) {
-			return false, nil
-		}
-		return false, errors.New("failed to check config file: " + err.Error())
-	}
-	return true, nil
-}
-
-func (a *App) createDefaultConfigFile() error {
-	config := bore.DefaultConfig()
-	configStr, err := config.TOML()
-	if err != nil {
-		return errors.New("failed to convert config to string: " + err.Error())
-	}
-
-	if err := os.WriteFile(a.configPath, configStr, 0o644); err != nil {
-		return errors.New("failed to write config file: " + err.Error())
-	}
-
-	return nil
-}
-
-func (a *App) readConfig() (*bore.Config, error) {
-	configStr, err := os.ReadFile(a.configPath)
-	if err != nil {
-		return nil, errors.New("failed to read config file: " + err.Error())
-	}
-
-	config := new(bore.Config)
-	if _, err := config.FromBytes(configStr); err != nil {
-		return nil, errors.New("failed to parse config file: " + err.Error())
-	}
-	config.DataDir = a.dataDir
-
-	return config, nil
 }
