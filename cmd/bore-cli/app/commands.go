@@ -270,19 +270,28 @@ func (a *App) collectionsCommand() *cli.Command {
 				},
 			},
 			{
-				Name:  "set-default",
-				Usage: "Set the default collection",
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:     handler.FlagCollection,
-						Aliases:  []string{"c"},
-						Usage:    "ID of the collection to set as default",
-						Required: true,
+				Name: "default",
+				Action: func(ctx *cli.Context) error {
+					return a.handler.ShowDefaultCollection(ctx)
+				},
+				Subcommands: []*cli.Command{
+					{
+						Name:      "set",
+						Usage:     "Set the default collection",
+						ArgsUsage: "[collection id]",
+						Action: func(ctx *cli.Context) error {
+							return a.handler.SetDefaultCollection(ctx)
+						},
+					},
+					{
+						Name:  "unset",
+						Usage: "Unset the default collection",
+						Action: func(ctx *cli.Context) error {
+							return a.handler.UnsetDefaultCollection(ctx)
+						},
 					},
 				},
-				Action: func(ctx *cli.Context) error {
-					return a.handler.SetDefaultCollection(ctx)
-				},
+				Usage: "Manage the default collection",
 			},
 		},
 	}
