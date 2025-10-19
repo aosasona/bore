@@ -28,6 +28,26 @@ type (
 	}
 )
 
+func (c *collectionNamespace) Get(
+	ctx context.Context,
+	identifier string,
+) (*models.Collection, error) {
+	collection, err := c.repository.Collections().
+		FindOne(ctx, repository.CollectionLookupOptions{
+			Identifier: identifier,
+			Name:       "",
+		})
+	if err != nil {
+		return nil, errs.New("failed to fetch collection").WithError(err)
+	}
+
+	if collection == nil {
+		return nil, errs.New("collection not found")
+	}
+
+	return collection, nil
+}
+
 func (c *collectionNamespace) Create(
 	ctx context.Context,
 	options CreateCollectionOptions,
