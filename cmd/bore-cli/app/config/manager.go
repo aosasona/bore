@@ -105,3 +105,35 @@ func (m *Manager) Read() (*bore.Config, error) {
 
 	return config, nil
 }
+
+func (m *Manager) SetDefaultCollectionID(identifier string) error {
+	config, err := m.Read()
+	if err != nil {
+		return errs.Wrap(err, "failed to read config")
+	}
+
+	if err := config.SetDefaultCollection(identifier); err != nil {
+		return errs.Wrap(err, "failed to set default collection")
+	}
+
+	if err := m.Write(config); err != nil {
+		return errs.Wrap(err, "failed to write config")
+	}
+
+	return nil
+}
+
+func (m *Manager) UnsetDefaultCollectionID() error {
+	config, err := m.Read()
+	if err != nil {
+		return errs.Wrap(err, "failed to read config")
+	}
+
+	config.DefaultCollection = ""
+
+	if err := m.Write(config); err != nil {
+		return errs.Wrap(err, "failed to write config")
+	}
+
+	return nil
+}
