@@ -8,6 +8,7 @@ import (
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/models"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 )
 
 type itemRepository struct {
@@ -27,7 +28,7 @@ func (i *itemRepository) Bump(
 	}
 
 	if item == nil {
-		return errors.New("item not found")
+		return errs.New("item not found")
 	}
 
 	item.LastAppliedSequenceID = sequenceId
@@ -41,13 +42,17 @@ func (i *itemRepository) Bump(
 
 // Create implements ItemRepository.
 func (i *itemRepository) Create(ctx context.Context, tx bun.Tx, item *models.Item) error {
-	_, err := tx.NewInsert().Model(item).Exec(ctx)
+	_, err := tx.NewInsert().Model(item).Ignore().Exec(ctx)
 	return err
 }
 
 // DeleteById implements ItemRepository.
 func (i *itemRepository) DeleteById(ctx context.Context, tx bun.Tx, identifier string) error {
 	identifier = strings.TrimSpace(identifier)
+	if identifier == "" {
+		return ErrEmptyIdentifier
+	}
+
 	_, err := tx.NewDelete().Model((*models.Item)(nil)).Where("id = ?", identifier).Exec(ctx)
 	if err != nil {
 		return err

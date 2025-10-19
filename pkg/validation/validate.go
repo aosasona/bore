@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"errors"
 	"reflect"
 	"strings"
 
@@ -9,6 +8,7 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 )
 
 var (
@@ -57,9 +57,9 @@ func ValidateStruct(s any) error {
 
 	switch err := err.(type) {
 	case *validator.InvalidValidationError:
-		return errors.New("invalid validation error: " + err.Error())
+		return errs.New("invalid validation error: " + err.Error())
 	case validator.ValidationErrors:
-		validationErrors := NewValidationError()
+		validationErrors := NewValidationErrors()
 		for _, v := range err {
 			validationErrors.Add(v.Field(), v.Translate(translator))
 		}

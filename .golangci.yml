@@ -2,6 +2,7 @@ version: "2"
 linters:
   enable:
     - dupl
+    - errcheck
     - errchkjson
     - exhaustruct
     - exhaustive
@@ -9,6 +10,8 @@ linters:
     - goconst
     - gocritic
     - godox
+    - gosec
+    - govet
     - gocheckcompilerdirectives
     - misspell
     - musttag
@@ -23,13 +26,17 @@ linters:
     - unconvert
   settings:
     exhaustruct:
-      include: []
-      exclude: []
+      allow-empty-rx:
+        - '.*/validation\.ValidateStructMixin'
+        - '.*/bun\.BaseModel'
+      allow-empty-returns: true
     exhaustive:
+      default-case-required: true
+      default-signifies-exhaustive: false
       explicit-exhaustive-switch: false
       explicit-exhaustive-map: false
-      default-case-required: true
-      default-signifies-exhaustive: true
+    errchkjson:
+      report-no-exported: true
     gocritic:
       enabled-tags:
         - performance

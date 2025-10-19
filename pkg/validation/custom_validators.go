@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"regexp"
 	"strings"
 
 	ut "github.com/go-playground/universal-translator"
@@ -13,12 +14,20 @@ type customValidator struct {
 	translation  string
 }
 
-var validators map[string]customValidator = map[string]customValidator{
-	"mimetype": {
-		validateFunc: mimetypeValidator,
-		translation:  "{0} must be a valid MIME type",
-	},
-}
+var (
+	collectionNameRegex = regexp.MustCompile(`^[a-zA-Z0-9 _-]{1,50}$`)
+
+	validators map[string]customValidator = map[string]customValidator{
+		"mimetype": {
+			validateFunc: mimetypeValidator,
+			translation:  "{0} must be a valid MIME type",
+		},
+		"collection_name": {
+			validateFunc: collectionNameValidator,
+			translation:  "{0} must be 1-50 characters long and can only contain letters, numbers, spaces, hyphens, and underscores",
+		},
+	}
+)
 
 func registerCustomValidators(
 	v *validator.Validate,
@@ -51,4 +60,13 @@ func registerCustomValidators(
 func mimetypeValidator(fl validator.FieldLevel) bool {
 	_, err := mimetype.ParseMimeType(fl.Field().String())
 	return err == nil
+}
+
+func collectionNameValidator(fl validator.FieldLevel) bool {
+	return IsValidCollectionName(fl.Field().String())
+}
+
+func IsValidCollectionName(name string) bool {
+	name = strings.TrimSpace(name)
+	return len(name) > 0 && len(name) <= 50 && collectionNameRegex.MatchString(name)
 }

@@ -9,8 +9,19 @@ type validationError struct {
 
 type ValidationErrors []validationError
 
-func NewValidationError() ValidationErrors {
+var ErrInvalidCollectionName = NewValidationError(
+	"collection_name",
+	"must be 1-50 characters long and can only contain letters, numbers, spaces, hyphens, and underscores",
+)
+
+func NewValidationErrors() ValidationErrors {
 	return ValidationErrors{}
+}
+
+func NewValidationError(field, err string) ValidationErrors {
+	return ValidationErrors{
+		{Field: field, Err: err},
+	}
 }
 
 func (v ValidationErrors) Error() string {

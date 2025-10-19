@@ -3,20 +3,19 @@ package events
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"time"
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/repository"
-	"go.trulyao.dev/bore/v2/pkg/events/action"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 	"go.trulyao.dev/bore/v2/pkg/events/aggregate"
 	"go.trulyao.dev/bore/v2/pkg/events/payload"
 )
 
 var (
-	ErrUnknownEventType = errors.New("unknown event type")
-	ErrNoEventsToAppend = errors.New("no events to append")
-	ErrNoEventApplied   = errors.New("no event applied")
+	ErrUnknownEventType = errs.New("unknown event type")
+	ErrNoEventsToAppend = errs.New("no events to append")
+	ErrNoEventApplied   = errs.New("no event applied")
 )
 
 // Manager handles event sourcing operations.
@@ -65,7 +64,7 @@ func (m *Manager) ApplyN(
 			}
 
 			if options.ExpectedVersion >= 0 && currentVersion != options.ExpectedVersion {
-				return errors.New("aggregate version mismatch")
+				return errs.New("aggregate version mismatch")
 			}
 
 			timestamp := time.Now().UTC()
@@ -144,24 +143,10 @@ func (m *Manager) Apply(
 
 func (m *Manager) applyProjection(ctx context.Context, tx bun.Tx, event *Event) error {
 	if event == nil {
-		return errors.New("event cannot be nil")
+		return errs.New("event cannot be nil")
 	}
 
-	var (
-		p   payload.Payload
-		err error
-	)
-	switch event.Type {
-	case action.ActionCreateItem:
-		p, err = payload.Decode(event.Payload, new(payload.CreateItem))
-	case action.ActionBumpItem:
-		p, err = payload.Decode(event.Payload, new(payload.BumpItem))
-	case action.ActionDeleteItem:
-		p, err = payload.Decode(event.Payload, new(payload.DeleteItem))
-	default:
-		return ErrUnknownEventType
-	}
-
+	p, err := payload.Decode(event.Payload, event.Type)
 	if err != nil {
 		return err
 	}
@@ -170,5 +155,6 @@ func (m *Manager) applyProjection(ctx context.Context, tx bun.Tx, event *Event) 
 		Aggregate: event.Aggregate,
 		Sequence:  event.Sequence,
 	}
+
 	return p.ApplyProjection(ctx, tx, m.repo, options)
 }

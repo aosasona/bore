@@ -4,9 +4,11 @@ import (
 	"bytes"
 
 	"github.com/BurntSushi/toml"
+	"github.com/oklog/ulid/v2"
 	"go.trulyao.dev/bore/v2/pkg/errs"
 )
 
+// NOTE: where and show the configuration is stored is determined by the application layer.
 type Config struct {
 	// DataDir is the path to the storage directory.
 	DataDir string `toml:"data_dir" json:"data_dir"`
@@ -25,6 +27,16 @@ func DefaultConfig() Config {
 		ClipboardPassthrough: true,
 		DefaultCollection:    "",
 	}
+}
+
+func (c *Config) SetDefaultCollection(identifier string) error {
+	id, err := ulid.Parse(identifier)
+	if err != nil {
+		return errs.Wrap(err, "invalid collection identifier")
+	}
+
+	c.DefaultCollection = id.String()
+	return nil
 }
 
 // FromBytes reads the configuration from a byte slice and populates the Config struct.

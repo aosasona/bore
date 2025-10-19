@@ -22,9 +22,10 @@ func pipedIn() bool {
 func (a *App) createRootCmd() *cli.App {
 	// nolint:exhaustruct
 	return &cli.App{
-		Name:    "bore",
-		Usage:   "A clipboard manager for the terminal",
-		Version: Version,
+		Name:                 "bore",
+		Usage:                "An SQLite-backed clipboard manager for headless environments",
+		Version:              Version,
+		EnableBashCompletion: true,
 		Authors: []*cli.Author{
 			{Name: "Ayodeji O.", Email: "ayodeji@trulyao.dev"},
 		},
@@ -76,6 +77,7 @@ func (a *App) createRootCmd() *cli.App {
 			a.resetCommand(),
 			a.copyCommand(),
 			a.pasteCommand(),
+			a.collectionsCommand(),
 		},
 	}
 }
@@ -209,6 +211,88 @@ func (a *App) pasteCommand() *cli.Command {
 		},
 		Action: func(ctx *cli.Context) error {
 			return a.handler.Paste(ctx)
+		},
+	}
+}
+
+func (a *App) collectionsCommand() *cli.Command {
+	// nolint:exhaustruct
+	return &cli.Command{
+		Name:  "collections",
+		Usage: "Manage clipboard collections",
+		Subcommands: []*cli.Command{
+			{
+				Name:  "list",
+				Usage: "List all collections",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    handler.FlagFormat,
+						Aliases: []string{"f"},
+						Usage:   "Output format (text, json)",
+					},
+				},
+				Action: func(ctx *cli.Context) error {
+					return a.handler.ListCollections(ctx)
+				},
+			},
+			{
+				Name:      "create",
+				Usage:     "Create a new collection",
+				ArgsUsage: "[collection name]",
+				Args:      true,
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    handler.FlagForce,
+						Aliases: []string{"f"},
+						Usage:   "Force creation even if a collection with the same name exists (uses a random suffix)",
+						Value:   false,
+					},
+				},
+				Action: func(ctx *cli.Context) error {
+					return a.handler.CreateCollection(ctx)
+				},
+			},
+			{
+				Name:      "delete",
+				Usage:     "Delete a collection",
+				Args:      true,
+				ArgsUsage: "[collection id]",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    handler.FlagForce,
+						Aliases: []string{"f"},
+						Usage:   "Force deletion without confirmation",
+						Value:   false,
+					},
+				},
+				Action: func(ctx *cli.Context) error {
+					return a.handler.DeleteCollection(ctx)
+				},
+			},
+			{
+				Name: "default",
+				Action: func(ctx *cli.Context) error {
+					return a.handler.ShowDefaultCollection(ctx)
+				},
+				Subcommands: []*cli.Command{
+					{
+						Name:      "set",
+						Usage:     "Set the default collection",
+						ArgsUsage: "[collection id]",
+						Action: func(ctx *cli.Context) error {
+							return a.handler.SetDefaultCollection(ctx)
+						},
+					},
+					{
+						Name:  "unset",
+						Usage: "Unset the default collection",
+						Action: func(ctx *cli.Context) error {
+							return a.handler.UnsetDefaultCollection(ctx)
+						},
+					},
+				},
+				Usage: "Manage the default collection",
+			},
 		},
 	}
 }

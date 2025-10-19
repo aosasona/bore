@@ -3,21 +3,21 @@ package events
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/oklog/ulid/v2"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/schema"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 	"go.trulyao.dev/bore/v2/pkg/events/action"
 	"go.trulyao.dev/bore/v2/pkg/events/aggregate"
 	"go.trulyao.dev/bore/v2/pkg/events/payload"
 )
 
 var (
-	ErrInvalidEventType = errors.New("invalid event type")
-	ErrInvalidAggregate = errors.New("invalid aggregate")
+	ErrInvalidEventType = errs.New("invalid event type")
+	ErrInvalidAggregate = errs.New("invalid aggregate")
 )
 
 // An event represents any action or change that occurs within the system.
@@ -99,7 +99,7 @@ func (e *Event) BeforeAppendModel(ctx context.Context, query schema.Query) error
 // AfterScanRow implements schema.AfterScanRowHook.
 func (e *Event) AfterScanRow(context.Context) error {
 	if e.AggregateType == "" || e.AggregateID == "" {
-		return errors.New("missing aggregate type or ID in event record")
+		return errs.New("missing aggregate type or ID in event record")
 	}
 
 	agg, err := aggregate.FromRaw(e.AggregateType, e.AggregateID)

@@ -9,10 +9,10 @@ import (
 	"go.trulyao.dev/bore/v2/pkg/events/action"
 )
 
-type DeleteItem struct{}
+type DeleteCollection struct{}
 
 // ApplyProjection implements Payload.
-func (d *DeleteItem) ApplyProjection(
+func (d *DeleteCollection) ApplyProjection(
 	ctx context.Context,
 	tx bun.Tx,
 	repo repository.Repository,
@@ -22,12 +22,12 @@ func (d *DeleteItem) ApplyProjection(
 		return errs.New("invalid aggregate")
 	}
 
-	return repo.Items().DeleteById(ctx, tx, options.Aggregate.ID())
+	return repo.Collections().DeleteById(ctx, tx, options.Aggregate.ID())
 }
 
 // Type implements Payload.
-func (d *DeleteItem) Type() action.Action {
-	return action.ActionDeleteItem
+func (d *DeleteCollection) Type() action.Action {
+	return action.ActionDeleteCollection
 }
 
-var _ Payload = (*DeleteItem)(nil)
+var _ Payload = (*DeleteCollection)(nil)

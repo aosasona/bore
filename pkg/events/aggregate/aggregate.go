@@ -1,18 +1,18 @@
 package aggregate
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/oklog/ulid/v2"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 )
 
 //go:generate go tool github.com/abice/go-enum --marshal
 
 var (
-	ErrInvalidAggregateString = errors.New("invalid aggregate string")
-	ErrInvalidAggregateID     = errors.New("invalid aggregate ID")
+	ErrInvalidAggregateString = errs.New("invalid aggregate string")
+	ErrInvalidAggregateID     = errs.New("invalid aggregate ID")
 )
 
 // An Aggregate represents a target entity for events, identified by a type and a ULID.
@@ -34,8 +34,8 @@ func New(aggregateType AggregateType) (Aggregate, error) {
 	return Aggregate{id: ulid.Make(), t: aggregateType}, nil
 }
 
-// NewWithID creates a new aggregate with the given type and ULID.
-func NewWithID(aggregateType AggregateType, aggregateId string) (Aggregate, error) {
+// WithID creates a new aggregate with the given type and ULID.
+func WithID(aggregateType AggregateType, aggregateId string) (Aggregate, error) {
 	if !aggregateType.IsValid() {
 		return Aggregate{}, ErrInvalidAggregateString
 	}
@@ -54,7 +54,7 @@ func NewWithID(aggregateType AggregateType, aggregateId string) (Aggregate, erro
 
 // FromRaw creates a new aggregate from raw string inputs for type and ID.
 func FromRaw(aggregateType string, aggregateId string) (Aggregate, error) {
-	return NewWithID(AggregateType(strings.TrimSpace(aggregateType)), aggregateId)
+	return WithID(AggregateType(strings.TrimSpace(aggregateType)), aggregateId)
 }
 
 // Parses an aggregate from its string representation in the format "type:id".
@@ -90,4 +90,27 @@ func (a *Aggregate) Type() string { return a.t.String() }
 // String returns the string representation of the aggregate in the format "type:id".
 func (a *Aggregate) String() string {
 	return fmt.Sprintf("%s:%s", a.t, a.id)
+}
+
+// Equals checks if two aggregates are equal based on their type and ID.
+func (a *Aggregate) Equals(other *Aggregate) bool {
+	if other == nil {
+		return false
+	}
+	return a.t == other.t && a.id.Compare(other.id) == 0
+}
+
+// MarshalText implements the encoding.TextMarshaler interface.
+func (a Aggregate) MarshalText() ([]byte, error) {
+	return []byte(a.String()), nil
+}
+
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+func (a *Aggregate) UnmarshalText(data []byte) error {
+	parsed, err := Parse(string(data))
+	if err != nil {
+		return err
+	}
+	*a = parsed
+	return nil
 }

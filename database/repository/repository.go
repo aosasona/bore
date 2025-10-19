@@ -6,7 +6,10 @@ import (
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/models"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 )
+
+var ErrEmptyIdentifier = errs.New("identifier cannot be empty")
 
 type ItemRepository interface {
 	Create(ctx context.Context, tx bun.Tx, item *models.Item) error
@@ -23,8 +26,36 @@ type ItemRepository interface {
 	FindByHash(ctx context.Context, hash string, collectionId string) (*models.Item, error)
 }
 
+type CollectionLookupOptions struct {
+	Identifier string
+	Name       string
+}
+
+type OrderBy struct {
+	Field     string
+	Ascending bool
+}
+
+type Pagination struct {
+	Limit  int
+	Offset int
+}
+
+type FindAllOptions struct {
+	OrderBy    []OrderBy
+	Pagination *Pagination
+}
+
 type CollectionRepository interface {
-	Exists(ctx context.Context, identifier string) (bool, error)
+	Create(ctx context.Context, tx bun.Tx, collection *models.Collection) error
+	Rename(ctx context.Context, tx bun.Tx, identifier string, newName string) error
+	DeleteById(ctx context.Context, tx bun.Tx, identifier string) error
+
+	FindById(ctx context.Context, identifier string) (*models.Collection, error)
+	FindByName(ctx context.Context, name string) (*models.Collection, error)
+	// FindOne looks up a collection by either ID or name.
+	FindOne(ctx context.Context, opts CollectionLookupOptions) (*models.Collection, error)
+	FindAll(ctx context.Context, opts FindAllOptions) (models.Collections, error)
 }
 
 // Repository is the main interface for accessing all repositories.

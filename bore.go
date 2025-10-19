@@ -25,14 +25,15 @@ type Bore struct {
 	// clipboard is the native clipboard interface for the current platform
 	clipboard clipboard.NativeClipboard
 
-	// events is the event manager for this bore instance
+	// manager is the event manager for this bore instance
 	manager *events.Manager
 
 	// repository is the interface for accessing database operations
 	repository repository.Repository
 
 	// MARK: Namespaces
-	items *clipboardNamespace
+	items       *clipboardNamespace
+	collections *collectionNamespace
 }
 
 // New creates a new Bore instance with the provided configuration.
@@ -75,6 +76,14 @@ func (b *Bore) Repository() (repository.Repository, error) {
 	return b.repository, nil
 }
 
+func (b *Bore) Events() (*events.Manager, error) {
+	if b.manager == nil {
+		return nil, errs.New("event manager is not initialized")
+	}
+
+	return b.manager, nil
+}
+
 // SystemClipboard returns the native clipboard interface for the current platform.
 func (b *Bore) SystemClipboard() (clipboard.NativeClipboard, error) {
 	if b.clipboard == nil {
@@ -103,14 +112,22 @@ func (b *Bore) Config() (*Config, error) {
 
 // Clipboard returns the items namespace for managing clipboard items.
 func (b *Bore) Clipboard() *clipboardNamespace {
-	b.namespaceMutex.Lock()
-	defer b.namespaceMutex.Unlock()
-
-	if b.items == nil {
-		b.items = &clipboardNamespace{b}
-	}
+	b.withNamespaceLock(func() {
+		if b.items == nil {
+			b.items = &clipboardNamespace{b}
+		}
+	})
 
 	return b.items
+}
+
+func (b *Bore) Collections() *collectionNamespace {
+	b.withNamespaceLock(func() {
+		if b.collections == nil {
+			b.collections = &collectionNamespace{b}
+		}
+	})
+	return b.collections
 }
 
 func (b *Bore) Close() error {
@@ -127,4 +144,12 @@ func (b *Bore) Reset() error {
 	}
 
 	return nil
+}
+
+// withNamespaceLock executes the provided function while holding the namespace mutex lock.
+func (b *Bore) withNamespaceLock(fn func()) {
+	b.namespaceMutex.Lock()
+	defer b.namespaceMutex.Unlock()
+
+	fn()
 }

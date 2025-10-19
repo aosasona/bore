@@ -3,9 +3,11 @@ package payload
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/uptrace/bun"
 	"go.trulyao.dev/bore/v2/database/repository"
+	"go.trulyao.dev/bore/v2/pkg/errs"
 	"go.trulyao.dev/bore/v2/pkg/events/action"
 	"go.trulyao.dev/bore/v2/pkg/events/aggregate"
 )
@@ -29,10 +31,36 @@ type RawPayload interface {
 	[]byte | json.RawMessage
 }
 
-// Decode decodes the given JSON data into the provided payload type.
-func Decode[T Payload, P RawPayload](data P, payload T) (T, error) {
-	if err := json.Unmarshal(data, &payload); err != nil {
-		return payload, err
+// Decode decodes the given JSON data into an associated Payload struct based on the action type.
+func Decode[P RawPayload](data P, a action.Action) (Payload, error) {
+	var target Payload
+
+	switch a {
+	case action.ActionCreateCollection:
+		target = new(CreateCollection)
+
+	case action.ActionDeleteCollection:
+		target = new(DeleteCollection)
+
+	case action.ActionCreateItem:
+		target = new(CreateItem)
+
+	case action.ActionDeleteItem:
+		target = new(DeleteItem)
+
+	case action.ActionBumpItem:
+		target = new(BumpItem)
+
+	case action.ActionRenameCollection:
+		target = new(RenameCollection)
+
+	default:
+		return nil, errs.New(fmt.Sprintf("unknown event action: %s", a))
 	}
-	return payload, nil
+
+	if err := json.Unmarshal(data, target); err != nil {
+		return nil, err
+	}
+
+	return target, nil
 }
