@@ -10,6 +10,7 @@ import (
 
 type (
 	Manager struct {
+		config     *bore.Config
 		dataDir    string
 		configPath string
 	}
@@ -22,6 +23,7 @@ type (
 
 func NewManager(opts Options) (*Manager, error) {
 	m := &Manager{
+		config:     nil,
 		dataDir:    opts.DataDir,
 		configPath: opts.ConfigPath,
 	}
@@ -92,6 +94,10 @@ func (m *Manager) Write(config *bore.Config) error {
 }
 
 func (m *Manager) Read() (*bore.Config, error) {
+	if m.config != nil {
+		return m.config, nil
+	}
+
 	configStr, err := os.ReadFile(m.configPath)
 	if err != nil {
 		return nil, errs.New("failed to read config file: " + err.Error())
@@ -102,8 +108,9 @@ func (m *Manager) Read() (*bore.Config, error) {
 		return nil, errs.New("failed to parse config file: " + err.Error())
 	}
 	config.DataDir = m.dataDir
+	m.config = config
 
-	return config, nil
+	return m.config, nil
 }
 
 func (m *Manager) SetDefaultCollectionID(identifier string) error {
