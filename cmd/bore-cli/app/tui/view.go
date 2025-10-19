@@ -1,4 +1,4 @@
-package view
+package tui
 
 import (
 	"encoding/json"
@@ -7,15 +7,15 @@ import (
 	"github.com/rivo/tview"
 )
 
-type ViewManager struct {
+type Manager struct {
 	application *tview.Application
 }
 
-func NewViewManager() *ViewManager {
-	return &ViewManager{application: tview.NewApplication()}
+func NewViewManager() *Manager {
+	return &Manager{application: tview.NewApplication()}
 }
 
-func (v *ViewManager) RenderJSON(writer io.Writer, data any) error {
+func (m *Manager) RenderJSON(writer io.Writer, data any) error {
 	var (
 		serialized []byte
 		err        error

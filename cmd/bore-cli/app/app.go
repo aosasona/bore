@@ -9,7 +9,7 @@ import (
 	"go.trulyao.dev/bore/v2"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/config"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/handler"
-	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/view"
+	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/tui"
 )
 
 var Version string
@@ -33,26 +33,23 @@ func init() {
 }
 
 type App struct {
-	bore *bore.Bore
-
 	// configPath is the path to the configuration file.
 	configPath string
 
 	// dataDir is the path to the data directory where data is stored.
 	dataDir string
 
-	handler *handler.Handler
-
-	viewManager *view.ViewManager
-
+	bore          *bore.Bore
+	handler       *handler.Handler
+	tuiManager    *tui.Manager
 	configManager *config.Manager
 }
 
 func New() (*App, error) {
 	app := &App{
-		configPath:  defaultConfigPath(),
-		dataDir:     defaultDataPath(),
-		viewManager: view.NewViewManager(),
+		configPath: defaultConfigPath(),
+		dataDir:    defaultDataPath(),
+		tuiManager: tui.NewViewManager(),
 	}
 
 	return app, nil
@@ -93,7 +90,7 @@ func (a *App) Load() error {
 	}
 
 	a.bore = bore
-	a.handler = handler.New(bore, a.viewManager, configManager)
+	a.handler = handler.New(bore, a.tuiManager, configManager)
 
 	return nil
 }

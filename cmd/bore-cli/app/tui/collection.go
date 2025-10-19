@@ -1,4 +1,4 @@
-package view
+package tui
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"go.trulyao.dev/bore/v2/database/models"
 )
 
-func (v *ViewManager) RenderCollectionsList(
+func (m *Manager) RenderCollectionsList(
 	output io.Writer,
 	collections models.Collections,
 ) error {
