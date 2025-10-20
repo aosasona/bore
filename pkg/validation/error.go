@@ -1,6 +1,9 @@
 package validation
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type validationError struct {
 	Field string
@@ -11,7 +14,7 @@ type ValidationErrors []validationError
 
 var ErrInvalidCollectionName = NewValidationError(
 	"collection_name",
-	"must be 1-50 characters long and can only contain letters, numbers, spaces, hyphens, and underscores",
+	"must be between 1 and 50 characters long and can only contain letters, numbers, spaces, hyphens, and underscores",
 )
 
 func NewValidationErrors() ValidationErrors {
@@ -28,10 +31,7 @@ func (v ValidationErrors) Error() string {
 	var sb strings.Builder
 
 	for i, ve := range v {
-		sb.WriteString("- ")
-		sb.WriteString(ve.Field)
-		sb.WriteString(": ")
-		sb.WriteString(ve.Err)
+		sb.WriteString(fmt.Sprintf("validation error: '%s' %s", ve.Field, ve.Err))
 		if i < len(v)-1 {
 			sb.WriteString("\n")
 		}
