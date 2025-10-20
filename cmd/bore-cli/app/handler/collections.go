@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 
+	"github.com/oklog/ulid/v2"
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
 )
@@ -93,6 +94,45 @@ func (h *Handler) DeleteCollection(c *cli.Context) error {
 	}
 
 	_, _ = c.App.Writer.Write([]byte(collection.ID + "\n"))
+	return nil
+}
+
+// RenameCollection renames a collection.
+func (h *Handler) RenameCollection(c *cli.Context) error {
+	if c.NArg() < 2 {
+		return cli.Exit("collection id and new name are required", 1)
+	} else if c.NArg() > 2 {
+		return cli.Exit("too many arguments", 1)
+	}
+
+	collectionID := c.Args().Get(0)
+	newName := c.Args().Get(1)
+
+	if collectionID == "" {
+		return cli.Exit("collection id is required", 1)
+	} else if newName == "" {
+		return cli.Exit("new name is required", 1)
+	}
+
+	id, err := ulid.Parse(collectionID)
+	if err != nil {
+		return cli.Exit("invalid collection id", 1)
+	}
+
+	collection, err := h.bore.Collections().Get(c.Context, id.String())
+	if err != nil {
+		return err
+	}
+
+	if collection == nil {
+		return cli.Exit("collection not found", 1)
+	}
+
+	if err = h.bore.Collections().Rename(c.Context, id.String(), newName); err != nil {
+		return err
+	}
+
+	_, _ = c.App.Writer.Write([]byte(newName + "\n"))
 	return nil
 }
 
