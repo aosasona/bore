@@ -270,6 +270,15 @@ func (a *App) collectionsCommand() *cli.Command {
 				},
 			},
 			{
+				Name:      "rename",
+				Usage:     "Rename a collection",
+				ArgsUsage: "[collection id] [new name]",
+				Args:      true,
+				Action: func(ctx *cli.Context) error {
+					return a.handler.RenameCollection(ctx)
+				},
+			},
+			{
 				Name: "default",
 				Action: func(ctx *cli.Context) error {
 					return a.handler.ShowDefaultCollection(ctx)
