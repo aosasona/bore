@@ -132,7 +132,9 @@ func (h *Handler) RenameCollection(c *cli.Context) error {
 		return err
 	}
 
-	_, _ = c.App.Writer.Write([]byte(newName + "\n"))
+	if _, err := fmt.Fprintln(c.App.Writer, newName); err != nil {
+		return err
+	}
 	return nil
 }
 
