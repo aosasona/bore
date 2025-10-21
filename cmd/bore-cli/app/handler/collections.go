@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/oklog/ulid/v2"
 	"github.com/urfave/cli/v2"
@@ -105,8 +106,8 @@ func (h *Handler) RenameCollection(c *cli.Context) error {
 		return cli.Exit("too many arguments", 1)
 	}
 
-	collectionID := c.Args().Get(0)
-	newName := c.Args().Get(1)
+	collectionID := strings.TrimSpace(c.Args().Get(0))
+	newName := strings.TrimSpace(c.Args().Get(1))
 
 	if collectionID == "" {
 		return cli.Exit("collection id is required", 1)
