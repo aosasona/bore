@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v2"
+	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/commands"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/handler"
 )
 
@@ -19,7 +20,18 @@ func pipedIn() bool {
 	return (fileinfo.Mode() & os.ModeCharDevice) == 0
 }
 
-func (a *App) createRootCmd() *cli.App {
+func (a *App) createRootCmd() (*cli.App, error) {
+	cmd, err := commands.New(&commands.NewCommandOptions{
+		Handler: a.handler,
+		Bore:    a.bore,
+		TUI:     a.tuiManager,
+		Config:  a.configManager,
+		Version: Version,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	// nolint:exhaustruct
 	return &cli.App{
 		Name:                 "bore",
@@ -73,13 +85,17 @@ func (a *App) createRootCmd() *cli.App {
 			return a.Load()
 		},
 		Commands: []*cli.Command{
-			a.infoCommand(),
+			cmd.Info().Build(),
+
+			// TODO: remove this
+			// a.infoCommand(),
+
 			a.resetCommand(),
 			a.copyCommand(),
 			a.pasteCommand(),
 			a.collectionsCommand(),
 		},
-	}
+	}, nil
 }
 
 func (a *App) infoCommand() *cli.Command {

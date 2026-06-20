@@ -19,6 +19,7 @@ func (c *InfoCommand) Usage() string {
 }
 
 func (c *InfoCommand) Action() error {
+	panic("not implemented")
 }
 
 func (c *InfoCommand) Build() *cli.Command {

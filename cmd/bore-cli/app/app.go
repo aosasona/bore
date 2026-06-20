@@ -56,8 +56,12 @@ func New() (*App, error) {
 }
 
 func (a *App) Execute() error {
-	app := a.createRootCmd()
-	return app.Run(os.Args)
+	rootCommand, err := a.createRootCmd()
+	if err != nil {
+		return err
+	}
+
+	return rootCommand.Run(os.Args)
 }
 
 func (a *App) SetConfigPath(path string) {
