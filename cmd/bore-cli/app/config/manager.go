@@ -13,19 +13,26 @@ type (
 		config     *bore.Config
 		dataDir    string
 		configPath string
+		version    string
 	}
 
 	Options struct {
 		DataDir    string
 		ConfigPath string
+		Version    string
 	}
 )
 
 func NewManager(opts Options) (*Manager, error) {
+	if opts.Version == "" {
+		opts.Version = "dev"
+	}
+
 	m := &Manager{
 		config:     nil,
 		dataDir:    opts.DataDir,
 		configPath: opts.ConfigPath,
+		version:    opts.Version,
 	}
 
 	if err := m.createDirectories(); err != nil {
@@ -48,8 +55,11 @@ func NewManager(opts Options) (*Manager, error) {
 
 func (m *Manager) ConfigPath() string { return m.configPath }
 
-func (m *Manager) DataDir() string   { return m.dataDir }
+func (m *Manager) DataDir() string { return m.dataDir }
+
 func (m *Manager) ConfigDir() string { return path.Dir(m.configPath) }
+
+func (m *Manager) Version() string { return m.version }
 
 func (m *Manager) createDirectories() error {
 	configDir := path.Dir(m.configPath)

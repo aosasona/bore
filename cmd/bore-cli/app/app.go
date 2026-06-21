@@ -76,6 +76,7 @@ func (a *App) Load() error {
 	configManager, err := config.NewManager(config.Options{
 		ConfigPath: a.configPath,
 		DataDir:    a.dataDir,
+		Version:    Version,
 	})
 	if err != nil {
 		return err
