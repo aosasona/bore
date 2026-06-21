@@ -1,27 +1,37 @@
 package commands
 
-import "github.com/urfave/cli/v2"
+import (
+	"fmt"
+
+	"github.com/urfave/cli/v2"
+)
 
 type InfoCommand struct {
-	*Command
+	*Manager
 }
 
-func (c *Command) Info() *InfoCommand {
-	return &InfoCommand{Command: c}
+func (c *Manager) Info() *InfoCommand {
+	return &InfoCommand{Manager: c}
 }
 
-func (c *InfoCommand) Name() string {
+func (i InfoCommand) Name() string {
 	return "info"
 }
 
-func (c *InfoCommand) Usage() string {
+func (i InfoCommand) Usage() string {
 	return "Display information about the current bore instance"
 }
 
-func (c *InfoCommand) Action() error {
-	panic("not implemented")
-}
+func (i *InfoCommand) Execute(ctx *cli.Context) error {
+	config, err := i.config.Read()
+	if err != nil {
+		return cli.Exit("failed to get bore configuration: "+err.Error(), 1)
+	}
 
-func (c *InfoCommand) Build() *cli.Command {
-	panic("not implemented")
+	fmt.Println("Bore Version:", i.config.Version())
+	fmt.Println("Data Directory:", config.DataDir)
+	fmt.Println("Config Path:", i.config.ConfigPath())
+	fmt.Println("Default Collection:", config.DefaultCollection)
+	fmt.Println("Clipboard Passthrough:", config.ClipboardPassthrough)
+	return nil
 }

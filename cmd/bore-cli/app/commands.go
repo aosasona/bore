@@ -21,19 +21,8 @@ func pipedIn() bool {
 }
 
 func (a *App) createRootCmd() (*cli.App, error) {
-	cmd, err := commands.New(&commands.NewCommandOptions{
-		Handler: a.handler,
-		Bore:    a.bore,
-		TUI:     a.tuiManager,
-		Config:  a.configManager,
-		Version: Version,
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	// nolint:exhaustruct
-	return &cli.App{
+	rootCmd := &cli.App{
 		Name:                 "bore",
 		Usage:                "An SQLite-backed clipboard manager for headless environments",
 		Version:              Version,
@@ -79,44 +68,47 @@ func (a *App) createRootCmd() (*cli.App, error) {
 			},
 		},
 		Before: func(ctx *cli.Context) error {
+			var err error
+
 			a.SetConfigPath(ctx.String("config"))
 			a.SetDataDir(ctx.String("data-dir"))
 
-			return a.Load()
+			if err = a.Load(); err != nil {
+				return cli.Exit("failed to load configuration: "+err.Error(), 1)
+			}
+
+			commandOptions := commands.NewCommandOptions{
+				Handler: a.handler,
+				Bore:    a.bore,
+				TUI:     a.tuiManager,
+				Config:  a.configManager,
+				Version: Version,
+			}
+
+			a.commandManager, err = commands.NewManager(&commandOptions)
+			if err != nil {
+				return cli.Exit("failed to initialize commands: "+err.Error(), 1)
+			}
+
+			return nil
 		},
 		Commands: []*cli.Command{
-			cmd.Info().Build(),
-
-			// TODO: remove this
-			// a.infoCommand(),
+			{
+				Name:  a.commandManager.Info().Name(),
+				Usage: a.commandManager.Info().Usage(),
+				Action: func(ctx *cli.Context) error {
+					return a.commandManager.Execute(ctx, a.commandManager.Info())
+				},
+			},
 
 			a.resetCommand(),
 			a.copyCommand(),
 			a.pasteCommand(),
 			a.collectionsCommand(),
 		},
-	}, nil
-}
-
-func (a *App) infoCommand() *cli.Command {
-	// nolint:exhaustruct
-	return &cli.Command{
-		Name:  "info",
-		Usage: "Display information about the current bore instance",
-		Action: func(ctx *cli.Context) error {
-			config, err := a.bore.Config()
-			if err != nil {
-				return cli.Exit("failed to get bore configuration: "+err.Error(), 1)
-			}
-
-			fmt.Println("Bore Version:", Version)
-			fmt.Println("Data Directory:", a.dataDir)
-			fmt.Println("Config Path:", a.configPath)
-			fmt.Println("Default Collection:", config.DefaultCollection)
-			fmt.Println("Clipboard Passthrough:", config.ClipboardPassthrough)
-			return nil
-		},
 	}
+
+	return rootCmd, nil
 }
 
 func (a *App) resetCommand() *cli.Command {

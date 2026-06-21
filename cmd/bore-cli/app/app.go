@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"go.trulyao.dev/bore/v2"
+	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/commands"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/config"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/handler"
 	"go.trulyao.dev/bore/v2/cmd/bore-cli/app/tui"
@@ -39,10 +40,11 @@ type App struct {
 	// dataDir is the path to the data directory where data is stored.
 	dataDir string
 
-	bore          *bore.Bore
-	handler       *handler.Handler
-	tuiManager    *tui.Manager
-	configManager *config.Manager
+	bore           *bore.Bore
+	handler        *handler.Handler
+	tuiManager     *tui.Manager
+	configManager  *config.Manager
+	commandManager *commands.Manager
 }
 
 func New() (*App, error) {

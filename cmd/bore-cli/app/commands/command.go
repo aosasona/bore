@@ -25,7 +25,7 @@ type NewCommandOptions struct {
 	Version string
 }
 
-type Command struct {
+type Manager struct {
 	handler *handler.Handler
 	bore    *bore.Bore
 	tui     *tui.Manager
@@ -34,13 +34,12 @@ type Command struct {
 }
 
 type SubCommand interface {
-	*Command
 	Name() string
 	Usage() string
 	Execute(ctx *cli.Context) error
 }
 
-func New(options *NewCommandOptions) (*Command, error) {
+func NewManager(options *NewCommandOptions) (*Manager, error) {
 	if options.Handler == nil {
 		return nil, ErrHandlerNotProvided
 	}
@@ -57,10 +56,23 @@ func New(options *NewCommandOptions) (*Command, error) {
 		return nil, ErrConfigManagerNotProvided
 	}
 
-	return &Command{
+	if options.Version == "" {
+		options.Version = "dev"
+	}
+
+	return &Manager{
 		handler: options.Handler,
 		bore:    options.Bore,
 		tui:     options.TUI,
 		config:  options.Config,
+		version: options.Version,
 	}, nil
+}
+
+func (c *Manager) Execute(ctx *cli.Context, sub SubCommand) error {
+	if c == nil {
+		return cli.Exit("command is not initialized", 1)
+	}
+
+	return sub.Execute(ctx)
 }
