@@ -93,14 +93,7 @@ func (a *App) createRootCmd() (*cli.App, error) {
 			return nil
 		},
 		Commands: []*cli.Command{
-			{
-				Name:  a.commandManager.Info().Name(),
-				Usage: a.commandManager.Info().Usage(),
-				Action: func(ctx *cli.Context) error {
-					return a.commandManager.Execute(ctx, a.commandManager.Info())
-				},
-			},
-
+			a.infoCommand(),
 			a.resetCommand(),
 			a.copyCommand(),
 			a.pasteCommand(),
@@ -109,6 +102,17 @@ func (a *App) createRootCmd() (*cli.App, error) {
 	}
 
 	return rootCmd, nil
+}
+
+func (a *App) infoCommand() *cli.Command {
+	// nolint:exhaustruct
+	return &cli.Command{
+		Name:  commands.InfoName,
+		Usage: commands.InfoUsage,
+		Action: func(ctx *cli.Context) error {
+			return a.commandManager.Execute(ctx, a.commandManager.Info())
+		},
+	}
 }
 
 func (a *App) resetCommand() *cli.Command {

@@ -6,6 +6,11 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+const (
+	InfoName  = "info"
+	InfoUsage = "Display information about the current bore instance"
+)
+
 type InfoCommand struct {
 	*Manager
 }
@@ -15,11 +20,11 @@ func (c *Manager) Info() *InfoCommand {
 }
 
 func (i InfoCommand) Name() string {
-	return "info"
+	return InfoName
 }
 
 func (i InfoCommand) Usage() string {
-	return "Display information about the current bore instance"
+	return InfoUsage
 }
 
 func (i *InfoCommand) Execute(ctx *cli.Context) error {
