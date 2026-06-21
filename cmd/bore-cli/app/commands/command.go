@@ -2,6 +2,8 @@ package commands
 
 import (
 	"errors"
+	"fmt"
+	"os"
 
 	"github.com/urfave/cli/v2"
 	"go.trulyao.dev/bore/v2"
@@ -33,14 +35,20 @@ type Manager struct {
 	version string
 }
 
+type Runner func(ctx *cli.Context, sub SubCommand) error
+
 type SubCommand interface {
-	Build(action cli.ActionFunc) *cli.Command
+	Build(run Runner) *cli.Command
 	Execute(ctx *cli.Context, manager *Manager) error
 }
 
 func Registry() []SubCommand {
 	return []SubCommand{
 		InfoCommand{},
+		ResetCommand{},
+		CopyCommand{},
+		PasteCommand{},
+		CollectionsCommand{},
 	}
 }
 
@@ -52,13 +60,13 @@ func BuildAll(getManager func() *Manager) []*cli.Command {
 		subcommand := subcommand
 
 		cliCommands = append(cliCommands, subcommand.Build(
-			func(ctx *cli.Context) error {
+			func(ctx *cli.Context, sub SubCommand) error {
 				manager := getManager()
 				if manager == nil {
 					return cli.Exit("command manager is not initialized", 1)
 				}
 
-				return manager.Execute(ctx, subcommand)
+				return manager.Execute(ctx, sub)
 			},
 		))
 	}
@@ -102,4 +110,14 @@ func (c *Manager) Execute(ctx *cli.Context, sub SubCommand) error {
 	}
 
 	return sub.Execute(ctx, c)
+}
+
+func PipedIn() bool {
+	fileinfo, err := os.Stdin.Stat()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "failed to read from stdin:", err)
+		return false
+	}
+
+	return (fileinfo.Mode() & os.ModeCharDevice) == 0
 }

@@ -21,12 +21,14 @@ func (i InfoCommand) Usage() string {
 	return InfoUsage
 }
 
-func (i InfoCommand) Build(action cli.ActionFunc) *cli.Command {
+func (i InfoCommand) Build(run Runner) *cli.Command {
 	// nolint:exhaustruct
 	return &cli.Command{
-		Name:   i.Name(),
-		Usage:  i.Usage(),
-		Action: action,
+		Name:  i.Name(),
+		Usage: i.Usage(),
+		Action: func(ctx *cli.Context) error {
+			return run(ctx, i)
+		},
 	}
 }
 
