@@ -21,6 +21,8 @@ func pipedIn() bool {
 }
 
 func (a *App) createRootCmd() (*cli.App, error) {
+	var commandManager *commands.Manager
+
 	// nolint:exhaustruct
 	rootCmd := &cli.App{
 		Name:                 "bore",
@@ -85,34 +87,26 @@ func (a *App) createRootCmd() (*cli.App, error) {
 				Version: Version,
 			}
 
-			a.commandManager, err = commands.NewManager(&commandOptions)
+			commandManager, err = commands.NewManager(&commandOptions)
 			if err != nil {
 				return cli.Exit("failed to initialize commands: "+err.Error(), 1)
 			}
 
 			return nil
 		},
-		Commands: []*cli.Command{
-			a.infoCommand(),
-			a.resetCommand(),
-			a.copyCommand(),
-			a.pasteCommand(),
-			a.collectionsCommand(),
-		},
 	}
+
+	rootCmd.Commands = append(
+		commands.BuildAll(func() *commands.Manager {
+			return commandManager
+		}),
+		a.resetCommand(),
+		a.copyCommand(),
+		a.pasteCommand(),
+		a.collectionsCommand(),
+	)
 
 	return rootCmd, nil
-}
-
-func (a *App) infoCommand() *cli.Command {
-	// nolint:exhaustruct
-	return &cli.Command{
-		Name:  commands.InfoName,
-		Usage: commands.InfoUsage,
-		Action: func(ctx *cli.Context) error {
-			return a.commandManager.Execute(ctx, a.commandManager.Info())
-		},
-	}
 }
 
 func (a *App) resetCommand() *cli.Command {

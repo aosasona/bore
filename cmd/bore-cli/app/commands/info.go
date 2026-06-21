@@ -11,13 +11,7 @@ const (
 	InfoUsage = "Display information about the current bore instance"
 )
 
-type InfoCommand struct {
-	*Manager
-}
-
-func (c *Manager) Info() *InfoCommand {
-	return &InfoCommand{Manager: c}
-}
+type InfoCommand struct{}
 
 func (i InfoCommand) Name() string {
 	return InfoName
@@ -27,15 +21,24 @@ func (i InfoCommand) Usage() string {
 	return InfoUsage
 }
 
-func (i *InfoCommand) Execute(ctx *cli.Context) error {
-	config, err := i.config.Read()
+func (i InfoCommand) Build(action cli.ActionFunc) *cli.Command {
+	// nolint:exhaustruct
+	return &cli.Command{
+		Name:   i.Name(),
+		Usage:  i.Usage(),
+		Action: action,
+	}
+}
+
+func (i InfoCommand) Execute(ctx *cli.Context, manager *Manager) error {
+	config, err := manager.config.Read()
 	if err != nil {
 		return cli.Exit("failed to get bore configuration: "+err.Error(), 1)
 	}
 
-	fmt.Println("Bore Version:", i.config.Version())
+	fmt.Println("Bore Version:", manager.config.Version())
 	fmt.Println("Data Directory:", config.DataDir)
-	fmt.Println("Config Path:", i.config.ConfigPath())
+	fmt.Println("Config Path:", manager.config.ConfigPath())
 	fmt.Println("Default Collection:", config.DefaultCollection)
 	fmt.Println("Clipboard Passthrough:", config.ClipboardPassthrough)
 	return nil

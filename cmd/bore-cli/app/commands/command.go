@@ -34,9 +34,36 @@ type Manager struct {
 }
 
 type SubCommand interface {
-	Name() string
-	Usage() string
-	Execute(ctx *cli.Context) error
+	Build(action cli.ActionFunc) *cli.Command
+	Execute(ctx *cli.Context, manager *Manager) error
+}
+
+func Registry() []SubCommand {
+	return []SubCommand{
+		InfoCommand{},
+	}
+}
+
+func BuildAll(getManager func() *Manager) []*cli.Command {
+	subcommands := Registry()
+	cliCommands := make([]*cli.Command, 0, len(subcommands))
+
+	for _, subcommand := range subcommands {
+		subcommand := subcommand
+
+		cliCommands = append(cliCommands, subcommand.Build(
+			func(ctx *cli.Context) error {
+				manager := getManager()
+				if manager == nil {
+					return cli.Exit("command manager is not initialized", 1)
+				}
+
+				return manager.Execute(ctx, subcommand)
+			},
+		))
+	}
+
+	return cliCommands
 }
 
 func NewManager(options *NewCommandOptions) (*Manager, error) {
@@ -74,5 +101,5 @@ func (c *Manager) Execute(ctx *cli.Context, sub SubCommand) error {
 		return cli.Exit("command is not initialized", 1)
 	}
 
-	return sub.Execute(ctx)
+	return sub.Execute(ctx, c)
 }
