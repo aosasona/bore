@@ -15,6 +15,12 @@ type itemRepository struct {
 	db *bun.DB
 }
 
+type FindItemsOptions struct {
+	FindAllOptions
+	// CollectionID is the ID of the collection to filter by. If empty, no filtering will be applied.
+	CollectionID string
+}
+
 // Bump implements ItemRepository.
 func (i *itemRepository) Bump(
 	ctx context.Context,
@@ -139,6 +145,28 @@ func (i *itemRepository) FindLatest(
 	}
 
 	return item, nil
+}
+
+// FindAll implements ItemRepository.
+func (i *itemRepository) FindAll(
+	ctx context.Context,
+	opts FindItemsOptions,
+) ([]*models.Item, error) {
+	result := make([]*models.Item, 0)
+
+	query := i.db.NewSelect().Model(&result)
+
+	if opts.CollectionID != "" {
+		query.Where("collection_id = ?", opts.CollectionID)
+	}
+
+	opts.ApplyTo(query)
+
+	if err := query.Scan(ctx); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 var _ ItemRepository = (*itemRepository)(nil)
