@@ -56,7 +56,12 @@ func (h *Handler) Copy(ctx *cli.Context, options CliCopyOptions) error {
 
 	switch {
 	case inputFile != "":
-		content, err = os.ReadFile(inputFile)
+		cleanedInputFile := strings.TrimSpace(inputFile)
+		if cleanedInputFile == "" {
+			return cli.Exit("input file path cannot be empty", 1)
+		}
+
+		content, err = os.ReadFile(cleanedInputFile)
 		if err != nil {
 			return cli.Exit("failed to read input file: "+err.Error(), 1)
 		}
@@ -157,7 +162,7 @@ func (h *Handler) Paste(ctx *cli.Context) error {
 }
 
 func (h *Handler) writeToFile(_ *cli.Context, filename string, content []byte) error {
-	return os.WriteFile(filename, content, 0o644)
+	return os.WriteFile(filename, content, 0o600)
 }
 
 func (h *Handler) writeToStdout(ctx *cli.Context, content []byte) error {
