@@ -24,6 +24,7 @@ type ItemRepository interface {
 	FindLatest(ctx context.Context, collectionID string) (*models.Item, error)
 	FindById(ctx context.Context, identifier string, collectionId string) (*models.Item, error)
 	FindByHash(ctx context.Context, hash string, collectionId string) (*models.Item, error)
+	FindAll(ctx context.Context, opts FindItemsOptions) ([]*models.Item, error)
 }
 
 type CollectionLookupOptions struct {
@@ -31,10 +32,12 @@ type CollectionLookupOptions struct {
 	Name       string
 }
 
-type OrderBy struct {
+type OrderByField struct {
 	Field     string
 	Ascending bool
 }
+
+type OrderBy []OrderByField
 
 type Pagination struct {
 	Limit  int
@@ -42,7 +45,7 @@ type Pagination struct {
 }
 
 type FindAllOptions struct {
-	OrderBy    []OrderBy
+	OrderBy    OrderBy
 	Pagination *Pagination
 }
 
@@ -102,6 +105,41 @@ func withLock[T any](r *repo, fn func(*repo) T) T {
 	defer r.mu.Unlock()
 
 	return fn(r)
+}
+
+func (p Pagination) ApplyTo(query *bun.SelectQuery) *bun.SelectQuery {
+	if p.Limit > 0 {
+		query = query.Limit(p.Limit)
+	}
+
+	if p.Offset > 0 {
+		query = query.Offset(p.Offset)
+	}
+
+	return query
+}
+
+func (o OrderBy) ApplyTo(query *bun.SelectQuery) *bun.SelectQuery {
+	for _, order := range o {
+		direction := "DESC"
+		if order.Ascending {
+			direction = "ASC"
+		}
+
+		query = query.OrderExpr(order.Field + " " + direction)
+	}
+
+	return query
+}
+
+func (f FindAllOptions) ApplyTo(query *bun.SelectQuery) *bun.SelectQuery {
+	query = f.OrderBy.ApplyTo(query)
+
+	if f.Pagination != nil {
+		f.Pagination.ApplyTo(query)
+	}
+
+	return query
 }
 
 var _ Repository = (*repo)(nil)
