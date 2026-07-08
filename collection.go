@@ -166,7 +166,7 @@ func (c *collectionNamespace) Rename(ctx context.Context, identifier, newName st
 }
 
 type ListCollectionsOptions struct {
-	OrderBy    []repository.OrderBy
+	OrderBy    repository.OrderBy
 	Pagination *repository.Pagination
 }
 

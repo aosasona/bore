@@ -28,22 +28,7 @@ func (c *collectionRepository) FindAll(
 		ColumnExpr("COUNT(i.id) AS items_count").
 		Group("collection.id")
 
-	for _, order := range opts.OrderBy {
-		direction := "DESC"
-		if order.Ascending {
-			direction = "ASC"
-		}
-		query = query.OrderExpr(order.Field + " " + direction)
-	}
-
-	if p := opts.Pagination; p != nil {
-		if p.Limit > 0 {
-			query = query.Limit(p.Limit)
-		}
-		if p.Offset > 0 {
-			query = query.Offset(p.Offset)
-		}
-	}
+	opts.ApplyTo(query)
 
 	var collections models.Collections
 	if err := query.Scan(ctx, &collections); err != nil {
