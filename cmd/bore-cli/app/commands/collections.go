@@ -178,3 +178,14 @@ func (u UnsetDefaultCollectionCommand) Build(run Runner) *cli.Command {
 func (u UnsetDefaultCollectionCommand) Execute(ctx *cli.Context, manager *Manager) error {
 	return manager.handler.UnsetDefaultCollection(ctx)
 }
+
+var (
+	_ SubCommand = (*CollectionsCommand)(nil)
+	_ SubCommand = (*ListCollectionsCommand)(nil)
+	_ SubCommand = (*CreateCollectionCommand)(nil)
+	_ SubCommand = (*DeleteCollectionCommand)(nil)
+	_ SubCommand = (*RenameCollectionCommand)(nil)
+	_ SubCommand = (*ShowDefaultCollectionCommand)(nil)
+	_ SubCommand = (*SetDefaultCollectionCommand)(nil)
+	_ SubCommand = (*UnsetDefaultCollectionCommand)(nil)
+)

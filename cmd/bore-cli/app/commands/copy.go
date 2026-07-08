@@ -53,3 +53,5 @@ func (c CopyCommand) Build(run Runner) *cli.Command {
 func (c CopyCommand) Execute(ctx *cli.Context, manager *Manager) error {
 	return manager.handler.Copy(ctx, handler.CliCopyOptions{Stdin: PipedIn()})
 }
+
+var _ SubCommand = (*CopyCommand)(nil)

@@ -32,3 +32,5 @@ func (r ResetCommand) Execute(ctx *cli.Context, manager *Manager) error {
 	fmt.Println("Bore instance has been reset successfully.")
 	return nil
 }
+
+var _ SubCommand = (*ResetCommand)(nil)

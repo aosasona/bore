@@ -59,3 +59,5 @@ func (p PasteCommand) Build(run Runner) *cli.Command {
 func (p PasteCommand) Execute(ctx *cli.Context, manager *Manager) error {
 	return manager.handler.Paste(ctx)
 }
+
+var _ SubCommand = (*PasteCommand)(nil)

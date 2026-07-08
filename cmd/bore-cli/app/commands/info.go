@@ -45,3 +45,5 @@ func (i InfoCommand) Execute(ctx *cli.Context, manager *Manager) error {
 	fmt.Println("Clipboard Passthrough:", config.ClipboardPassthrough)
 	return nil
 }
+
+var _ SubCommand = (*InfoCommand)(nil)
