@@ -57,8 +57,6 @@ func BuildAll(getManager func() *Manager) []*cli.Command {
 	cliCommands := make([]*cli.Command, 0, len(subcommands))
 
 	for _, subcommand := range subcommands {
-		subcommand := subcommand
-
 		cliCommands = append(cliCommands, subcommand.Build(
 			func(ctx *cli.Context, sub SubCommand) error {
 				manager := getManager()
