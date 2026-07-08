@@ -133,7 +133,7 @@ func (h *Handler) Paste(ctx *cli.Context) error {
 		collectionID = config.DefaultCollection
 	}
 
-	item, err := h.bore.Get(ctx.Context, bore.GetClipboardOptions{
+	item, err := h.bore.Clipboard().Get(ctx.Context, bore.GetClipboardOptions{
 		ItemID:              ctx.String(FlagIdentifier),
 		CollectionID:        collectionID,
 		FromSystemClipboard: ctx.Bool(FlagSystem),

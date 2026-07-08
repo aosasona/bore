@@ -40,16 +40,16 @@ type (
 )
 
 // Set copies the provided data to the Bore instance.
-func (i *clipboardNamespace) Set(ctx context.Context, data []byte, opts SetClipboardOptions) error {
-	forwardToSystemClipboard := i.config.ClipboardPassthrough || opts.Passthrough
-	if i.clipboard.Available() && forwardToSystemClipboard {
-		if err := i.clipboard.Write(ctx, data); err != nil {
+func (c *clipboardNamespace) Set(ctx context.Context, data []byte, opts SetClipboardOptions) error {
+	forwardToSystemClipboard := c.config.ClipboardPassthrough || opts.Passthrough
+	if c.clipboard.Available() && forwardToSystemClipboard {
+		if err := c.clipboard.Write(ctx, data); err != nil {
 			return err
 		}
 	}
 
 	hash := lib.ComputeChecksum(data)
-	existingItem, err := i.repository.Items().FindByHash(ctx, hash, opts.CollectionID)
+	existingItem, err := c.repository.Items().FindByHash(ctx, hash, opts.CollectionID)
 	if err != nil {
 		return errs.New("failed to check for existing item").WithError(err)
 	}
@@ -77,7 +77,7 @@ func (i *clipboardNamespace) Set(ctx context.Context, data []byte, opts SetClipb
 		return errs.New("failed to create copy event: ").WithError(err)
 	}
 
-	if _, _, err = i.manager.Apply(ctx, e, events.AppendOptions{ExpectedVersion: -1}); err != nil {
+	if _, _, err = c.manager.Apply(ctx, e, events.AppendOptions{ExpectedVersion: -1}); err != nil {
 		return errs.New("failed to apply copy event").WithError(err)
 	}
 
@@ -85,9 +85,12 @@ func (i *clipboardNamespace) Set(ctx context.Context, data []byte, opts SetClipb
 }
 
 // Get retrieves the last copied data from the Bore instance.
-func (b *Bore) Get(ctx context.Context, options GetClipboardOptions) (PasteResult, error) {
-	if b.clipboard.Available() && options.FromSystemClipboard {
-		rawContent, err := b.clipboard.Read(ctx)
+func (c *clipboardNamespace) Get(
+	ctx context.Context,
+	options GetClipboardOptions,
+) (PasteResult, error) {
+	if c.clipboard.Available() && options.FromSystemClipboard {
+		rawContent, err := c.clipboard.Read(ctx)
 		if err != nil {
 			return PasteResult{}, errs.New("failed to read from system clipboard").WithError(err)
 		}
@@ -97,7 +100,7 @@ func (b *Bore) Get(ctx context.Context, options GetClipboardOptions) (PasteResul
 
 	options.CollectionID = strings.TrimSpace(options.CollectionID)
 	if options.CollectionID != "" && !options.SkipCollectionCheck {
-		existingCollection, err := b.repository.Collections().
+		existingCollection, err := c.repository.Collections().
 			FindOne(ctx, repository.CollectionLookupOptions{
 				Identifier: options.CollectionID,
 				Name:       "",
@@ -116,9 +119,9 @@ func (b *Bore) Get(ctx context.Context, options GetClipboardOptions) (PasteResul
 
 	identifier := strings.TrimSpace(options.ItemID)
 	if identifier == "" {
-		item, err = b.repository.Items().FindLatest(ctx, options.CollectionID)
+		item, err = c.repository.Items().FindLatest(ctx, options.CollectionID)
 	} else {
-		item, err = b.repository.Items().FindById(ctx, identifier, options.CollectionID)
+		item, err = c.repository.Items().FindById(ctx, identifier, options.CollectionID)
 	}
 
 	if err != nil {
@@ -143,7 +146,7 @@ func (b *Bore) Get(ctx context.Context, options GetClipboardOptions) (PasteResul
 			return PasteResult{}, errs.New("failed to create delete event").WithError(err)
 		}
 
-		if _, _, err = b.manager.Apply(ctx, e); err != nil {
+		if _, _, err = c.manager.Apply(ctx, e); err != nil {
 			return PasteResult{}, errs.New("failed to apply delete event").WithError(err)
 		}
 	}
